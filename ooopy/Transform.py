@@ -25,6 +25,7 @@ import time
 import re
 from elementtree.ElementTree import dump, SubElement, Element
 from OOoPy                   import OOoPy
+from copy                    import deepcopy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
 tags = \
@@ -124,6 +125,7 @@ class Transformer (object) :
        >>> t   = Transformer (
        ...       Autoupdate_Transform ()
        ...     , Editinfo_Transform   ()  
+       ...     , Field_Replace_Transform (prio = 99, replace = cb)
        ...     , Field_Replace_Transform 
        ...         ( replace =
        ...             { 'salutation' : ''
@@ -133,7 +135,6 @@ class Transformer (object) :
        ...             , 'postalcode' : '00815'
        ...             , 'city'       : 'Niemandsdorf'
        ...             }
-       ...         , callback = cb
        ...         )
        ...     , Addpagebreak_Style_Transform ()
        ...     , Addpagebreak_Transform       ()
@@ -159,6 +160,39 @@ class Transformer (object) :
        city : Niemandsdorf
        >>> body [-1].get (OOo_Tag ('text', 'style-name'))
        'P1'
+       >>> sio = StringIO ()
+       >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+       >>> c = o.read ('content.xml')
+       >>> t   = Transformer (
+       ...       Addpagebreak_Style_Transform ()
+       ...     , Mailmerge_Transform
+       ...       ( iterator = 
+       ...         ( dict (firstname = 'Erika', lastname = 'Nobody')
+       ...         , dict (firstname = 'Eric',  lastname = 'Wizard')
+       ...         , cb
+       ...         )
+       ...       )
+       ...     )
+       >>> t.transform (o)
+       >>> o.close ()
+       >>> ov  = sio.getvalue ()
+       >>> f   = open ("testout2.sxw", "w")
+       >>> f.write (ov)
+       >>> f.close ()
+       >>> o = OOoPy (infile = sio)
+       >>> c = o.read ('content.xml')
+       >>> body = c.find (OOo_Tag ('office', 'body'))
+       >>> for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
+       ...     if node.get (OOo_Tag ('text', 'name'), None).endswith ('name') :
+       ...         name = node.get (OOo_Tag ('text', 'name'))
+       ...         print name, ':', node.text
+       firstname : Erika
+       lastname : Nobody
+       firstname : Eric
+       lastname : Wizard
+       firstname : Hugo
+       lastname : Testman
+       >>> o.close ()
     """
     def __init__ (self, *ts) :
         self.transforms = {}
@@ -286,24 +320,29 @@ class Field_Replace_Transform (Transform) :
     filename = 'content.xml'
     prio     = 100
 
-    def __init__ (self, prio = None, replace = None, callback = None, **kw) :
+    def __init__ (self, prio = None, replace = None, **kw) :
+        """ replace is something behaving like a dict or something
+            callable for name lookups
+        """
         Transform (prio)
         self.replace  = replace or {}
-        self.callback = callback
-        for k in kw.keys () :
-            self.replace [k] = kw [k]
+        self.dict     = kw
     # end def __init__
 
     def apply (self, root, transformer) :
-        body = root.find (OOo_Tag ('office', 'body'))
+        body = root
+        if body.tag != OOo_Tag ('office', 'body') :
+            body = body.find (OOo_Tag ('office', 'body'))
         for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
             name = node.get (OOo_Tag ('text', 'name'))
-            if self.replace.has_key (name) :
-                node.text = self.replace [name]
-            elif callable (self.callback) :
-                replace = self.callback (name)
+            if callable (self.replace) :
+                replace = self.replace (name)
                 if replace :
                     node.text = replace
+            elif name in self.replace :
+                node.text = self.replace [name]
+            elif name in self.dict :
+                node.text = self.dict    [name]
     # end def apply
 # end class Field_Replace_Transform
 
@@ -366,15 +405,18 @@ class Addpagebreak_Transform (Transform) :
     filename = 'content.xml'
     prio     = 100
 
-    def __init__ (self, stylename = None, stylekey = None) :
+    def __init__ (self, prio = None, stylename = None, stylekey = None) :
+        Transform.__init__ (self, prio)
         self.stylename = stylename
         self.stylekey  = stylekey or 'Addpagebreak_Style_Transform:stylename'
     # end def __init__
 
-    def apply (self, root, transformation) :
+    def apply (self, root, transformer) :
         """append to body e.g., <text:p text:style-name="P4"/>"""
-        body = root.find (OOo_Tag ('office', 'body'))
-        stylename = self.stylename or transformation [self.stylekey]
+        body = root
+        if body.tag != OOo_Tag ('office', 'body') :
+            body = body.find (OOo_Tag ('office', 'body'))
+        stylename = self.stylename or transformer [self.stylekey]
         SubElement \
             ( body
             , OOo_Tag ('text', 'p')
@@ -383,30 +425,53 @@ class Addpagebreak_Transform (Transform) :
     # end def apply
 # end class Addpagebreak_Transform
 
-if __name__ == '__main__' :
-    from StringIO import StringIO
-    sio = StringIO ()
-    o   = OOoPy (infile = 'test.sxw', outfile = sio)
-    t   = Transformer \
-        ( Autoupdate_Transform ()
-        , Editinfo_Transform   ()
-        , Field_Replace_Transform 
-            ( replace =
-                { 'salutation' : ''
-                , 'firstname'  : 'Erika'
-                , 'lastname'   : 'Musterfrau'
-                , 'street'     : 'Beispielstrasse 42'
-                , 'country'    : 'D'
-                , 'postalcode' : '00815'
-                , 'city'       : 'Niemandsdorf'
-                }
-            )
-        , Addpagebreak_Style_Transform ()
-        , Addpagebreak_Transform       ()
-        )
-    t.transform (o)
-    o.close ()
-    ov  = sio.getvalue ()
-    f   = open ("testout.sxw", "w")
-    f.write (ov)
-    f.close ()
+class Mailmerge_Transform (Transform) :
+    """
+       This transformation is used to create a mailmerge document using
+       the current document as the template. In the constructor we get
+       an iterator that provides a data set for each item in the
+       iteration. Elements the iterator has to provide are either
+       something that follows the Mapping Type interface (it looks like
+       a dict) or something that is callable and can be used for
+       name-value lookups.
+
+       A precondition for this transform is the application of the
+       Addpagebreak_Style_Transform to guarantee that we know the style
+       for adding a page break to the current document. Alternatively
+       the stylename (or the stylekey if a different name should be used
+       for lookup in the current transformer) can be given in the
+       constructor.
+    """
+    filename = 'content.xml'
+    prio     = 100
+
+    def __init__ \
+        (self, iterator, prio = None, stylename = None, stylekey = None) :
+        Transform.__init__ (self, prio)
+        self.iterator  = iterator
+        self.stylename = stylename
+        self.stylekey  = stylekey
+    # end def __init__
+
+    def apply (self, root, transformer) :
+        """ """
+        pb         = Addpagebreak_Transform \
+            (stylename = self.stylename, stylekey = self.stylekey)
+        cont       = root
+        if cont.tag != OOo_Tag ('office', 'document-content') :
+            cont   = root.find  (OOo_Tag ('office', 'document-content'))
+        body       = cont.find  (OOo_Tag ('office', 'body'))
+        idx        = cont [:].index (body)
+        copy       = cont [idx]
+        cont [idx] = Element (OOo_Tag ('office', 'body'))
+        body       = cont [idx]
+        for i in self.iterator :
+            fr = Field_Replace_Transform (replace = i)
+            if body : # add page break only to non-empty body
+                pb.apply (body, transformer)
+            cp = deepcopy (copy)
+            fr.apply (cp, transformer)
+            for i in cp [:] :
+                body.append (i)
+    # end def apply
+# end class Mailmerge_Transform
