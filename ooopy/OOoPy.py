@@ -28,7 +28,7 @@ class OOoElementTree (object) :
     """
         An ElementTree for OOo document XML members. Behaves like the
         orginal ElementTree (in fact it delegates almost everything to a
-        real instance of ElementTree) expect for the write method, that
+        real instance of ElementTree) except for the write method, that
         writes itself back to the OOo XML file in the OOo zip archive it
         came from.
     """
@@ -47,7 +47,9 @@ class OOoElementTree (object) :
             Delegate everything to our ElementTree attribute.
         """
         if not name.startswith ('__') :
-            return getattr (self.tree, name)
+            result = getattr (self.tree, name)
+            setattr (self, name, result)
+            return result
         raise AttributeError, name
     # end def __getattr__
 

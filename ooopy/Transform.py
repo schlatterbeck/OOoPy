@@ -29,6 +29,7 @@ def OOo_Tag (tag, name) :
 # end def OOo_Tag
 
 class Transform (object) :
+    prio = 0
     def __init__ (self, prio = None) :
         if prio :
             self.prio    = prio
@@ -58,14 +59,15 @@ class Transformer (object) :
 
     def transform (self, ooopy) :
         for f in self.transforms.keys () :
-            e = ooopy.read (f)
-            root = e.getroot ()
-            prios = self.transforms [f].keys ()
-            prios.sort ()
-            for prio in prios :
-                for t in self.transforms [f][prio] :
-                    t.apply (root)
-            e.write ()
+            if self.transforms [f] :
+                e = ooopy.read (f)
+                root = e.getroot ()
+                prios = self.transforms [f].keys ()
+                prios.sort ()
+                for prio in prios :
+                    for t in self.transforms [f][prio] :
+                        t.apply (root)
+                e.write ()
     # end def transform
 # end class Transformer
 
@@ -87,12 +89,20 @@ class Editinfo_Transform (Transform) :
 # end class Editinfo_Transform
 
 class Field_Replace_Transform (Transform) :
+    """ Takes a dict of replacement key-value pairs. The key is the name
+        of a variable in OOo. Alternatively a callback mechanism for
+        variable name lookups is provided. The callback function is
+        given the name of a variable in OOo and is expected to return
+        the replacement value or None if the variable value should not
+        be replaced.
+    """
     filename = 'content.xml'
     prio     = 100
 
-    def __init__ (self, prio = None, replace = None, **kw) :
+    def __init__ (self, prio = None, replace = None, callback = None, **kw) :
         Transform (prio)
-        self.replace = replace or {}
+        self.replace  = replace or {}
+        self.callback = callback
         for k in kw.keys () :
             self.replace [k] = kw [k]
     # end def __init__
@@ -103,6 +113,10 @@ class Field_Replace_Transform (Transform) :
             name = node.get (OOo_Tag ('text', 'name'))
             if self.replace.has_key (name) :
                 node.text = self.replace [name]
+            elif callable (self.callback) :
+                replace = self.callable (name)
+                if replace :
+                    node.text = replace
     # end def apply
 # end class Field_Replace_Transform
 
@@ -131,6 +145,7 @@ class Autoupdate_Transform (Transform) :
 # end class Autoupdate_Transform
 
 class Addpagebreak_Transform (Transform) :
+    pass
     # Add a pagebreak paragraph style
     # <style:style style:name="P4" style:family="paragraph"
     # style:parent-style-name="Standard"><style:properties
