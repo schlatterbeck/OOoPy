@@ -1,0 +1,3 @@
+include test.sxw
+include ooopy/*.py
+include README
