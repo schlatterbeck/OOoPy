@@ -23,19 +23,33 @@
 
 from distutils.core import setup
 
+description = []
+f = open ('README')
+start = False
+f.next ()
+f.next ()
+for line in f :
+    if line.strip () == 'Resources' :
+        break
+    description.append (line)
+
+license = 'GNU Library or Lesser General Public License (LGPL)'
+
 setup \
-    ( name         = "OOoPy"
-    , version      = "VERSION"
-    , description  = "Python utilities for modifying OpenOffice.org documents"
-    , author       = "Ralf Schlatterbeck"
-    , author_email = "rsc@runtux.com"
-    , url          = "http://www.runtux.com/"
-    , packages     = ['ooopy']
-    , data_files   = [('share/ooopy', ['test.sxw'])]
-    , classifiers  = \
+    ( name             = "OOoPy"
+    , version          = "VERSION"
+    , description      = "OOoPy: Modify OpenOffice.org documents in Python"
+    , long_description = ''.join (description)
+    , license          = license
+    , author           = "Ralf Schlatterbeck"
+    , author_email     = "rsc@runtux.com"
+    , url              = "http://www.runtux.com/"
+    , packages         = ['ooopy']
+    , platforms        = 'Any'
+    , data_files       = [('share/ooopy', ['test.sxw'])]
+    , classifiers      = \
         [ 'Development Status :: 5 - Production/Stable'
-        , 'License :: OSI Approved :: '
-          'GNU Library or Lesser General Public License (LGPL)'
+        , 'License :: OSI Approved :: ' + license
         , 'Operating System :: OS Independent'
         , 'Programming Language :: Python'
         , 'Topic :: Internet :: WWW/HTTP :: Dynamic Content'
@@ -45,5 +59,3 @@ setup \
         , 'Topic :: Text Processing :: Markup :: XML'
         ]
     )
-
-

@@ -1,0 +1,37 @@
+OOoPy: Modify OpenOffice.org documents in Python
+================================================
+
+OpenOffice.org (OOo) documents are ZIP archives containing several XML
+files.  Therefore it is easy to inspect, create, or modify OOo
+documents. OOoPy is a library in Python for these tasks with OOo
+documents. To not reinvent the wheel, OOoPy uses an existing XML
+library, ElementTree_ by Fredrik Lundh. OOoPy is a thin wrapper around
+ElementTree_ using Python's ZipFile to read and write OOo documents.
+
+.. _ElementTree: http://effbot.org/zone/element-index.htm
+
+In addition to being a wrapper for ElementTree_, OOoPy contains a
+framework for applying XML transforms to OOo documents. Several
+Transforms for OOo documents exist, e.g., for changing OOo fields (OOo
+Insert-Fields menu) or using OOo fields for a mail merge application.
+Some other transformations for modifying OOo settings and meta
+information are also given as examples.
+
+Applications like this come in handy in applications where calling
+native OOo is not an option, e.g., in server-side Web applications.
+
+Resources
+---------
+
+For using OOoPy, you need to download and install the
+`ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
+XML file format, see the book by J. David Eisenberg called
+`OpenOffice.org XML Essentials`_ which is under the Gnu Free
+Documentation License and will probably be printed soon. For a reference
+document you may want to check out the `XML File Format Specification`_
+(PDF) by OpenOffice.org.
+
+.. _`ElementTree Library`: http://effbot.org/downloads/#elementtree
+.. _`OpenOffice.org XML Essentials`: http://books.evc-cit.info/
+.. _`XML File Format Specification`: http://xml.openoffice.org/xml_specification.pdf
+
