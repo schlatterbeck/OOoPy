@@ -21,10 +21,10 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
-import OOoPy
 import time
 import re
 from elementtree.ElementTree import dump, SubElement, Element
+from OOoPy                   import OOoPy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
 tags = \
@@ -106,6 +106,59 @@ class Transformer (object) :
        values left by previous transforms.
        As a naming convention each transform should use its class name
        as a prefix for storing values in the dictionary.
+       >>> from StringIO import StringIO
+       >>> sio = StringIO ()
+       >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+       >>> c = o.read ('content.xml')
+       >>> body = c.find (OOo_Tag ('office', 'body'))
+       >>> body [-1].get (OOo_Tag ('text', 'style-name'))
+       'Standard'
+       >>> def cb (name) :
+       ...     r = { 'street'     : 'Beispielstrasse 42'
+       ...         , 'firstname'  : 'Hugo'
+       ...         , 'salutation' : 'Frau'
+       ...         }
+       ...     if r.has_key (name) : return r [name]
+       ...     return None
+       ... 
+       >>> t   = Transformer (
+       ...       Autoupdate_Transform ()
+       ...     , Editinfo_Transform   ()  
+       ...     , Field_Replace_Transform 
+       ...         ( replace =
+       ...             { 'salutation' : ''
+       ...             , 'firstname'  : 'Erika'
+       ...             , 'lastname'   : 'Musterfrau'
+       ...             , 'country'    : 'D' 
+       ...             , 'postalcode' : '00815'
+       ...             , 'city'       : 'Niemandsdorf'
+       ...             }
+       ...         , callback = cb
+       ...         )
+       ...     , Addpagebreak_Style_Transform ()
+       ...     , Addpagebreak_Transform       ()
+       ...     )
+       >>> t.transform (o)
+       >>> o.close ()
+       >>> ov  = sio.getvalue ()
+       >>> f   = open ("testout.sxw", "w")
+       >>> f.write (ov)
+       >>> f.close ()
+       >>> o = OOoPy (infile = sio)
+       >>> c = o.read ('content.xml')
+       >>> body = c.find (OOo_Tag ('office', 'body'))
+       >>> for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
+       ...     name = node.get (OOo_Tag ('text', 'name'))
+       ...     print name, ':', node.text
+       salutation : None
+       firstname : Erika
+       lastname : Musterfrau
+       street : Beispielstrasse 42
+       country : D
+       postalcode : 00815
+       city : Niemandsdorf
+       >>> body [-1].get (OOo_Tag ('text', 'style-name'))
+       'P1'
     """
     def __init__ (self, *ts) :
         self.transforms = {}
@@ -248,7 +301,7 @@ class Field_Replace_Transform (Transform) :
             if self.replace.has_key (name) :
                 node.text = self.replace [name]
             elif callable (self.callback) :
-                replace = self.callable (name)
+                replace = self.callback (name)
                 if replace :
                     node.text = replace
     # end def apply
@@ -333,7 +386,7 @@ class Addpagebreak_Transform (Transform) :
 if __name__ == '__main__' :
     from StringIO import StringIO
     sio = StringIO ()
-    o   = OOoPy.OOoPy (infile = 'test.sxw', outfile = sio)
+    o   = OOoPy (infile = 'test.sxw', outfile = sio)
     t   = Transformer \
         ( Autoupdate_Transform ()
         , Editinfo_Transform   ()

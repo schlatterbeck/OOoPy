@@ -67,7 +67,7 @@ class OOoPy (object) :
         >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
         >>> e = o.read ('content.xml')
         >>> e.write ()
-        >>> e.close ()
+        >>> o.close ()
     """
     def __init__ (self, infile = None, outfile = None, write_mode = 'w') :
         """
