@@ -5,25 +5,6 @@ from elementtree.ElementTree import ElementTree, fromstring
 from tempfile                import mkstemp
 import os
 
-def copy (srcfile, dstfile = None, mode = 'a') :
-    """
-        Factory function to produce a OOoPy object from a *copy* of the
-        given src zip file. This opens the original in read-mode, copies
-        everything over to the new and then opens the new one in write
-        mode. If no destination is given, we create a temporary file.
-    """
-    if not dstfile :
-        f, dstfile = mkstemp ('.sxw', 'ooopy')
-        os.close (f)
-    src = ZipFile (srcfile, mode = "r")
-    dst = OOoPy   (dstfile, mode = "w")
-    for f in src.infolist () :
-        dst.zip.writestr (f, src.read (f.filename))
-    src.close ()
-    dst.close ()
-    return OOoPy   (dstfile, mode = mode)
-# end def copy
-
 class OOoElementTree (object) :
     """
         An ElementTree for OOo document XML members. Behaves like the
@@ -61,17 +42,33 @@ class OOoPy (object) :
         really zip files internally).
 
         from OOoPy import OOoPy
-        >>> o = OOoPy ('test.sxw', mode = 'a')
+        >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
         >>> e = o.read ('content.xml')
         >>> e.write ()
+        >>> e.close ()
     """
-    def __init__ (self, filename, mode = 'r') :
+    def __init__ (self, infile = None, outfile = None, write_mode = 'w') :
         """
-            Open an OOo document with the given mode. Default is "r" for
-            read-only access.
+            Open an OOo document, if no outfile is given, we open the
+            file read-only. Otherwise the outfile has to be different
+            from the infile -- the python ZipFile can't deal with
+            read-write access. In case an outfile is given, we open it
+            in "w" mode as a zip file, unless write_mode is specified
+            (the only allowed case would be "a" for appending to an
+            existing file, see pythons ZipFile documentation for
+            details). If no infile is given, the user is responsible for
+            providing all necessary files in the resulting output file.
+
+            Note that both, infile and outfile can either be filenames
+            or file-like objects (e.g. StringIO).
         """
-        self.filename = filename
-        self.zip      = ZipFile (filename, mode, ZIP_DEFLATED)
+        assert (infile != outfile)
+        self.izip = self.ozip = None
+        if infile :
+            self.izip    = ZipFile (infile,  'r',        ZIP_DEFLATED)
+        if outfile :
+            self.ozip    = ZipFile (outfile, write_mode, ZIP_DEFLATED)
+            self.written = {}
     # end def __init__
 
     def read (self, zname) :
@@ -89,21 +86,30 @@ class OOoPy (object) :
             There is an additional file "mimetype" that always contains
             the string "application/vnd.sun.xml.writer".
         """
-        return OOoElementTree (self, zname, fromstring (self.zip.read (zname)))
+        assert (self.izip)
+        return OOoElementTree (self, zname, fromstring (self.izip.read (zname)))
     # end def tree
 
     def write (self, zname, etree) :
+        assert (self.ozip)
         str = StringIO ()
         etree.write (str)
-        self.zip.writestr (zname, str.getvalue ())
+        self.ozip.writestr (zname, str.getvalue ())
+        self.written [zname] = 1
     # end def
 
     def close (self) :
         """
-            Close the zip file. According to documentation of zipfile in
+            Close the zip files. According to documentation of zipfile in
             the standard python lib, this has to be done to be sure
-            everything is written.
+            everything is written. We copy over the not-yet written files
+            from izip before closing ozip.
         """
-        self.zip.close ()
+        if self.izip and self.ozip :
+            for f in self.izip.infolist () :
+                if not self.written.has_key (f.filename) :
+                    self.ozip.writestr (f, self.izip.read (f.filename))
+        for i in self.izip, self.ozip :
+            if i : i.close ()
     # end def close
 # end class OOoPy
