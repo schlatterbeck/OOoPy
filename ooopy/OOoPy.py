@@ -47,7 +47,6 @@ class OOoElementTree (object) :
             Delegate everything to our ElementTree attribute.
         """
         if not name.startswith ('__') :
-            print name
             return getattr (self.tree, name)
         raise AttributeError, name
     # end def __getattr__

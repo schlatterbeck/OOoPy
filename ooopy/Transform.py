@@ -43,27 +43,27 @@ class Transform (object) :
 
 class Transformer (object) :
     def __init__ (self, *ts) :
-        self.transformers = {}
+        self.transforms = {}
         for f in files :
-            self.transformers [f] = {}
+            self.transforms [f] = {}
         for t in ts :
             self.insert (t)
     # end def __init__
 
     def insert (self, t) :
-        if not self.transformers [t.filename].has_key (t.prio) :
-            self.transformers [t.filename][t.prio] = []
-        self.transformers [t.filename][t.prio].append (t)
+        if not self.transforms [t.filename].has_key (t.prio) :
+            self.transforms [t.filename][t.prio] = []
+        self.transforms [t.filename][t.prio].append (t)
     # end def append
 
     def transform (self, ooopy) :
-        for f in self.transformers.keys () :
+        for f in self.transforms.keys () :
             e = ooopy.read (f)
             root = e.getroot ()
-            prios = self.transformers [f].keys ()
+            prios = self.transforms [f].keys ()
             prios.sort ()
             for prio in prios :
-                for t in self.transformers [f][prio] :
+                for t in self.transforms [f][prio] :
                     t.apply (root)
             e.write ()
     # end def transform
@@ -80,7 +80,7 @@ class Editinfo_Transform (Transform) :
     }
 
     def apply (self, root) :
-        for node in root.findall (".//*") :
+        for node in root.findall (OOo_Tag ('office', 'meta') + '/*') :
             if self.replace.has_key (node.tag) :
                 node.text = self.replace [node.tag]
     # end def apply
@@ -98,7 +98,8 @@ class Field_Replace_Transform (Transform) :
     # end def __init__
 
     def apply (self, root) :
-        for node in root.findall (".//" + OOo_Tag ('text', 'variable-set')) :
+        body = root.find (OOo_Tag ('office', 'body'))
+        for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
             name = node.get (OOo_Tag ('text', 'name'))
             if self.replace.has_key (name) :
                 node.text = self.replace [name]
@@ -110,8 +111,16 @@ class Autoupdate_Transform (Transform) :
     prio     = 20
 
     def apply (self, root) :
-        config = root.find ('.//' + OOo_Tag ('config', 'config-item-set'))
-        for node in config.findall ('.//' + OOo_Tag ('config', 'config-item')) :
+        config = None
+        for config in root.findall \
+            ( OOo_Tag ('office', 'settings')
+            + '/'
+            + OOo_Tag ('config', 'config-item-set')
+            ) :
+            name = config.get (OOo_Tag ('config', 'name'))
+            if name == 'configuration-settings' :
+                break
+        for node in config.findall (OOo_Tag ('config', 'config-item')) :
             name = node.get (OOo_Tag ('config', 'name'))
             if name == 'LinkUpdateMode' :  # update when reading
                 node.text = '2'
@@ -121,16 +130,28 @@ class Autoupdate_Transform (Transform) :
     # end def apply
 # end class Autoupdate_Transform
 
+class Addpagebreak_Transform (Transform) :
+    # Add a pagebreak paragraph style
+    # <style:style style:name="P4" style:family="paragraph"
+    # style:parent-style-name="Standard"><style:properties
+    # fo:font-size="10pt"
+    # style:font-size-asian="10pt" style:font-size-complex="10pt"
+    # fo:break-before="page"/></style:style>
+    # then add the pagebreak as the last element in body
+    # <text:p text:style-name="P4"/>
+# end class Addpagebreak_Transform
+
 if __name__ == '__main__' :
     o = OOoPy.copy ('zfr.sxw')
     t = Transformer \
         ( Autoupdate_Transform ()
         , Editinfo_Transform   ()
         , Field_Replace_Transform 
-            ( { 'abo.payer.salutation' : 'Frau'
-              , 'abo.payer.firstname'  : ''
-              , 'abo.payer.lasttname'  : 'Musterfrau'
-              }
+            ( replace =
+                { 'abo.payer.salutation' : 'Frau'
+                , 'abo.payer.firstname'  : ''
+                , 'abo.payer.lasttname'  : 'Musterfrau'
+                }
             )
         )
     t.transform (o)
