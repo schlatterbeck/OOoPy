@@ -28,7 +28,7 @@ from OOoPy                   import OOoPy
 from copy                    import deepcopy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
-tags = \
+namespaces = \
 { 'chart'  : "http://openoffice.org/2000/chart"
 , 'config' : "http://openoffice.org/2001/config"
 , 'dc'     : "http://purl.org/dc/elements/1.1/"
@@ -48,9 +48,9 @@ tags = \
 , 'xlink'  : "http://www.w3.org/1999/xlink"
 }
 
-def OOo_Tag (tag, name) :
+def OOo_Tag (namespace, name) :
     """Return combined XML tag"""
-    return "{%s}%s" % (tags [tag], name)
+    return "{%s}%s" % (namespaces [namespace], name)
 # end def OOo_Tag
 
 class Transform (object) :
@@ -98,6 +98,38 @@ class Transform (object) :
     # end def apply
 
 # end class Transform
+
+class Renumber (object) :
+    """ Specifies a renumbering transform. OOo has a 'name' attribute
+        for several different tags, e.g., tables, frames, sections etc.
+        These names must be unique in the whole document. OOo itself
+        solves this by appending a unique number to a basename for each
+        element, e.g., sections are named 'Section1', 'Section2', ...
+        Renumber transforms can be applied to correct the numbering
+        after operations that destroy the unique numbering, e.g., after
+        a mailmerge where the same document is repeatedly appended.
+
+        For performance reasons we do not specify a separate transform
+        for each renumbering operation. Instead we define all the
+        renumberings we want to perform as Renumber objects and then
+        apply them in one go.
+    """
+
+    def __init__ (self, namespace, tag, name = None, attr = 'name', start = 1) :
+        self.namespace  = namespace
+        self.name       = name or tag [0].upper () + tag [1:]
+        self.num        = start
+        self.tag        = OOo_Tag (self.namespace, tag)
+        self.attribute  = OOo_Tag (self.namespace, attr)
+    # end def __init__
+
+    def next_name (self) :
+        name = "%s%d" % (self.name, self.num)
+        self.num += 1
+        return name
+    # end def next_name
+
+# end class Renumber
 
 class Transformer (object) :
     """
@@ -162,7 +194,7 @@ class Transformer (object) :
         postalcode : 00815
         city : Niemandsdorf
         >>> body [-1].get (OOo_Tag ('text', 'style-name'))
-        'P1'
+        'P2'
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
@@ -175,6 +207,13 @@ class Transformer (object) :
         ...         , cb
         ...         )
         ...       )
+        ...     , Renumber_Transform
+        ...       ( renumberings =
+        ...         ( renumber_frames
+        ...         , renumber_sections
+        ...         , renumber_tables
+        ...         )
+        ...       )
         ...     )
         >>> t.transform (o)
         >>> o.close ()
@@ -185,16 +224,37 @@ class Transformer (object) :
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
         >>> body = c.find (OOo_Tag ('office', 'body'))
-        >>> for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
-        ...     if node.get (OOo_Tag ('text', 'name'), None).endswith ('name') :
-        ...         name = node.get (OOo_Tag ('text', 'name'))
-        ...         print name, ':', node.text
+        >>> for n in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
+        ...     if n.get (OOo_Tag ('text', 'name'), None).endswith ('name') :
+        ...         name = n.get (OOo_Tag ('text', 'name'))
+        ...         print name, ':', n.text
         firstname : Erika
         lastname : Nobody
         firstname : Eric
         lastname : Wizard
         firstname : Hugo
         lastname : Testman
+        >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'text-box')) :
+        ...     print n.get (OOo_Tag ('draw', 'name'))
+        Frame1
+        Frame2
+        Frame3
+        >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section')) :
+        ...     print n.get (OOo_Tag ('text', 'name'))
+        Section1
+        Section2
+        Section3
+        Section4
+        Section5
+        Section6
+        Section7
+        Section8
+        Section9
+        >>> for n in body.findall ('.//' + OOo_Tag ('table', 'table')) :
+        ...     print n.get (OOo_Tag ('table', 'name'))
+        Table1
+        Table2
+        Table3
         >>> o.close ()
     """
     def __init__ (self, *tf) :
@@ -501,24 +561,35 @@ class Mailmerge_Transform (Transform) :
     # end def apply
 # end class Mailmerge_Transform
 
-class Renumber_Sections_Transform (Transform) :
+class Renumber_Transform (Transform) :
     """
-        Renumber the sections in an OOo document starting with the
-        offset given in the constructor. This is necessary when a new
-        document is created from several other documents (e.g. by a
-        mailmerge, where the same document is repeatedly appended). OOo
-        can't live with repeated section numbers and will use only one
-        of repeating sections.
+        Renumber elements in an OOo document.
+        This is necessary when a new document is created from several
+        other documents (e.g. by a mailmerge, where the same document is
+        repeatedly appended). OOo can't live with repeated element
+        numbers and will use only one of repeating elements.
+        We get a list of Renumber objects to apply to the whole
+        document.
     """
     filename = 'content.xml'
     prio     = 110
 
-    def __init__ (self, prio = None, start = 0) :
+    def __init__ (self, renumberings, prio = None) :
         Transform.__init__ (self, prio)
-        self.start  = start
+        self.renumberings = {}
+        for r in renumberings :
+            self.renumberings [r.tag] = r
     # end def __init__
 
     def apply (self, root, transformer) :
-        """ Search for all sections and replace name """
+        """ Search for all tags for which we renumber and replace name """
+        for s in root.findall ('.//*') :
+            if s.tag in self.renumberings :
+                r = self.renumberings [s.tag]
+                s.set (r.attribute, r.next_name ())
     # end def apply
-# end class Renumber_Sections_Transform
+# end class Renumber_Transform
+
+renumber_frames   = Renumber ('draw',  'text-box', 'Frame')
+renumber_sections = Renumber ('text',  'section')
+renumber_tables   = Renumber ('table', 'table')
