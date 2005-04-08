@@ -34,7 +34,9 @@ def cleantag (tag) :
 def pretty (n, indent = 0) :
     s = ["    " * indent]
     s.append (cleantag (n.tag))
-    for a in n.attrib :
+    attrkeys = n.attrib.keys ()
+    attrkeys.sort ()
+    for a in attrkeys :
         s.append (' %s="%s"' % (cleantag (a), n.attrib [a]))
     print ''.join (s)
     for sub in n :

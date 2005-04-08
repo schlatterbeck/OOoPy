@@ -577,6 +577,11 @@ class Mailmerge_Transform (Transform) :
     filename = 'content.xml'
     prio     = 100
 
+    remove_body_tags = \
+        { OOo_Tag ('text', 'variable-decls') : 1
+        , OOo_Tag ('text', 'sequence-decls') : 1
+        }
+
     def __init__ \
         (self, iterator, prio = None, stylename = None, stylekey = None) :
         Transform.__init__ (self, prio)
@@ -612,6 +617,14 @@ class Mailmerge_Transform (Transform) :
             if body :
                 pb.apply (body)
                 ra.apply (copy)
+                remove = []
+                # remove body text that may not repeat
+                for idx in range (len (copy)) :
+                    if copy [idx].tag in self.remove_body_tags :
+                        remove.append (idx)
+                remove.reverse ()
+                for idx in remove :
+                    del (copy [idx])
             cp = deepcopy (copy)
             fr.apply (cp)
             for i in cp [:] :
