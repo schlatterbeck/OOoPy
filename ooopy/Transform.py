@@ -77,23 +77,30 @@ class Transform (object) :
     # end def __init__
 
     def register (self, transformer) :
+        """
+            Registering with a transformer means being able to access
+            variables stored in the tranformer by other transforms.
+        """
         self.transformer = transformer
-        transformer.register (self)
     # end def register
 
-    def _classname_prefix (self) :
+    def _varname (self, name) :
         """
             For fulfilling the naming convention of the transformer
             dictionary (every entry in this dictionary should be prefixed
             with the class name of the transform) we have this
             convenience method.
+            Returns variable name prefixed with own class name.
         """
-        return self.__class__.__name__ + ':'
-    # end def _classname_prefix
+        return ":".join ((self.__class__.__name__, name))
+    # end def _varname
 
-    classname_prefix = property (_classname_prefix)
+    def set (self, variable, value) :
+        """ Set variable in our transformer using naming convention. """
+        self.transformer [self._varname (variable)] = value
+    # end def set
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         raise NotImplementedError, 'derived transforms must implement "apply"'
     # end def apply
 
@@ -157,6 +164,14 @@ class Transformer (object) :
         ...     if r.has_key (name) : return r [name]
         ...     return None
         ... 
+        >>> p = Pagecount_Transform ()
+        >>> t = Transformer (p)
+        >>> t ['a'] = 'a'
+        >>> t ['a']
+        'a'
+        >>> p.set ('a', 'b')
+        >>> t ['Pagecount_Transform:a']
+        'b'
         >>> t   = Transformer (
         ...       Autoupdate_Transform ()
         ...     , Editinfo_Transform   ()  
@@ -199,7 +214,8 @@ class Transformer (object) :
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
         >>> t   = Transformer (
-        ...       Addpagebreak_Style_Transform ()
+        ...       Pagecount_Transform ()
+        ...     , Addpagebreak_Style_Transform ()
         ...     , Mailmerge_Transform
         ...       ( iterator = 
         ...         ( dict (firstname = 'Erika', lastname = 'Nobody')
@@ -216,6 +232,8 @@ class Transformer (object) :
         ...       )
         ...     )
         >>> t.transform (o)
+        >>> t ['Pagecount_Transform:pagecount']
+        1
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout2.sxw", "w")
@@ -272,6 +290,7 @@ class Transformer (object) :
         if t.prio not in self.transforms :
             self.transforms [t.prio] = []
         self.transforms [t.prio].append (t)
+        t.register (self)
     # end def append
 
     def transform (self, ooopy) :
@@ -287,7 +306,7 @@ class Transformer (object) :
         prios.sort ()
         for p in prios :
             for t in self.transforms [p] :
-                t.apply (self.trees [t.filename].getroot (), self)
+                t.apply (self.trees [t.filename].getroot ())
         for e in self.trees.itervalues () :
             e.write ()
     # end def transform
@@ -322,7 +341,7 @@ class Editinfo_Transform (Transform) :
     , OOo_Tag ('meta', 'editing-duration') : 'PT0M0S'
     }
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         for node in root.findall (OOo_Tag ('office', 'meta') + '/*') :
             if self.replace.has_key (node.tag) :
                 node.text = self.replace [node.tag]
@@ -334,9 +353,17 @@ class Pagecount_Transform (Transform) :
         This is an example of getting information from an OOo document.
         We simply read the number of pages in the document and store it
         for later use by other transforms.
+        The stored value can be retrieved from the transformer with
+        transformer ['Pagecount_Transform:pagecount'] by other
+        transforms.
     """
     filename = 'meta.xml'
     prio     = 20
+
+    def apply (self, root) :
+        count = root.find ('.//' + OOo_Tag ('meta', 'document-statistic'))
+        self.set ('pagecount', int (count.get (OOo_Tag ('meta', 'page-count'))))
+    # end def apply
 # end class Pagecount_Transform
 
 #
@@ -363,7 +390,7 @@ class Autoupdate_Transform (Transform) :
     filename = 'settings.xml'
     prio     = 20
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         config = None
         for config in root.findall \
             ( OOo_Tag ('office', 'settings')
@@ -409,7 +436,7 @@ class Field_Replace_Transform (Transform) :
         self.dict     = kw
     # end def __init__
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         body = root
         if body.tag != OOo_Tag ('office', 'body') :
             body = body.find (OOo_Tag ('office', 'body'))
@@ -446,7 +473,7 @@ class Addpagebreak_Style_Transform (Transform) :
     prio     = 80
     para     = re.compile (r'P([0-9]+)')
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         max_style = 0
         styles = root.find (OOo_Tag ('office', 'automatic-styles'))
         for s in styles.findall ('./' + OOo_Tag ('style', 'style')) :
@@ -469,7 +496,7 @@ class Addpagebreak_Style_Transform (Transform) :
             , OOo_Tag ('style', 'properties')
             , { OOo_Tag ('fo', 'break-before') : 'page' }
             )
-        transformer [self.classname_prefix + 'stylename'] = stylename
+        self.set ('stylename', stylename)
     # end def apply
 # end class Addpagebreak_Style_Transform
 
@@ -493,12 +520,12 @@ class Addpagebreak_Transform (Transform) :
         self.stylekey  = stylekey or 'Addpagebreak_Style_Transform:stylename'
     # end def __init__
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         """append to body e.g., <text:p text:style-name="P4"/>"""
         body = root
         if body.tag != OOo_Tag ('office', 'body') :
             body = body.find (OOo_Tag ('office', 'body'))
-        stylename = self.stylename or transformer [self.stylekey]
+        stylename = self.stylename or self.transformer [self.stylekey]
         SubElement \
             ( body
             , OOo_Tag ('text', 'p')
@@ -535,13 +562,14 @@ class Mailmerge_Transform (Transform) :
         self.stylekey  = stylekey
     # end def __init__
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         """
             Copy old body, create new empty one and repeatedly append the
             new body.
         """
         pb         = Addpagebreak_Transform \
             (stylename = self.stylename, stylekey = self.stylekey)
+        pb.register (self.transformer)
         cont       = root
         if cont.tag != OOo_Tag ('office', 'document-content') :
             cont   = root.find  (OOo_Tag ('office', 'document-content'))
@@ -552,10 +580,11 @@ class Mailmerge_Transform (Transform) :
         body       = cont [idx]
         for i in self.iterator :
             fr = Field_Replace_Transform (replace = i)
+            fr.register (self.transformer)
             if body : # add page break only to non-empty body
-                pb.apply (body, transformer)
+                pb.apply (body)
             cp = deepcopy (copy)
-            fr.apply (cp, transformer)
+            fr.apply (cp)
             for i in cp [:] :
                 body.append (i)
     # end def apply
@@ -581,7 +610,7 @@ class Renumber_Transform (Transform) :
             self.renumberings [r.tag] = r
     # end def __init__
 
-    def apply (self, root, transformer) :
+    def apply (self, root) :
         """ Search for all tags for which we renumber and replace name """
         for s in root.findall ('.//*') :
             if s.tag in self.renumberings :
