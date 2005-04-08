@@ -118,25 +118,49 @@ class Renumber (object) :
 
         For performance reasons we do not specify a separate transform
         for each renumbering operation. Instead we define all the
-        renumberings we want to perform as Renumber objects and then
-        apply them in one go.
+        renumberings we want to perform as Renumber objects that follow
+        the attribute changer api and apply them all using an
+        Attribute_Changer_Transform in one go.
     """
 
-    def __init__ (self, namespace, tag, name = None, attr = 'name', start = 1) :
+    def __init__ (self, namespace, tag, name = None, attr = None, start = 1) :
         self.namespace  = namespace
         self.name       = name or tag [0].upper () + tag [1:]
         self.num        = start
-        self.tag        = OOo_Tag (self.namespace, tag)
-        self.attribute  = OOo_Tag (self.namespace, attr)
+        self.tag        = OOo_Tag (namespace, tag)
+        self.attribute  = attr or OOo_Tag (namespace, 'name')
     # end def __init__
 
-    def next_name (self) :
+    def new_value (self, oldval = None) :
         name = "%s%d" % (self.name, self.num)
         self.num += 1
         return name
-    # end def next_name
+    # end def new_value
 
 # end class Renumber
+
+class Reanchor (object) :
+    """
+        Similar to the renumbering transform in that we are assigning
+        new values to some attributes. But in this case we want to
+        relocate objects that are anchored to a page.
+        
+        This is another example of a class following the attribute
+        changer API.
+    """
+
+    def __init__ (self, offset, namespace, tag, attr = None) :
+        self.offset     = offset
+        self.namespace  = namespace
+        self.tag        = OOo_Tag (namespace, tag)
+        self.attribute  = attr or OOo_Tag ('text', 'anchor-page-number')
+    # end def __init__
+
+    def new_value (self, oldval) :
+        return "%d" % (int (oldval) + self.offset)
+    # end def new_value
+
+# end class Reanchor
 
 class Transformer (object) :
     """
@@ -223,13 +247,11 @@ class Transformer (object) :
         ...         , cb
         ...         )
         ...       )
-        ...     , Renumber_Transform
-        ...       ( renumberings =
-        ...         ( renumber_frames
+        ...     , Attribute_Changer_Transform
+        ...       ( ( renumber_frames
         ...         , renumber_sections
         ...         , renumber_tables
-        ...         )
-        ...       )
+        ...       ) )
         ...     )
         >>> t.transform (o)
         >>> t ['Pagecount_Transform:pagecount']
@@ -253,10 +275,11 @@ class Transformer (object) :
         firstname : Hugo
         lastname : Testman
         >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'text-box')) :
-        ...     print n.get (OOo_Tag ('draw', 'name'))
-        Frame1
-        Frame2
-        Frame3
+        ...     print n.get (OOo_Tag ('draw', 'name')),
+        ...     print n.get (OOo_Tag ('text', 'anchor-page-number'))
+        Frame1 1
+        Frame2 2
+        Frame3 3
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section')) :
         ...     print n.get (OOo_Tag ('text', 'name'))
         Section1
@@ -570,6 +593,9 @@ class Mailmerge_Transform (Transform) :
         pb         = Addpagebreak_Transform \
             (stylename = self.stylename, stylekey = self.stylekey)
         pb.register (self.transformer)
+        pagecount  = self.transformer ['Pagecount_Transform:pagecount']
+        ra         = Attribute_Changer_Transform \
+            ((Reanchor (pagecount, 'draw', 'text-box'),))
         cont       = root
         if cont.tag != OOo_Tag ('office', 'document-content') :
             cont   = root.find  (OOo_Tag ('office', 'document-content'))
@@ -581,8 +607,11 @@ class Mailmerge_Transform (Transform) :
         for i in self.iterator :
             fr = Field_Replace_Transform (replace = i)
             fr.register (self.transformer)
-            if body : # add page break only to non-empty body
+            # add page break only to non-empty body
+            # reanchor only after the first mailmerge
+            if body :
                 pb.apply (body)
+                ra.apply (copy)
             cp = deepcopy (copy)
             fr.apply (cp)
             for i in cp [:] :
@@ -590,34 +619,40 @@ class Mailmerge_Transform (Transform) :
     # end def apply
 # end class Mailmerge_Transform
 
-class Renumber_Transform (Transform) :
+class Attribute_Changer_Transform (Transform) :
     """
-        Renumber elements in an OOo document.
-        This is necessary when a new document is created from several
-        other documents (e.g. by a mailmerge, where the same document is
-        repeatedly appended). OOo can't live with repeated element
-        numbers and will use only one of repeating elements.
-        We get a list of Renumber objects to apply to the whole
-        document.
+        Change attributes in an OOo document.
+        Can be used for renumbering, moving anchored objects, etc.
+        Expects a list of attribute changer objects that follow the
+        attribute changer API. This API is very simple:
+
+        - Member function "new_value" returns the new value of an
+          attribute
+        - The attribute "tag" gives the tag for an element we are
+          searching
+        - The attribute "attribute" gives the name of the attribute we
+          want to change.
+        For examples of the attribute changer API, see Renumber and
+        Reanchor above.
     """
     filename = 'content.xml'
     prio     = 110
 
-    def __init__ (self, renumberings, prio = None) :
+    def __init__ (self, attrchangers, prio = None) :
         Transform.__init__ (self, prio)
-        self.renumberings = {}
-        for r in renumberings :
-            self.renumberings [r.tag] = r
+        self.attrchangers = {}
+        for r in attrchangers :
+            self.attrchangers [r.tag] = r
     # end def __init__
 
     def apply (self, root) :
         """ Search for all tags for which we renumber and replace name """
-        for s in root.findall ('.//*') :
-            if s.tag in self.renumberings :
-                r = self.renumberings [s.tag]
-                s.set (r.attribute, r.next_name ())
+        for n in root.findall ('.//*') :
+            if n.tag in self.attrchangers :
+                r = self.attrchangers [n.tag]
+                n.set (r.attribute, r.new_value (n.get (r.attribute)))
     # end def apply
-# end class Renumber_Transform
+# end class Attribute_Changer_Transform
 
 renumber_frames   = Renumber ('draw',  'text-box', 'Frame')
 renumber_sections = Renumber ('text',  'section')
