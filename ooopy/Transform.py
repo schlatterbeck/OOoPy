@@ -53,6 +53,14 @@ def OOo_Tag (namespace, name) :
     return "{%s}%s" % (namespaces [namespace], name)
 # end def OOo_Tag
 
+def _body () :
+    """
+        We use the body element as a container for various
+        transforms...
+    """
+    return Element (OOo_Tag ('office', 'body'))
+# end def _body
+
 class Transform (object) :
     """
         Base class for individual transforms on OOo files. An individual
@@ -222,7 +230,7 @@ class Transformer (object) :
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
         >>> body = c.find (OOo_Tag ('office', 'body'))
-        >>> for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
+        >>> for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')):
         ...     name = node.get (OOo_Tag ('text', 'name'))
         ...     print name, ':', node.text
         salutation : None
@@ -256,6 +264,9 @@ class Transformer (object) :
         >>> t.transform (o)
         >>> t ['Pagecount_Transform:pagecount']
         1
+        >>> name = t ['Addpagebreak_Style_Transform:stylename']
+        >>> name
+        'P2'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout2.sxw", "w")
@@ -264,6 +275,11 @@ class Transformer (object) :
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
         >>> body = c.find (OOo_Tag ('office', 'body'))
+        >>> for n in body.findall ('.//' + OOo_Tag ('text', 'p')) :
+        ...     if n.get (OOo_Tag ('text', 'style-name')) == name :
+        ...         print n.tag
+        {http://openoffice.org/2000/text}p
+        {http://openoffice.org/2000/text}p
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
         ...     if n.get (OOo_Tag ('text', 'name'), None).endswith ('name') :
         ...         name = n.get (OOo_Tag ('text', 'name'))
@@ -577,10 +593,14 @@ class Mailmerge_Transform (Transform) :
     filename = 'content.xml'
     prio     = 100
 
-    remove_body_tags = \
-        { OOo_Tag ('text', 'variable-decls') : 1
-        , OOo_Tag ('text', 'sequence-decls') : 1
-        }
+    sections = \
+        [ { OOo_Tag ('text', 'variable-decls') : 1
+          , OOo_Tag ('text', 'sequence-decls') : 1
+          }
+        , { OOo_Tag ('draw', 'text-box')       : 1
+          , OOo_Tag ('draw', 'rect')           : 1
+          }
+        ]
 
     def __init__ \
         (self, iterator, prio = None, stylename = None, stylekey = None) :
@@ -589,6 +609,22 @@ class Mailmerge_Transform (Transform) :
         self.stylename = stylename
         self.stylekey  = stylekey
     # end def __init__
+
+    def _divide_body (self) :
+        """ Divide self.copy into parts that must keep their sequence.
+            We use another body tag for storing the parts...
+        """
+        self.copyparts = _body ()
+        self.copyparts.append (_body ())
+        l = len (self.sections)
+        idx = 0
+        for e in self.copy :
+            if idx < l :
+                if e.tag not in self.sections [idx] :
+                    self.copyparts.append (_body ())
+                    idx += 1
+            self.copyparts [-1].append (e)
+    # end def _divide_body
 
     def apply (self, root) :
         """
@@ -600,35 +636,40 @@ class Mailmerge_Transform (Transform) :
         pb.register (self.transformer)
         pagecount  = self.transformer ['Pagecount_Transform:pagecount']
         ra         = Attribute_Changer_Transform \
-            ((Reanchor (pagecount, 'draw', 'text-box'),))
+            (( Reanchor (pagecount, 'draw', 'text-box')
+            ,  Reanchor (pagecount, 'draw', 'rect')
+            ))
         cont       = root
         if cont.tag != OOo_Tag ('office', 'document-content') :
             cont   = root.find  (OOo_Tag ('office', 'document-content'))
         body       = cont.find  (OOo_Tag ('office', 'body'))
         idx        = cont [:].index (body)
-        copy       = cont [idx]
-        cont [idx] = Element (OOo_Tag ('office', 'body'))
-        body       = cont [idx]
+        self.copy  = cont [idx]
+        body       = cont [idx] = _body ()
+        self._divide_body ()
+        bodyparts  = [_body () for i in self.copyparts]
+
         for i in self.iterator :
             fr = Field_Replace_Transform (replace = i)
             fr.register (self.transformer)
             # add page break only to non-empty body
             # reanchor only after the first mailmerge
             if body :
-                pb.apply (body)
-                ra.apply (copy)
-                remove = []
-                # remove body text that may not repeat
-                for idx in range (len (copy)) :
-                    if copy [idx].tag in self.remove_body_tags :
-                        remove.append (idx)
-                remove.reverse ()
-                for idx in remove :
-                    del (copy [idx])
-            cp = deepcopy (copy)
+                pb.apply (bodyparts [-1])
+                ra.apply (self.copyparts)
+            else :
+                for e in self.copyparts [0] :
+                    body.append (e)
+                del bodyparts [0]
+                del (self.copyparts [0]) # non-repeatable parts
+            cp = deepcopy (self.copyparts)
             fr.apply (cp)
-            for i in cp [:] :
-                body.append (i)
+            for i in range (len (bodyparts)) :
+                for j in cp [i] :
+                    bodyparts [i].append (j)
+        for p in bodyparts :
+            for e in p :
+                body.append (e)
     # end def apply
 # end class Mailmerge_Transform
 
