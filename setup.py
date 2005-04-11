@@ -43,7 +43,7 @@ setup \
     , license          = license
     , author           = "Ralf Schlatterbeck"
     , author_email     = "rsc@runtux.com"
-    , url              = "http://www.runtux.com/"
+    , url              = "http://ooopy.sourceforge.net/"
     , packages         = ['ooopy']
     , platforms        = 'Any'
     , data_files       = [('share/ooopy', ['test.sxw'])]
