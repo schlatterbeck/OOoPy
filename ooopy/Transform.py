@@ -165,6 +165,8 @@ class Reanchor (object) :
     # end def __init__
 
     def new_value (self, oldval) :
+        if oldval is None :
+            return oldval
         return "%d" % (int (oldval) + self.offset)
     # end def new_value
 
@@ -240,6 +242,13 @@ class Transformer (object) :
         country : D
         postalcode : 00815
         city : Niemandsdorf
+        salutation : None
+        firstname : Erika
+        lastname : Musterfrau
+        street : Beispielstrasse 42
+        country : D
+        postalcode : 00815
+        city : Niemandsdorf
         >>> body [-1].get (OOo_Tag ('text', 'style-name'))
         'P2'
         >>> sio = StringIO ()
@@ -290,12 +299,21 @@ class Transformer (object) :
         lastname : Wizard
         firstname : Hugo
         lastname : Testman
+        firstname : Erika
+        lastname : Nobody
+        firstname : Eric
+        lastname : Wizard
+        firstname : Hugo
+        lastname : Testman
         >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'text-box')) :
         ...     print n.get (OOo_Tag ('draw', 'name')),
         ...     print n.get (OOo_Tag ('text', 'anchor-page-number'))
         Frame1 1
         Frame2 2
         Frame3 3
+        Frame4 None
+        Frame5 None
+        Frame6 None
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section')) :
         ...     print n.get (OOo_Tag ('text', 'name'))
         Section1
@@ -307,6 +325,15 @@ class Transformer (object) :
         Section7
         Section8
         Section9
+        Section10
+        Section11
+        Section12
+        Section13
+        Section14
+        Section15
+        Section16
+        Section17
+        Section18
         >>> for n in body.findall ('.//' + OOo_Tag ('table', 'table')) :
         ...     print n.get (OOo_Tag ('table', 'name'))
         Table1
@@ -703,8 +730,10 @@ class Attribute_Changer_Transform (Transform) :
         """ Search for all tags for which we renumber and replace name """
         for n in root.findall ('.//*') :
             if n.tag in self.attrchangers :
-                r = self.attrchangers [n.tag]
-                n.set (r.attribute, r.new_value (n.get (r.attribute)))
+                r    = self.attrchangers [n.tag]
+                nval = r.new_value (n.get (r.attribute))
+                if nval is not None :
+                    n.set (r.attribute, nval)
     # end def apply
 # end class Attribute_Changer_Transform
 

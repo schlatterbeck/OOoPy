@@ -22,8 +22,8 @@
 # ****************************************************************************
 
 import sys
-from OOoPy     import OOoPy
-from Transform import namespaces
+from ooopy.OOoPy     import OOoPy
+from ooopy.Transform import namespaces
 
 names = {}
 
