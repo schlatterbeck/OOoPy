@@ -6,7 +6,9 @@ SRC=default.css Makefile MANIFEST.in README setup.py $(OOOPY:%.py=ooopy/%.py)
 
 all: $(VERSION)
 
-dist: all $(SRC)
+$(VERSION): $(SRC)
+
+dist: all
 	python setup.py sdist
 
 %.py: %.v

@@ -25,6 +25,7 @@ import time
 import re
 from elementtree.ElementTree import dump, SubElement, Element
 from OOoPy                   import OOoPy
+from Version                 import VERSION
 from copy                    import deepcopy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']

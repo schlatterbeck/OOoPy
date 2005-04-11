@@ -26,6 +26,7 @@ import re
 from elementtree.ElementTree import dump, SubElement, Element
 from OOoPy                   import OOoPy
 from Transformer             import files, namespaces, OOo_Tag, Transform
+from Version                 import VERSION
 from copy                    import deepcopy
 
 def _body () :

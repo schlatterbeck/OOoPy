@@ -22,6 +22,7 @@
 # ****************************************************************************
 
 from distutils.core import setup
+from ooopy.Version  import VERSION
 
 description = []
 f = open ('README')
@@ -37,7 +38,7 @@ license = 'GNU Library or Lesser General Public License (LGPL)'
 
 setup \
     ( name             = "OOoPy"
-    , version          = "VERSION"
+    , version          = VERSION
     , description      = "OOoPy: Modify OpenOffice.org documents in Python"
     , long_description = ''.join (description)
     , license          = license
