@@ -58,5 +58,6 @@ setup \
         , 'Topic :: Text Processing'
         , 'Topic :: Text Processing :: General'
         , 'Topic :: Text Processing :: Markup :: XML'
+        , 'Topic :: Text Editors :: Word Processors'
         ]
     )
