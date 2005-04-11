@@ -67,10 +67,12 @@ A german page for OOoPy exists at `runtux.com`_
 
 Reporting Bugs
 --------------
-Please use the `Sourceforge Bug Tracker`_ and attach the OOo document
-that reproduces your problem as well as a short description of what you
-think is the correct behaviour and the observed behaviour and what you
-did.
+Please use the `Sourceforge Bug Tracker`_ and
+
+ - attach the OOo document that reproduces your problem
+ - give a short description of what you think is the correct behaviour
+ - give a description of the observed behaviour
+ - tell me exactly what you did.
 
 .. _`Sourceforge Bug Tracker`:
     http://sourceforge.net/tracker/?group_id=134329&atid=729727
