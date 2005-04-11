@@ -1,1 +1,1 @@
-VERSION="RELEASE".replace ('_', '.')
+VERSION="RELEASE".replace ('V_', '').replace ('_', '.')
