@@ -35,7 +35,7 @@ Documentation License and will probably be printed soon. For a reference
 document you may want to check out the `XML File Format Specification`_
 (PDF) by OpenOffice.org.
 
-A german page for OOoPy exists at `runtux.com`
+A german page for OOoPy exists at `runtux.com`_
 
 .. _`ElementTree Library`: http://effbot.org/downloads/#elementtree
 .. _`OpenOffice.org XML Essentials`: http://books.evc-cit.info/

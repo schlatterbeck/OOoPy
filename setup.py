@@ -48,7 +48,7 @@ setup \
     , platforms        = 'Any'
     , data_files       = [('share/ooopy', ['test.sxw'])]
     , classifiers      = \
-        [ 'Development Status :: 5 - Production/Stable'
+        [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license
         , 'Operating System :: OS Independent'
         , 'Programming Language :: Python'
