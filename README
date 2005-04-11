@@ -43,6 +43,9 @@ Project information and download from `Sourceforge main page`_
 
 .. _`Sourceforge main page`: http://sourceforge.net/projects/ooopy/
 
+You need at least version 2.3 of python. I have *not* tested with 2.4,
+so if you do and encounter bugs, please file a bug report.
+
 For using OOoPy, you need to download and install the
 `ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
 XML file format, see the book by J. David Eisenberg called

@@ -1,3 +1,5 @@
 include test.sxw
 include ooopy/*.py
 include README
+include default.css
+include README.html

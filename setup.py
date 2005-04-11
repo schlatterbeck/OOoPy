@@ -47,7 +47,7 @@ setup \
     , url              = "http://ooopy.sourceforge.net/"
     , packages         = ['ooopy']
     , platforms        = 'Any'
-    , data_files       = [('share/ooopy', ['test.sxw'])]
+    , data_files       = [('share/ooopy' , ['test.sxw'])]
     , classifiers      = \
         [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license
