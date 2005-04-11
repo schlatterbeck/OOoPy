@@ -252,3 +252,10 @@ tt.docutils {
 
 ul.auto-toc {
   list-style-type: none }
+
+body {
+  background-color: #F0F0FF }
+
+p img {
+  vertical-align: text-top }
+
