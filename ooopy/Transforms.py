@@ -51,7 +51,7 @@ class Renumber (object) :
         for each renumbering operation. Instead we define all the
         renumberings we want to perform as Renumber objects that follow
         the attribute changer api and apply them all using an
-        Attribute_Changer_Transform in one go.
+        Attribute_Changer in one go.
     """
 
     def __init__ (self, namespace, tag, name = None, attr = None, start = 1) :
@@ -99,7 +99,7 @@ class Reanchor (object) :
 # meta.xml transforms
 #
 
-class Editinfo_Transform (Transform) :
+class Editinfo (Transform) :
     """
         This is an example of modifying OOo meta info (edit information,
         author, etc). We set some of the items (program that generated
@@ -121,16 +121,15 @@ class Editinfo_Transform (Transform) :
             if self.replace.has_key (node.tag) :
                 node.text = self.replace [node.tag]
     # end def apply
-# end class Editinfo_Transform
+# end class Editinfo
 
-class Pagecount_Transform (Transform) :
+class Pagecount (Transform) :
     """
         This is an example of getting information from an OOo document.
         We simply read the number of pages in the document and store it
         for later use by other transforms.
         The stored value can be retrieved from the transformer with
-        transformer ['Pagecount_Transform:pagecount'] by other
-        transforms.
+        transformer ['Pagecount:pagecount'] by other transforms.
     """
     filename = 'meta.xml'
     prio     = 20
@@ -139,20 +138,20 @@ class Pagecount_Transform (Transform) :
         count = root.find ('.//' + OOo_Tag ('meta', 'document-statistic'))
         self.set ('pagecount', int (count.get (OOo_Tag ('meta', 'page-count'))))
     # end def apply
-# end class Pagecount_Transform
+# end class Pagecount
 
 #
 # settings.xml transforms
 #
 
-class Autoupdate_Transform (Transform) :
+class Autoupdate (Transform) :
     """
         This is an example of modifying OOo settings. We set some of the
         AutoUpdate configuration items in OOo to true. We also specify
         that links should be updated when reading.
 
         This was originally intended to make OOo correctly display fields
-        if they were changed with the Field_Replace_Transform below
+        if they were changed with the Field_Replace below
         (similar to pressing F9 after loading the generated document in
         OOo). In particular I usually make spaces depend on field
         contents so that I don't have spurious spaces if a field is
@@ -183,13 +182,13 @@ class Autoupdate_Transform (Transform) :
             if name == 'FieldAutoUpdate' or name == 'ChartAutoUpdate' :
                 node.text = 'true'
     # end def apply
-# end class Autoupdate_Transform
+# end class Autoupdate
 
 #
 # content.xml transforms
 #
 
-class Field_Replace_Transform (Transform) :
+class Field_Replace (Transform) :
     """
         Takes a dict of replacement key-value pairs. The key is the name
         of a variable in OOo. Additional replacement key-value pairs may
@@ -226,9 +225,9 @@ class Field_Replace_Transform (Transform) :
             elif name in self.dict :
                 node.text = self.dict    [name]
     # end def apply
-# end class Field_Replace_Transform
+# end class Field_Replace
 
-class Addpagebreak_Style_Transform (Transform) :
+class Addpagebreak_Style (Transform) :
     """
         This transformation adds a new ad-hoc paragraph style to the
         content part of the OOo document. This is needed to be able to
@@ -273,16 +272,16 @@ class Addpagebreak_Style_Transform (Transform) :
             )
         self.set ('stylename', stylename)
     # end def apply
-# end class Addpagebreak_Style_Transform
+# end class Addpagebreak_Style
 
-class Addpagebreak_Transform (Transform) :
+class Addpagebreak (Transform) :
     """
         This transformation adds a page break to the last page of the OOo
         text. This is needed, e.g., when doing mail-merge: We append a
         page break to the body and then append the next page. This
         transform needs the name of the paragraph style specifying the
         page break style. Default is to use
-        'Addpagebreak_Style_Transform:stylename' as the key for
+        'Addpagebreak_Style:stylename' as the key for
         retrieving the page style. Alternatively the page style or the
         page style key can be specified in the constructor.
     """
@@ -292,7 +291,7 @@ class Addpagebreak_Transform (Transform) :
     def __init__ (self, prio = None, stylename = None, stylekey = None) :
         Transform.__init__ (self, prio)
         self.stylename = stylename
-        self.stylekey  = stylekey or 'Addpagebreak_Style_Transform:stylename'
+        self.stylekey  = stylekey or 'Addpagebreak_Style:stylename'
     # end def __init__
 
     def apply (self, root) :
@@ -307,9 +306,9 @@ class Addpagebreak_Transform (Transform) :
             , { OOo_Tag ('text', 'style-name') : stylename }
             )
     # end def apply
-# end class Addpagebreak_Transform
+# end class Addpagebreak
 
-class Mailmerge_Transform (Transform) :
+class Mailmerge (Transform) :
     """
         This transformation is used to create a mailmerge document using
         the current document as the template. In the constructor we get
@@ -320,7 +319,7 @@ class Mailmerge_Transform (Transform) :
         name-value lookups.
 
         A precondition for this transform is the application of the
-        Addpagebreak_Style_Transform to guarantee that we know the style
+        Addpagebreak_Style to guarantee that we know the style
         for adding a page break to the current document. Alternatively
         the stylename (or the stylekey if a different name should be used
         for lookup in the current transformer) can be given in the
@@ -367,11 +366,11 @@ class Mailmerge_Transform (Transform) :
             Copy old body, create new empty one and repeatedly append the
             new body.
         """
-        pb         = Addpagebreak_Transform \
+        pb         = Addpagebreak \
             (stylename = self.stylename, stylekey = self.stylekey)
         pb.register (self.transformer)
-        pagecount  = self.transformer ['Pagecount_Transform:pagecount']
-        ra         = Attribute_Changer_Transform \
+        pagecount  = self.transformer ['Pagecount:pagecount']
+        ra         = Attribute_Changer \
             (( Reanchor (pagecount, 'draw', 'text-box')
             ,  Reanchor (pagecount, 'draw', 'rect')
             ))
@@ -386,7 +385,7 @@ class Mailmerge_Transform (Transform) :
         bodyparts  = [_body () for i in self.copyparts]
 
         for i in self.iterator :
-            fr = Field_Replace_Transform (replace = i)
+            fr = Field_Replace (replace = i)
             fr.register (self.transformer)
             # add page break only to non-empty body
             # reanchor only after the first mailmerge
@@ -407,9 +406,9 @@ class Mailmerge_Transform (Transform) :
             for e in p :
                 body.append (e)
     # end def apply
-# end class Mailmerge_Transform
+# end class Mailmerge
 
-class Attribute_Changer_Transform (Transform) :
+class Attribute_Changer (Transform) :
     """
         Change attributes in an OOo document.
         Can be used for renumbering, moving anchored objects, etc.
@@ -444,7 +443,7 @@ class Attribute_Changer_Transform (Transform) :
                 if nval is not None :
                     n.set (r.attribute, nval)
     # end def apply
-# end class Attribute_Changer_Transform
+# end class Attribute_Changer
 
 renumber_frames   = Renumber ('draw',  'text-box', 'Frame')
 renumber_sections = Renumber ('text',  'section')

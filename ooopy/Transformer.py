@@ -118,12 +118,9 @@ class Transformer (object) :
         values left by previous transforms.
         As a naming convention each transform should use its class name
         as a prefix for storing values in the dictionary.
-        >>> from Transforms import Addpagebreak_Style_Transform     \
-            , Addpagebreak_Transform, Attribute_Changer_Transform   \
-            , Autoupdate_Transform, Editinfo_Transform              \
-            , Field_Replace_Transform, Mailmerge_Transform          \
-            , Pagecount_Transform                                   \
-            , renumber_frames, renumber_sections, renumber_tables
+        >>> import Transforms
+        >>> from Transforms import renumber_frames, renumber_sections \
+            , renumber_tables
         >>> from StringIO import StringIO
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
@@ -139,19 +136,19 @@ class Transformer (object) :
         ...     if r.has_key (name) : return r [name]
         ...     return None
         ... 
-        >>> p = Pagecount_Transform ()
+        >>> p = Transforms.Pagecount ()
         >>> t = Transformer (p)
         >>> t ['a'] = 'a'
         >>> t ['a']
         'a'
         >>> p.set ('a', 'b')
-        >>> t ['Pagecount_Transform:a']
+        >>> t ['Pagecount:a']
         'b'
         >>> t   = Transformer (
-        ...       Autoupdate_Transform ()
-        ...     , Editinfo_Transform   ()  
-        ...     , Field_Replace_Transform (prio = 99, replace = cb)
-        ...     , Field_Replace_Transform 
+        ...       Transforms.Autoupdate ()
+        ...     , Transforms.Editinfo   ()  
+        ...     , Transforms.Field_Replace (prio = 99, replace = cb)
+        ...     , Transforms.Field_Replace
         ...         ( replace =
         ...             { 'salutation' : ''
         ...             , 'firstname'  : 'Erika'
@@ -161,8 +158,8 @@ class Transformer (object) :
         ...             , 'city'       : 'Niemandsdorf'
         ...             }
         ...         )
-        ...     , Addpagebreak_Style_Transform ()
-        ...     , Addpagebreak_Transform       ()
+        ...     , Transforms.Addpagebreak_Style ()
+        ...     , Transforms.Addpagebreak       ()
         ...     )
         >>> t.transform (o)
         >>> o.close ()
@@ -196,25 +193,25 @@ class Transformer (object) :
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
         >>> t   = Transformer (
-        ...       Pagecount_Transform ()
-        ...     , Addpagebreak_Style_Transform ()
-        ...     , Mailmerge_Transform
+        ...       Transforms.Pagecount ()
+        ...     , Transforms.Addpagebreak_Style ()
+        ...     , Transforms.Mailmerge
         ...       ( iterator = 
         ...         ( dict (firstname = 'Erika', lastname = 'Nobody')
         ...         , dict (firstname = 'Eric',  lastname = 'Wizard')
         ...         , cb
         ...         )
         ...       )
-        ...     , Attribute_Changer_Transform
+        ...     , Transforms.Attribute_Changer
         ...       ( ( renumber_frames
         ...         , renumber_sections
         ...         , renumber_tables
         ...       ) )
         ...     )
         >>> t.transform (o)
-        >>> t ['Pagecount_Transform:pagecount']
+        >>> t ['Pagecount:pagecount']
         1
-        >>> name = t ['Addpagebreak_Style_Transform:stylename']
+        >>> name = t ['Addpagebreak_Style:stylename']
         >>> name
         'P2'
         >>> o.close ()
