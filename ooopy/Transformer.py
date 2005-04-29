@@ -24,7 +24,7 @@
 import time
 import re
 from elementtree.ElementTree import dump, SubElement, Element
-from OOoPy                   import OOoPy
+from OOoPy                   import OOoPy, autosuper
 from Version                 import VERSION
 from copy                    import deepcopy
 
@@ -54,7 +54,7 @@ def OOo_Tag (namespace, name) :
     return "{%s}%s" % (namespaces [namespace], name)
 # end def OOo_Tag
 
-class Transform (object) :
+class Transform (autosuper) :
     """
         Base class for individual transforms on OOo files. An individual
         transform needs a filename variable for specifying the OOo file
@@ -107,7 +107,7 @@ class Transform (object) :
 
 # end class Transform
 
-class Transformer (object) :
+class Transformer (autosuper) :
     """
         Class for applying a set of transforms to a given ooopy object.
         The transforms are applied to the specified file in priority
@@ -323,4 +323,3 @@ class Transformer (object) :
         self.dictionary [key] = value
     # end def __setitem__
 # end class Transformer
-

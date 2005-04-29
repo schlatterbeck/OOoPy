@@ -24,7 +24,7 @@
 import time
 import re
 from elementtree.ElementTree import dump, SubElement, Element
-from OOoPy                   import OOoPy
+from OOoPy                   import OOoPy, autosuper
 from Transformer             import files, namespaces, OOo_Tag, Transform
 from Version                 import VERSION
 from copy                    import deepcopy
@@ -37,7 +37,7 @@ def _body () :
     return Element (OOo_Tag ('office', 'body'))
 # end def _body
 
-class Renumber (object) :
+class Renumber (autosuper) :
     """ Specifies a renumbering transform. OOo has a 'name' attribute
         for several different tags, e.g., tables, frames, sections etc.
         These names must be unique in the whole document. OOo itself
@@ -70,7 +70,7 @@ class Renumber (object) :
 
 # end class Renumber
 
-class Reanchor (object) :
+class Reanchor (autosuper) :
     """
         Similar to the renumbering transform in that we are assigning
         new values to some attributes. But in this case we want to
@@ -205,7 +205,7 @@ class Field_Replace (Transform) :
         """ replace is something behaving like a dict or something
             callable for name lookups
         """
-        Transform (prio)
+        self.__super.__init__ (prio)
         self.replace  = replace or {}
         self.dict     = kw
     # end def __init__
@@ -289,7 +289,7 @@ class Addpagebreak (Transform) :
     prio     = 100
 
     def __init__ (self, prio = None, stylename = None, stylekey = None) :
-        Transform.__init__ (self, prio)
+        self.__super.__init__ (prio)
         self.stylename = stylename
         self.stylekey  = stylekey or 'Addpagebreak_Style:stylename'
     # end def __init__
@@ -339,7 +339,7 @@ class Mailmerge (Transform) :
 
     def __init__ \
         (self, iterator, prio = None, stylename = None, stylekey = None) :
-        Transform.__init__ (self, prio)
+        self.__super.__init__ (prio)
         self.iterator  = iterator
         self.stylename = stylename
         self.stylekey  = stylekey
@@ -428,7 +428,7 @@ class Attribute_Changer (Transform) :
     prio     = 110
 
     def __init__ (self, attrchangers, prio = None) :
-        Transform.__init__ (self, prio)
+        self.__super.__init__ (prio)
         self.attrchangers = {}
         for r in attrchangers :
             self.attrchangers [r.tag] = r

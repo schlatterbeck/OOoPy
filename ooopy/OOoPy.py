@@ -28,7 +28,19 @@ from tempfile                import mkstemp
 from Version                 import VERSION
 import os
 
-class OOoElementTree (object) :
+class _autosuper (type) :
+    def __init__ (cls, name, bases, dict) :
+        super   (_autosuper, cls).__init__ (name, bases, dict)
+        setattr (cls, "_%s__super" % name, super (cls))
+    # end def __init__
+# end class _autosuper
+
+class autosuper (object) :
+    __metaclass__ = _autosuper
+    pass
+# end class autosuper
+
+class OOoElementTree (autosuper) :
     """
         An ElementTree for OOo document XML members. Behaves like the
         orginal ElementTree (in fact it delegates almost everything to a
@@ -59,7 +71,7 @@ class OOoElementTree (object) :
 
 # end class OOoElementTree
 
-class OOoPy (object) :
+class OOoPy (autosuper) :
     """
         Wrapper for OpenOffice.org zip files (all OOo documents are
         really zip files internally).

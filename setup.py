@@ -26,7 +26,6 @@ from ooopy.Version  import VERSION
 
 description = []
 f = open ('README')
-start = False
 f.next ()
 f.next ()
 for line in f :
@@ -47,7 +46,7 @@ setup \
     , url              = "http://ooopy.sourceforge.net/"
     , packages         = ['ooopy']
     , platforms        = 'Any'
-    , data_files       = [('share/ooopy' , ['test.sxw'])]
+    , data_files       = [('share/ooopy' , ['test.sxw','run_doctest.py'])]
     , classifiers      = \
         [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license

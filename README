@@ -40,6 +40,9 @@ still change the API slightly.
 
 .. _`bug report`: http://ooopy.sourceforge.net/#reporting-bugs
 
+For running the doctest on python2.3 with the metaclass trickery of
+autosuper, see the file run_doctest.py.
+
 Resources
 ---------
 
