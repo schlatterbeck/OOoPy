@@ -3,3 +3,4 @@ include ooopy/*.py
 include README
 include default.css
 include README.html
+include run_doctest.py
