@@ -37,7 +37,48 @@ def _body () :
     return Element (OOo_Tag ('office', 'body'))
 # end def _body
 
-class Renumber (autosuper) :
+class Access_Attribute (autosuper) :
+    """ For performance reasons we do not specify a separate transform
+        for each attribute-read or -change operation. Instead we define
+        all the attribute accesses we want to perform as objects that
+        follow the attribute access api and apply them all using an
+        Attribute_Access in one go.
+    """
+
+    def set_transformer (self, transformer) :
+        self.transformer = transformer
+    # end def set_transform
+
+    def use_value (self, oldval = None) :
+        """ Can change the given value by returning the new value. If
+            returning None or oldval the attribute stays unchanged.
+        """
+        raise NotImplementedError, "use_value must be defined in derived class"
+    # end def use_value
+
+# end class Access_Attribute
+
+class Get_Attribute (Access_Attribute) :
+    """ An example of not changing an attribute but only storing the
+        value in the transformer
+    """
+
+    def __init__ ( self, namespace, tag, attr, transform = None, key = None) :
+        self.namespace  = namespace
+        self.tag        = OOo_Tag (namespace, tag)
+        self.attribute  = attr
+        self.transform  = transform
+        self.key        = key
+    # end def __init__
+
+    def use_value (self, oldval = None) :
+        self.transformer [self.key] = oldval
+        return None
+    # end def use_value
+
+# end def Get_Attribute
+
+class Renumber (Access_Attribute) :
     """ Specifies a renumbering transform. OOo has a 'name' attribute
         for several different tags, e.g., tables, frames, sections etc.
         These names must be unique in the whole document. OOo itself
@@ -46,12 +87,6 @@ class Renumber (autosuper) :
         Renumber transforms can be applied to correct the numbering
         after operations that destroy the unique numbering, e.g., after
         a mailmerge where the same document is repeatedly appended.
-
-        For performance reasons we do not specify a separate transform
-        for each renumbering operation. Instead we define all the
-        renumberings we want to perform as Renumber objects that follow
-        the attribute changer api and apply them all using an
-        Attribute_Changer in one go.
     """
 
     def __init__ (self, namespace, tag, name = None, attr = None, start = 1) :
@@ -62,38 +97,123 @@ class Renumber (autosuper) :
         self.attribute  = attr or OOo_Tag (namespace, 'name')
     # end def __init__
 
-    def new_value (self, oldval = None) :
+    def use_value (self, oldval = None) :
         name = "%s%d" % (self.name, self.num)
         self.num += 1
         return name
-    # end def new_value
+    # end def use_value
 
 # end class Renumber
 
-class Reanchor (autosuper) :
+class Set_Attribute (Access_Attribute) :
+    """
+        Similar to the renumbering transform in that we are assigning
+        new values to some attributes. But in this case we give keys
+        into the Transformer dict to replace some tag attributes.
+    """
+
+    def __init__ \
+        ( self
+        , namespace
+        , tag
+        , attr
+        , transform = None
+        , value     = None
+        , key       = None
+        ) :
+        self.namespace  = namespace
+        self.tag        = OOo_Tag (namespace, tag)
+        self.attribute  = attr
+        self.transform  = transform
+        self.value      = value
+        self.key        = key
+    # end def __init__
+
+    def use_value (self, oldval) :
+        if oldval is None :
+            return oldval
+        if self.key :
+            return str (self.transformer [self.key])
+        return str (self.value)
+    # end def use_value
+
+# end class Set_Attribute
+
+class Reanchor (Access_Attribute) :
     """
         Similar to the renumbering transform in that we are assigning
         new values to some attributes. But in this case we want to
         relocate objects that are anchored to a page.
-        
-        This is another example of a class following the attribute
-        changer API.
     """
 
     def __init__ (self, offset, namespace, tag, attr = None) :
-        self.offset     = offset
+        self.offset     = int (offset)
         self.namespace  = namespace
         self.tag        = OOo_Tag (namespace, tag)
         self.attribute  = attr or OOo_Tag ('text', 'anchor-page-number')
     # end def __init__
 
-    def new_value (self, oldval) :
+    def use_value (self, oldval) :
         if oldval is None :
             return oldval
         return "%d" % (int (oldval) + self.offset)
-    # end def new_value
+    # end def use_value
 
 # end class Reanchor
+
+#
+# general transforms applicable to several .xml files
+#
+
+class Attribute_Access (Transform) :
+    """
+        Read or Change attributes in an OOo document.
+        Can be used for renumbering, moving anchored objects, etc.
+        Expects a list of attribute changer objects that follow the
+        attribute changer API. This API is very simple:
+
+        - Member function "use_value" returns the new value of an
+          attribute, or if unchanged the old value
+        - The attribute "tag" gives the tag for an element we are
+          searching
+        - The attribute "attribute" gives the name of the attribute we
+          want to read or change.
+        For examples of the attribute changer API, see Renumber and
+        Reanchor above.
+    """
+    filename = 'content.xml'
+    prio     = 110
+
+    def __init__ (self, attrchangers, prio = None, filename = None) :
+        self.__super.__init__ (prio)
+        self.filename = filename or self.filename
+        self.attrchangers = {}
+        # allow several changers for a single tag
+        for r in attrchangers :
+            if r.tag not in self.attrchangers :
+                self.attrchangers [r.tag] = []
+            self.attrchangers [r.tag].append (r)
+    # end def __init__
+
+    def register (self, transformer) :
+        """ Register transformer with all attrchangers. """
+        self.__super.register (transformer)
+        for a in self.attrchangers.itervalues () :
+            for r in a :
+                r.set_transformer (transformer)
+    # end def register
+
+    def apply (self, root) :
+        """ Search for all tags for which we renumber and replace name """
+        for n in root.findall ('.//*') :
+            if n.tag in self.attrchangers :
+                for r in self.attrchangers [n.tag] :
+                    nval = r.use_value (n.get (r.attribute))
+                    if nval is not None :
+                        n.set (r.attribute, nval)
+    # end def apply
+
+# end class Attribute_Access
 
 #
 # meta.xml transforms
@@ -122,23 +242,6 @@ class Editinfo (Transform) :
                 node.text = self.replace [node.tag]
     # end def apply
 # end class Editinfo
-
-class Pagecount (Transform) :
-    """
-        This is an example of getting information from an OOo document.
-        We simply read the number of pages in the document and store it
-        for later use by other transforms.
-        The stored value can be retrieved from the transformer with
-        transformer ['Pagecount:pagecount'] by other transforms.
-    """
-    filename = 'meta.xml'
-    prio     = 20
-
-    def apply (self, root) :
-        count = root.find ('.//' + OOo_Tag ('meta', 'document-statistic'))
-        self.set ('pagecount', int (count.get (OOo_Tag ('meta', 'page-count'))))
-    # end def apply
-# end class Pagecount
 
 #
 # settings.xml transforms
@@ -361,6 +464,16 @@ class Mailmerge (Transform) :
             self.copyparts [-1].append (e)
     # end def _divide_body
 
+    def _get_meta (self, var) :
+        """ get page- and paragraph-count etc. meta-info """
+        return int (self.transformer [OOo_Tag ('meta', var)])
+    # end def _get_meta
+
+    def _set_meta (self, var, value) :
+        """ set page- and paragraph-count etc. meta-info """
+        self.transformer [OOo_Tag ('meta', var)] = str (value)
+    # end def _set_meta
+
     def apply (self, root) :
         """
             Copy old body, create new empty one and repeatedly append the
@@ -369,8 +482,8 @@ class Mailmerge (Transform) :
         pb         = Addpagebreak \
             (stylename = self.stylename, stylekey = self.stylekey)
         pb.register (self.transformer)
-        pagecount  = self.transformer ['Pagecount:pagecount']
-        ra         = Attribute_Changer \
+        pagecount  = self.transformer [OOo_Tag ('meta', 'page-count')]
+        ra         = Attribute_Access \
             (( Reanchor (pagecount, 'draw', 'text-box')
             ,  Reanchor (pagecount, 'draw', 'rect')
             ))
@@ -384,7 +497,9 @@ class Mailmerge (Transform) :
         self._divide_body ()
         bodyparts  = [_body () for i in self.copyparts]
 
+        count = 0
         for i in self.iterator :
+            count += 1
             fr = Field_Replace (replace = i)
             fr.register (self.transformer)
             # add page break only to non-empty body
@@ -402,49 +517,38 @@ class Mailmerge (Transform) :
             for i in range (len (bodyparts)) :
                 for j in cp [i] :
                     bodyparts [i].append (j)
+        # new page-count:
+        for i in 'page-count', 'character-count' :
+            self._set_meta (i, count * self._get_meta (i))
+        # we have added count-1 paragraphs, because each page-break is a
+        # paragraph.
+        pars = self._get_meta ('paragraph-count') * count + (count - 1)
+        self._set_meta ('paragraph-count', pars)
         for p in bodyparts :
             for e in p :
                 body.append (e)
     # end def apply
 # end class Mailmerge
 
-class Attribute_Changer (Transform) :
-    """
-        Change attributes in an OOo document.
-        Can be used for renumbering, moving anchored objects, etc.
-        Expects a list of attribute changer objects that follow the
-        attribute changer API. This API is very simple:
-
-        - Member function "new_value" returns the new value of an
-          attribute
-        - The attribute "tag" gives the tag for an element we are
-          searching
-        - The attribute "attribute" gives the name of the attribute we
-          want to change.
-        For examples of the attribute changer API, see Renumber and
-        Reanchor above.
-    """
-    filename = 'content.xml'
-    prio     = 110
-
-    def __init__ (self, attrchangers, prio = None) :
-        self.__super.__init__ (prio)
-        self.attrchangers = {}
-        for r in attrchangers :
-            self.attrchangers [r.tag] = r
-    # end def __init__
-
-    def apply (self, root) :
-        """ Search for all tags for which we renumber and replace name """
-        for n in root.findall ('.//*') :
-            if n.tag in self.attrchangers :
-                r    = self.attrchangers [n.tag]
-                nval = r.new_value (n.get (r.attribute))
-                if nval is not None :
-                    n.set (r.attribute, nval)
-    # end def apply
-# end class Attribute_Changer
-
 renumber_frames   = Renumber ('draw',  'text-box', 'Frame')
 renumber_sections = Renumber ('text',  'section')
 renumber_tables   = Renumber ('table', 'table')
+
+# used to have a separate Pagecount transform -- generalized to get
+# some of the meta information using an Attribute_Access transform
+# and set the same information later after possibly being updated by
+# other transforms. We use another naming convention here for storing
+# the info retrieve from the OOo document: We use the attribute name in
+# the meta-information to store (and later retrieve) the information.
+
+get_attr = []
+set_attr = []
+for attr in \
+    ( 'character-count', 'image-count', 'object-count', 'page-count'
+    , 'paragraph-count', 'table-count', 'word-count'
+    ) :
+    a = OOo_Tag ('meta', attr)
+    get_attr.append (Get_Attribute ('meta', 'document-statistic', a, key = a))
+    set_attr.append (Set_Attribute ('meta', 'document-statistic', a, key = a))
+get_meta = Attribute_Access (get_attr, prio =  20, filename = 'meta.xml')
+set_meta = Attribute_Access (set_attr, prio = 120, filename = 'meta.xml')

@@ -120,7 +120,7 @@ class Transformer (autosuper) :
         as a prefix for storing values in the dictionary.
         >>> import Transforms
         >>> from Transforms import renumber_frames, renumber_sections \
-            , renumber_tables
+            , renumber_tables, get_meta, set_meta
         >>> from StringIO import StringIO
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
@@ -136,13 +136,13 @@ class Transformer (autosuper) :
         ...     if r.has_key (name) : return r [name]
         ...     return None
         ... 
-        >>> p = Transforms.Pagecount ()
+        >>> p = get_meta
         >>> t = Transformer (p)
         >>> t ['a'] = 'a'
         >>> t ['a']
         'a'
         >>> p.set ('a', 'b')
-        >>> t ['Pagecount:a']
+        >>> t ['Attribute_Access:a']
         'b'
         >>> t   = Transformer (
         ...       Transforms.Autoupdate ()
@@ -193,7 +193,7 @@ class Transformer (autosuper) :
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
         >>> t   = Transformer (
-        ...       Transforms.Pagecount ()
+        ...       get_meta
         ...     , Transforms.Addpagebreak_Style ()
         ...     , Transforms.Mailmerge
         ...       ( iterator = 
@@ -202,15 +202,18 @@ class Transformer (autosuper) :
         ...         , cb
         ...         )
         ...       )
-        ...     , Transforms.Attribute_Changer
+        ...     , Transforms.Attribute_Access
         ...       ( ( renumber_frames
         ...         , renumber_sections
         ...         , renumber_tables
         ...       ) )
+        ...     , set_meta
         ...     )
         >>> t.transform (o)
-        >>> t ['Pagecount:pagecount']
-        1
+        >>> t [OOo_Tag ('meta', 'page-count')]
+        '3'
+        >>> t [OOo_Tag ('meta', 'paragraph-count')]
+        '113'
         >>> name = t ['Addpagebreak_Style:stylename']
         >>> name
         'P2'
@@ -277,6 +280,13 @@ class Transformer (autosuper) :
         Table1
         Table2
         Table3
+        >>> m = o.read ('meta.xml')
+        >>> metainfo = m.find ('.//' + OOo_Tag ('meta', 'document-statistic'))
+        >>> for i in 'paragraph-count', 'page-count', 'character-count' :
+        ...     metainfo.get (OOo_Tag ('meta', i))
+        '113'
+        '3'
+        '951'
         >>> o.close ()
     """
     def __init__ (self, *tf) :
