@@ -38,7 +38,7 @@ def pretty (n, indent = 0) :
     attrkeys.sort ()
     for a in attrkeys :
         s.append (' %s="%s"' % (cleantag (a), n.attrib [a]))
-    print ''.join (s)
+    print ''.join (s).encode ('utf-8')
     for sub in n :
         pretty (sub, indent + 1)
 
