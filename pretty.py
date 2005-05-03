@@ -45,8 +45,14 @@ def pretty (n, indent = 0) :
 if __name__ == '__main__' :
     for n in namespaces :
         names [namespaces [n]] = n
-    for f in sys.argv [1:] :
+    ooofile = 'content.xml'
+    idx = 1
+    if len (sys.argv) >= 2 :
+        if sys.argv [1].startswith ('--file') :
+            ooofile = sys.argv [1].split ('=') [1]
+            idx = 2
+    for f in sys.argv [idx:] :
         o = OOoPy (infile = f)
-        e = o.read ('content.xml')
+        e = o.read (ooofile)
         pretty (e.getroot ())
         o.close ()
