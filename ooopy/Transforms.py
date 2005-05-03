@@ -45,9 +45,17 @@ class Access_Attribute (autosuper) :
         Attribute_Access in one go.
     """
 
-    def set_transformer (self, transformer) :
+    def __init__ (self, key = None, prefix = None, ** kw) :
+        self.__super.__init__ (key = key, prefix = prefix, **kw)
+        if key :
+            if not prefix :
+                prefix   = self.__class__.__name__
+            self.key = ':'.join ((prefix, key))
+    # end def __init__
+
+    def register (self, transformer) :
         self.transformer = transformer
-    # end def set_transform
+    # end def register
 
     def use_value (self, oldval = None) :
         """ Can change the given value by returning the new value. If
@@ -63,12 +71,12 @@ class Get_Attribute (Access_Attribute) :
         value in the transformer
     """
 
-    def __init__ ( self, namespace, tag, attr, transform = None, key = None) :
+    def __init__ (self, namespace, tag, attr, key, transform = None, ** kw) :
+        self.__super.__init__ (key = key, **kw)
         self.namespace  = namespace
         self.tag        = OOo_Tag (namespace, tag)
         self.attribute  = attr
         self.transform  = transform
-        self.key        = key
     # end def __init__
 
     def use_value (self, oldval = None) :
@@ -90,6 +98,7 @@ class Renumber (Access_Attribute) :
     """
 
     def __init__ (self, namespace, tag, name = None, attr = None, start = 1) :
+        self.__super.__init__ ()
         self.namespace  = namespace
         self.name       = name or tag [0].upper () + tag [1:]
         self.num        = start
@@ -117,24 +126,25 @@ class Set_Attribute (Access_Attribute) :
         , namespace
         , tag
         , attr
+        , key
         , transform = None
         , value     = None
-        , key       = None
+        , ** kw
         ) :
+        self.__super.__init__ (key = key, ** kw)
         self.namespace  = namespace
         self.tag        = OOo_Tag (namespace, tag)
         self.attribute  = attr
         self.transform  = transform
         self.value      = value
-        self.key        = key
     # end def __init__
 
     def use_value (self, oldval) :
         if oldval is None :
-            return oldval
-        if self.key :
-            return str (self.transformer [self.key])
-        return str (self.value)
+            return None
+        if self.key and self.transformer.has_key (self.key) :
+                return str (self.transformer [self.key])
+        return self.value
     # end def use_value
 
 # end class Set_Attribute
@@ -147,6 +157,7 @@ class Reanchor (Access_Attribute) :
     """
 
     def __init__ (self, offset, namespace, tag, attr = None) :
+        self.__super.__init__ ()
         self.offset     = int (offset)
         self.namespace  = namespace
         self.tag        = OOo_Tag (namespace, tag)
@@ -200,7 +211,7 @@ class Attribute_Access (Transform) :
         self.__super.register (transformer)
         for a in self.attrchangers.itervalues () :
             for r in a :
-                r.set_transformer (transformer)
+                r.register (transformer)
     # end def register
 
     def apply (self, root) :
@@ -295,7 +306,7 @@ class Field_Replace (Transform) :
     """
         Takes a dict of replacement key-value pairs. The key is the name
         of a variable in OOo. Additional replacement key-value pairs may
-        be specified in **kw. Alternatively a callback mechanism for
+        be specified in ** kw. Alternatively a callback mechanism for
         variable name lookups is provided. The callback function is
         given the name of a variable in OOo and is expected to return
         the replacement value or None if the variable value should not
@@ -304,7 +315,7 @@ class Field_Replace (Transform) :
     filename = 'content.xml'
     prio     = 100
 
-    def __init__ (self, prio = None, replace = None, **kw) :
+    def __init__ (self, prio = None, replace = None, ** kw) :
         """ replace is something behaving like a dict or something
             callable for name lookups
         """
@@ -318,7 +329,7 @@ class Field_Replace (Transform) :
         if body.tag != OOo_Tag ('office', 'body') :
             body = body.find (OOo_Tag ('office', 'body'))
         for tag in 'variable-set', 'variable-get', 'variable-input' :
-            for node in body.findall ('.//' + OOo_Tag ('text', tag')) :
+            for node in body.findall ('.//' + OOo_Tag ('text', tag)) :
                 name = node.get (OOo_Tag ('text', 'name'))
                 if callable (self.replace) :
                     replace = self.replace (name)
@@ -467,12 +478,12 @@ class Mailmerge (Transform) :
 
     def _get_meta (self, var) :
         """ get page- and paragraph-count etc. meta-info """
-        return int (self.transformer [OOo_Tag ('meta', var)])
+        return int (self.transformer [':'.join (('Get_Attribute', var))])
     # end def _get_meta
 
     def _set_meta (self, var, value) :
         """ set page- and paragraph-count etc. meta-info """
-        self.transformer [OOo_Tag ('meta', var)] = str (value)
+        self.transformer [':'.join (('Set_Attribute', var))] = str (value)
     # end def _set_meta
 
     def apply (self, root) :
@@ -483,7 +494,7 @@ class Mailmerge (Transform) :
         pb         = Addpagebreak \
             (stylename = self.stylename, stylekey = self.stylekey)
         pb.register (self.transformer)
-        pagecount  = self.transformer [OOo_Tag ('meta', 'page-count')]
+        pagecount  = self._get_meta ('page-count')
         ra         = Attribute_Access \
             (( Reanchor (pagecount, 'draw', 'text-box')
             ,  Reanchor (pagecount, 'draw', 'rect')
@@ -549,7 +560,7 @@ for attr in \
     , 'paragraph-count', 'table-count', 'word-count'
     ) :
     a = OOo_Tag ('meta', attr)
-    get_attr.append (Get_Attribute ('meta', 'document-statistic', a, key = a))
-    set_attr.append (Set_Attribute ('meta', 'document-statistic', a, key = a))
+    get_attr.append (Get_Attribute ('meta', 'document-statistic', a, attr))
+    set_attr.append (Set_Attribute ('meta', 'document-statistic', a, attr))
 get_meta = Attribute_Access (get_attr, prio =  20, filename = 'meta.xml')
 set_meta = Attribute_Access (set_attr, prio = 120, filename = 'meta.xml')

@@ -210,9 +210,9 @@ class Transformer (autosuper) :
         ...     , set_meta
         ...     )
         >>> t.transform (o)
-        >>> t [OOo_Tag ('meta', 'page-count')]
+        >>> t [':'.join (('Set_Attribute', 'page-count'))]
         '3'
-        >>> t [OOo_Tag ('meta', 'paragraph-count')]
+        >>> t [':'.join (('Set_Attribute', 'paragraph-count'))]
         '113'
         >>> name = t ['Addpagebreak_Style:stylename']
         >>> name
