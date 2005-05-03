@@ -399,7 +399,7 @@ class Addpagebreak_Style (Transform) :
         SubElement \
             ( new
             , OOo_Tag ('style', 'properties')
-            , { OOo_Tag ('fo', 'break-before') : 'page' }
+            , { OOo_Tag ('fo', 'break-after') : 'page' }
             )
     # end def apply
 # end class Addpagebreak_Style
