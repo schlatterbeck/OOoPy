@@ -317,16 +317,17 @@ class Field_Replace (Transform) :
         body = root
         if body.tag != OOo_Tag ('office', 'body') :
             body = body.find (OOo_Tag ('office', 'body'))
-        for node in body.findall ('.//' + OOo_Tag ('text', 'variable-set')) :
-            name = node.get (OOo_Tag ('text', 'name'))
-            if callable (self.replace) :
-                replace = self.replace (name)
-                if replace :
-                    node.text = replace
-            elif name in self.replace :
-                node.text = self.replace [name]
-            elif name in self.dict :
-                node.text = self.dict    [name]
+        for tag in 'variable-set', 'variable-get', 'variable-input' :
+            for node in body.findall ('.//' + OOo_Tag ('text', tag')) :
+                name = node.get (OOo_Tag ('text', 'name'))
+                if callable (self.replace) :
+                    replace = self.replace (name)
+                    if replace :
+                        node.text = replace
+                elif name in self.replace :
+                    node.text = self.replace [name]
+                elif name in self.dict :
+                    node.text = self.dict    [name]
     # end def apply
 # end class Field_Replace
 
