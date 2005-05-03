@@ -214,7 +214,7 @@ class Transformer (autosuper) :
         '3'
         >>> t [':'.join (('Set_Attribute', 'paragraph-count'))]
         '113'
-        >>> name = t ['Addpagebreak_Style:stylename']
+        >>> name = t ['Addpagebreak_Style:para-style']
         >>> name
         'P2'
         >>> o.close ()
