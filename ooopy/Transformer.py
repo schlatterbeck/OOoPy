@@ -29,7 +29,7 @@ from Version                 import VERSION
 from copy                    import deepcopy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
-namespaces = \
+namespace_by_name = \
 { 'chart'  : "http://openoffice.org/2000/chart"
 , 'config' : "http://openoffice.org/2001/config"
 , 'dc'     : "http://purl.org/dc/elements/1.1/"
@@ -49,10 +49,22 @@ namespaces = \
 , 'xlink'  : "http://www.w3.org/1999/xlink"
 }
 
+namespace_by_url = {}
+for k,v in namespace_by_name.iteritems () :
+    namespace_by_url [v] = k
+
 def OOo_Tag (namespace, name) :
     """Return combined XML tag"""
-    return "{%s}%s" % (namespaces [namespace], name)
+    return "{%s}%s" % (namespace_by_name [namespace], name)
 # end def OOo_Tag
+
+def split_tag (tag) :
+    """ Split tag into symbolic namespace and name part -- inverse
+        operation of OOo_Tag.
+    """
+    ns, t = tag.split ('}')
+    return (namespace_by_url [ns [1:]], t)
+# end def split_tag
 
 class Transform (autosuper) :
     """
@@ -71,10 +83,12 @@ class Transform (autosuper) :
         OOo's settings (menu Tools->Configure).
     """
     prio = 100
-    def __init__ (self, prio = None) :
+    def __init__ (self, prio = None, transformer = None) :
         if prio :
             self.prio    = prio
         self.transformer = None
+        if transformer :
+            self.register (transformer)
     # end def __init__
 
     def register (self, transformer) :
@@ -101,7 +115,19 @@ class Transform (autosuper) :
         self.transformer [self._varname (variable)] = value
     # end def set
 
+    def apply_all (self, trees) :
+        """ Apply myself to all the files given in trees. The variable
+            trees contains a dictionary of ElementTree indexed by the
+            name of the OOo File.
+            The standard case is that only one file (namely
+            self.filename) is used.
+        """
+        assert (self.filename)
+        self.apply (trees [self.filename].getroot ())
+    # end def apply_all
+
     def apply (self, root) :
+        """ Apply myself to the element given as root """
         raise NotImplementedError, 'derived transforms must implement "apply"'
     # end def apply
 
@@ -288,6 +314,160 @@ class Transformer (autosuper) :
         '3'
         '951'
         >>> o.close ()
+        >>> sio = StringIO ()
+        >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+        >>> t   = Transformer (
+        ...       get_meta
+        ...     , Transforms.Concatenate ('test.sxw', 'rechng.sxw')
+        ...     , set_meta
+        ...     )
+        >>> t.transform (o)
+        >>> t [':'.join (('Set_Attribute', 'page-count'))]
+        '3'
+        >>> t [':'.join (('Set_Attribute', 'paragraph-count'))]
+        '168'
+        >>> t [':'.join (('Set_Attribute', 'character-count'))]
+        '1131'
+        >>> o.close ()
+        >>> ov  = sio.getvalue ()
+        >>> f   = open ("testout3.sxw", "w")
+        >>> f.write (ov)
+        >>> f.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> c = o.read ('content.xml')
+        >>> s = o.read ('styles.xml')
+        >>> for n in c.findall ('./*/*') :
+        ...     name = n.get (OOo_Tag ('style', 'name'))
+        ...     if name :
+        ...         parent = n.get (OOo_Tag ('style', 'parent-style-name'))
+        ...         print '"%s", "%s"' % (name, parent)
+        "Tahoma1", "None"
+        "Bitstream Vera Sans", "None"
+        "Tahoma", "None"
+        "Nimbus Roman No9 L", "None"
+        "Table1", "None"
+        "Table1.A", "None"
+        "Table1.A1", "None"
+        "Table1.E1", "None"
+        "Table1.A2", "None"
+        "Table1.E2", "None"
+        "P1", "None"
+        "fr1", "Frame"
+        "fr2", "None"
+        "fr3", "Frame"
+        "Sect1", "None"
+        "gr1", "None"
+        "P2", "Standard"
+        "Concat_P1", "Concat_Frame contents"
+        "Concat_P2", "Concat_Frame contents"
+        "P3", "Concat_Frame contents"
+        "P4", "Concat_Frame contents"
+        "P5", "Standard"
+        "P6", "Standard"
+        "P7", "Concat_Frame contents"
+        "P8", "Concat_Frame contents"
+        "P9", "Concat_Frame contents"
+        "P10", "Concat_Frame contents"
+        "P11", "Concat_Frame contents"
+        "P12", "Concat_Frame contents"
+        "P13", "Concat_Frame contents"
+        "P15", "Standard"
+        "P16", "Standard"
+        "P17", "Standard"
+        "P18", "Standard"
+        "P19", "Standard"
+        "P20", "Standard"
+        "P21", "Standard"
+        "P22", "Standard"
+        "P23", "Standard"
+        "T1", "None"
+        "Concat_fr1", "Concat_Frame"
+        "Concat_fr2", "Concat_Frame"
+        "Concat_fr3", "Concat_Frame"
+        "fr4", "Concat_Frame"
+        "fr5", "Concat_Frame"
+        "fr6", "Concat_Frame"
+        "Concat_Sect1", "None"
+        "N0", "None"
+        "N2", "None"
+        >>> for n in s.findall ('./*/*') :
+        ...     name = n.get (OOo_Tag ('style', 'name'))
+        ...     if name :
+        ...         parent = n.get (OOo_Tag ('style', 'parent-style-name'))
+        ...         print '"%s", "%s"' % (name, parent)
+        "Tahoma1", "None"
+        "Bitstream Vera Sans", "None"
+        "Tahoma", "None"
+        "Nimbus Roman No9 L", "None"
+        "Courier New", "None"
+        "Arial Black", "None"
+        "New Century Schoolbook", "None"
+        "Helvetica", "None"
+        "Standard", "None"
+        "Text body", "Standard"
+        "List", "Text body"
+        "Table Contents", "Text body"
+        "Table Heading", "Table Contents"
+        "Caption", "Standard"
+        "Frame contents", "Text body"
+        "Index", "Standard"
+        "Frame", "None"
+        "OLE", "None"
+        "Concat_Text body", "Standard"
+        "Concat_List", "Concat_Text body"
+        "Concat_Caption", "Standard"
+        "Concat_Frame contents", "Concat_Text body"
+        "Horizontal Line", "Standard"
+        "Internet link", "None"
+        "Visited Internet Link", "None"
+        "Concat_Frame", "None"
+        "Concat_OLE", "None"
+        "pm1", "None"
+        "Concat_pm1", "None"
+        "Standard", "None"
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl')) :
+        ...     name = n.get (OOo_Tag ('text', 'name'))
+        ...     print name
+        salutation
+        firstname
+        lastname
+        street
+        country
+        postalcode
+        city
+        date
+        invoice.invoice_no
+        invoice.abo.aboprice.abotype.description
+        address.salutation
+        address.title
+        address.firstname
+        address.lastname
+        address.function
+        address.street
+        address.country
+        address.postalcode
+        address.city
+        invoice.subscriber.salutation
+        invoice.subscriber.title
+        invoice.subscriber.firstname
+        invoice.subscriber.lastname
+        invoice.subscriber.function
+        invoice.subscriber.street
+        invoice.subscriber.country
+        invoice.subscriber.postalcode
+        invoice.subscriber.city
+        invoice.period_start
+        invoice.period_end
+        invoice.currency.name
+        invoice.amount
+        invoice.subscriber.initial
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'sequence-decl')) :
+        ...     name = n.get (OOo_Tag ('text', 'name'))
+        ...     print name
+        Illustration
+        Table
+        Text
+        Drawing
     """
     def __init__ (self, *tf) :
         self.transforms = {}
@@ -320,7 +500,7 @@ class Transformer (autosuper) :
         prios.sort ()
         for p in prios :
             for t in self.transforms [p] :
-                t.apply (self.trees [t.filename].getroot ())
+                t.apply_all (self.trees)
         for e in self.trees.itervalues () :
             e.write ()
     # end def transform

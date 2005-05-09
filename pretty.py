@@ -22,14 +22,11 @@
 # ****************************************************************************
 
 import sys
-from ooopy.OOoPy     import OOoPy
-from ooopy.Transform import namespaces
-
-names = {}
+from ooopy.OOoPy       import OOoPy
+from ooopy.Transformer import split_tag
 
 def cleantag (tag) :
-    ns, t = tag.split ('}')
-    return ':'.join ((names [ns [1:]], t))
+    return ':'.join (split_tag (tag))
 
 def pretty (n, indent = 0) :
     s = ["    " * indent]
@@ -43,8 +40,6 @@ def pretty (n, indent = 0) :
         pretty (sub, indent + 1)
 
 if __name__ == '__main__' :
-    for n in namespaces :
-        names [namespaces [n]] = n
     ooofile = 'content.xml'
     idx = 1
     if len (sys.argv) >= 2 :
