@@ -319,6 +319,11 @@ class Transformer (autosuper) :
         >>> t   = Transformer (
         ...       get_meta
         ...     , Transforms.Concatenate ('test.sxw', 'rechng.sxw')
+        ...     , Transforms.Attribute_Access
+        ...       ( ( renumber_frames
+        ...         , renumber_sections
+        ...         , renumber_tables
+        ...       ) )
         ...     , set_meta
         ...     )
         >>> t.transform (o)

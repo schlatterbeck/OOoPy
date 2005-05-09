@@ -646,7 +646,7 @@ class Concatenate (_Body_Concat) :
             a = OOo_Tag ('meta', attr)
             t = OOo_Tag ('meta', 'document-statistic')
             get_attr.append (Get_Attribute (t, a, 'concat' + attr))
-        getm = Attribute_Access \
+        self.getmeta = Attribute_Access \
             (get_attr, filename = 'meta.xml', transformer = self.transformer)
         self.pbname = self.transformer \
             [':'.join (('Addpagebreak_Style', 'stylename'))]
@@ -655,19 +655,6 @@ class Concatenate (_Body_Concat) :
         for f in 'styles.xml', 'content.xml' :
             self.style_concat   (f)
         self.body_concat (content)
-        n = {}
-        for i in 'page-count', 'character-count', 'paragraph-count' :
-            n [i] = self._get_meta (i)
-        for d in self.docs :
-            root = d.read ('meta.xml').getroot ()
-            getm.apply (root)
-            for i in 'page-count', 'character-count', 'paragraph-count' :
-                val = self.transformer \
-                    [':'.join (('Get_Attribute', 'concat' + i))]
-                n [i] += int (val)
-            n ['paragraph-count'] += 1
-        for i in 'page-count', 'character-count', 'paragraph-count' :
-            self._set_meta (i, n [i])
     # end def apply_all
 
     def register_decls (self) :
@@ -692,11 +679,25 @@ class Concatenate (_Body_Concat) :
     # end def update_decls
 
     def body_concat (self, root) :
+        n = {}
+        for i in 'page-count', 'character-count', 'paragraph-count' :
+            n [i] = self._get_meta (i)
         pb   = Addpagebreak \
             (stylename = self.pbname, transformer = self.transformer)
         self.divide_body (root)
         self.register_decls ()
         for idx in range (len (self.docs)) :
+            meta = self.docs [idx].read ('meta.xml').getroot ()
+            self.getmeta.apply (meta)
+            ra = Attribute_Access \
+                (( Reanchor (n ['page-count'], OOo_Tag ('draw', 'text-box'))
+                ,  Reanchor (n ['page-count'], OOo_Tag ('draw', 'rect'))
+                ))
+            for i in 'page-count', 'character-count', 'paragraph-count' :
+                val = self.transformer \
+                    [':'.join (('Get_Attribute', 'concat' + i))]
+                n [i] += int (val)
+            n ['paragraph-count'] += 1
             map = self.stylemaps [idx]
             tree = self.treemaps ['content.xml'][idx]
             r1 = set_attributes_from_dict (None, _stylename,  map)
@@ -704,12 +705,15 @@ class Concatenate (_Body_Concat) :
             tr = Attribute_Access (r1 + r2, transformer = self.transformer)
             pb.apply (self.bodyparts [-1])
             tr.apply (tree)
+            ra.apply (tree)
             append = tree.find (OOo_Tag ('office', 'body'))
             declarations = self._divide (append)
             self.update_decls   (declarations)
             self.append_to_body (self.copyparts)
         self.append_declarations ()
         self.assemble_body       ()
+        for i in 'page-count', 'character-count', 'paragraph-count' :
+            self._set_meta (i, n [i])
     # end def body_concat
 
     def _newname (self, tag, oldname) :
