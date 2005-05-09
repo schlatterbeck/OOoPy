@@ -360,38 +360,22 @@ class Addpagebreak_Style (Transform) :
     """
     filename = 'content.xml'
     prio     = 80
-    pattern  = \
-        { 'para' : re.compile (r'P([0-9]+)')
-        , 'text' : re.compile (r'T([0-9]+)')
-        }
-    format  = {'para' : 'P%s', 'text' : 'T%s'}
+    para     = re.compile (r'P([0-9]+)')
 
     def apply (self, root) :
-        max_style = {'para' : 0, 'text' : 0}
-        name      = {}
+        max_style = 0
         styles = root.find (OOo_Tag ('office', 'automatic-styles'))
         for s in styles.findall ('./' + OOo_Tag ('style', 'style')) :
-            style = s.get (OOo_Tag ('style', 'name'), '')
-            for key, pattern in self.pattern.iteritems () :
-                m = pattern.match (style)
-                if m :
-                    num = int (m.group (1))
-                    if num > max_style [key] :
-                        max_style [key] = num
-        for n in 'para', 'text' :
-            name [n] = self.format [n] % (max_style [n] + 1)
-            self.set ('%s-style' % n, name [n])
+            m = self.para.match (s.get (OOo_Tag ('style', 'name'), ''))
+            if m :
+                num = int (m.group (1))
+                if num > max_style :
+                    max_style = num
+        stylename = 'P%d' % (max_style + 1)
         new = SubElement \
             ( styles
             , OOo_Tag ('style', 'style')
-            , { OOo_Tag ('style', 'name')              : name ['text']
-              , OOo_Tag ('style', 'family')            : 'text'
-              }
-            )
-        new = SubElement \
-            ( styles
-            , OOo_Tag ('style', 'style')
-            , { OOo_Tag ('style', 'name')              : name ['para']
+            , { OOo_Tag ('style', 'name')              : stylename
               , OOo_Tag ('style', 'family')            : 'paragraph'
               , OOo_Tag ('style', 'parent-style-name') : 'Standard'
               }
@@ -401,6 +385,7 @@ class Addpagebreak_Style (Transform) :
             , OOo_Tag ('style', 'properties')
             , { OOo_Tag ('fo', 'break-after') : 'page' }
             )
+        self.set ('stylename', stylename)
     # end def apply
 # end class Addpagebreak_Style
 
@@ -411,28 +396,17 @@ class Addpagebreak (Transform) :
         page break to the body and then append the next page. This
         transform needs the name of the paragraph style specifying the
         page break style. Default is to use
-        'Addpagebreak_Style:para-style' as the key for retrieving the
-        paragraph style and 'Addpagebreak_Style:text-style' as the key
-        for retrieving the text-style used for a span tag. Alternatively
-        the paragraph style or the paragraph style key can be specified
-        in the constructor.
+        'Addpagebreak_Style:stylename' as the key for
+        retrieving the page style. Alternatively the page style or the
+        page style key can be specified in the constructor.
     """
     filename = 'content.xml'
     prio     = 100
 
-    def __init__ \
-        ( self
-        , prio = None
-        , pstylename = None
-        , pstylekey  = None
-        , tstylename = None
-        , tstylekey  = None
-        ) :
+    def __init__ (self, prio = None, stylename = None, stylekey = None) :
         self.__super.__init__ (prio)
-        self.pstylename = pstylename
-        self.pstylekey  = pstylekey or 'Addpagebreak_Style:para-style'
-        self.tstylename = tstylename
-        self.tstylekey  = tstylekey or 'Addpagebreak_Style:text-style'
+        self.stylename = stylename
+        self.stylekey  = stylekey or 'Addpagebreak_Style:stylename'
     # end def __init__
 
     def apply (self, root) :
@@ -440,17 +414,11 @@ class Addpagebreak (Transform) :
         body = root
         if body.tag != OOo_Tag ('office', 'body') :
             body = body.find (OOo_Tag ('office', 'body'))
-        pstylename = self.pstylename or self.transformer [self.pstylekey]
-        tstylename = self.tstylename or self.transformer [self.tstylekey]
-        e = SubElement \
+        stylename = self.stylename or self.transformer [self.stylekey]
+        SubElement \
             ( body
             , OOo_Tag ('text', 'p')
-            , { OOo_Tag ('text', 'style-name') : pstylename }
-            )
-        SubElement \
-            ( e
-            , OOo_Tag ('text', 'span')
-            , { OOo_Tag ('text', 'style-name') : tstylename }
+            , { OOo_Tag ('text', 'style-name') : stylename }
             )
     # end def apply
 # end class Addpagebreak
@@ -467,7 +435,10 @@ class Mailmerge (Transform) :
 
         A precondition for this transform is the application of the
         Addpagebreak_Style to guarantee that we know the style
-        for adding a page break to the current document.
+        for adding a page break to the current document. Alternatively
+        the stylename (or the stylekey if a different name should be used
+        for lookup in the current transformer) can be given in the
+        constructor.
     """
     filename = 'content.xml'
     prio     = 100
@@ -482,9 +453,11 @@ class Mailmerge (Transform) :
         ]
 
     def __init__ \
-        (self, iterator, prio = None) :
+        (self, iterator, prio = None, stylename = None, stylekey = None) :
         self.__super.__init__ (prio)
         self.iterator  = iterator
+        self.stylename = stylename
+        self.stylekey  = stylekey
     # end def __init__
 
     def _divide_body (self) :
@@ -518,7 +491,8 @@ class Mailmerge (Transform) :
             Copy old body, create new empty one and repeatedly append the
             new body.
         """
-        pb         = Addpagebreak ()
+        pb         = Addpagebreak \
+            (stylename = self.stylename, stylekey = self.stylekey)
         pb.register (self.transformer)
         pagecount  = self._get_meta ('page-count')
         ra         = Attribute_Access \
