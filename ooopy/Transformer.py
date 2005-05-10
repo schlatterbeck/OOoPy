@@ -350,6 +350,10 @@ class Transformer (autosuper) :
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
         "Nimbus Roman No9 L", "None"
+        "Courier New", "None"
+        "Arial Black", "None"
+        "New Century Schoolbook", "None"
+        "Helvetica", "None"
         "Table1", "None"
         "Table1.A", "None"
         "Table1.A1", "None"
@@ -430,6 +434,7 @@ class Transformer (autosuper) :
         "pm1", "None"
         "Concat_pm1", "None"
         "Standard", "None"
+        "Concat_Standard", "None"
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl')) :
         ...     name = n.get (OOo_Tag ('text', 'name'))
         ...     print name

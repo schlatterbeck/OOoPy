@@ -581,7 +581,7 @@ _stylename  = OOo_Tag ('style', 'name')
 _parentname = OOo_Tag ('style', 'parent-style-name')
 _textname   = OOo_Tag ('text',  'name')
 
-def tree_serialise (element) :
+def tree_serialise (element, replacements, prefix = '') :
     """ Serialise a style-element of an OOo document (e.g., a
         style:font-decl, style:default-style, etc declaration).
         We remove the name of the style and return something that is a
@@ -591,18 +591,21 @@ def tree_serialise (element) :
         first item, the attributes (as key,value pairs returned by
         items()) as the second item and the following items are
         serialisations of children.
+        All names which are keys in replacements are looked up in
+        replacement [key] and replaced if found.
     """
-    attr = element.attrib
-    if _stylename in attr or _parentname in attr :
-        attr = dict (attr)
-        if _stylename  in attr : del attr [_stylename]
-        if _parentname in attr : del attr [_parentname]
+    attr = dict (element.attrib)
+    if _stylename  in attr : del attr [_stylename]
+    for k,v in replacements.iteritems () :
+        if k in attr :
+            name = attr [k]
+            attr [k] = v.get (name, name)
     attr = attr.items ()
     attr.sort ()
     attr = tuple (attr)
-    serial = [element.tag, attr]
+    serial = [prefix + element.tag, attr]
     for e in element :
-        serial.append (tree_serialise (e))
+        serial.append (tree_serialise (e, replacements, prefix))
     return tuple (serial)
 # end def tree_serialise
 
@@ -614,11 +617,17 @@ class Concatenate (_Body_Concat) :
     """
     prio     = 80
     style_containers = \
-        { OOo_Tag ('office', 'font-decls')       : 1
-        , OOo_Tag ('office', 'styles')           : 1
-        , OOo_Tag ('office', 'automatic-styles') : 1
-        , OOo_Tag ('office', 'master-styles')    : 1
-        }
+      { OOo_Tag ('office', 'font-decls')       : 1
+      , OOo_Tag ('office', 'styles')           : 1
+      , OOo_Tag ('office', 'automatic-styles') : 1
+      , OOo_Tag ('office', 'master-styles')    : 1
+      }
+    ref_names = \
+      { _parentname                           : OOo_Tag ('style', 'style')
+      , OOo_Tag ('style', 'master-page-name') : OOo_Tag ('style', 'master-page')
+      , OOo_Tag ('style', 'page-master-name') : OOo_Tag ('style', 'page-master')
+      }
+        # own hash for each file
 
     def __init__ \
         (self, * docs, ** kw) :
@@ -636,6 +645,8 @@ class Concatenate (_Body_Concat) :
         content = self.trees ['content.xml'].getroot ()
         for d in self.docs :
             self.stylemaps.append ({})
+            for s in self.ref_names.itervalues () :
+                self.stylemaps [-1][s] = {}
             for f in 'styles.xml', 'content.xml' :
                 self.treemaps [f].append (d.read (f).getroot ())
         # append a pagebreak style, will be optimized away if duplicate
@@ -679,9 +690,9 @@ class Concatenate (_Body_Concat) :
     # end def update_decls
 
     def body_concat (self, root) :
-        n = {}
+        count = {}
         for i in 'page-count', 'character-count', 'paragraph-count' :
-            n [i] = self._get_meta (i)
+            count [i] = self._get_meta (i)
         pb   = Addpagebreak \
             (stylename = self.pbname, transformer = self.transformer)
         self.divide_body (root)
@@ -690,19 +701,19 @@ class Concatenate (_Body_Concat) :
             meta = self.docs [idx].read ('meta.xml').getroot ()
             self.getmeta.apply (meta)
             ra = Attribute_Access \
-                (( Reanchor (n ['page-count'], OOo_Tag ('draw', 'text-box'))
-                ,  Reanchor (n ['page-count'], OOo_Tag ('draw', 'rect'))
+                (( Reanchor (count ['page-count'], OOo_Tag ('draw', 'text-box'))
+                ,  Reanchor (count ['page-count'], OOo_Tag ('draw', 'rect'))
                 ))
             for i in 'page-count', 'character-count', 'paragraph-count' :
                 val = self.transformer \
                     [':'.join (('Get_Attribute', 'concat' + i))]
-                n [i] += int (val)
-            n ['paragraph-count'] += 1
-            map = self.stylemaps [idx]
+                count [i] += int (val)
+            count ['paragraph-count'] += 1
+            name_map = self.stylemaps [idx][OOo_Tag ('style', 'style')]
             tree = self.treemaps ['content.xml'][idx]
-            r1 = set_attributes_from_dict (None, _stylename,  map)
-            r2 = set_attributes_from_dict (None, _parentname, map)
-            tr = Attribute_Access (r1 + r2, transformer = self.transformer)
+            for n in self.ref_names.keys () + [_stylename] :
+                r = set_attributes_from_dict (None, n, name_map)
+            tr = Attribute_Access (r, transformer = self.transformer)
             pb.apply (self.bodyparts [-1])
             tr.apply (tree)
             ra.apply (tree)
@@ -713,16 +724,16 @@ class Concatenate (_Body_Concat) :
         self.append_declarations ()
         self.assemble_body       ()
         for i in 'page-count', 'character-count', 'paragraph-count' :
-            self._set_meta (i, n [i])
+            self._set_meta (i, count [i])
     # end def body_concat
 
-    def _newname (self, tag, oldname) :
+    def _newname (self, key, oldname) :
         stylenum = 0
-        if (tag, oldname) not in self.stylenames :
-            self.stylenames [(tag, oldname)] = 1
+        if (key, oldname) not in self.stylenames :
+            self.stylenames [(key, oldname)] = 1
             return oldname
         newname = basename = 'Concat_%s' % oldname
-        while (tag, newname) in self.stylenames :
+        while (key, newname) in self.stylenames :
             stylenum += 1
             newname = '%s%d' % (basename, stylenum)
         stylenum += 1
@@ -735,45 +746,49 @@ class Concatenate (_Body_Concat) :
             and put them in a dict by their name. For each tag register
             the various names.
         """
+        name_map  = {}
+        for s in self.ref_names.itervalues () :
+            name_map [s] = {}
         for node in self.trees [oofile].getroot () :
-            if node.tag in self.style_containers :
-                self.containers [oofile][node.tag] = node
-                idx       = 0
-                to_delete = []
-                map       = {}
-                for n in node :
-                    name  = n.get (_stylename, None)
-                    pname = n.get (_parentname, None)
-                    pname = map.get (pname, pname)
-                    if name :
-                        sn  = tree_serialise (n)
-                        key = (sn, pname)
-                        if key in self.serialised :
-                            # looks like OOo has duplicate font definitions
-                            # in styles.xml and content.xml -- don't know if
-                            # this is needed by OOo or if we could optimize
-                            # these away.
-                            newname = self.serialised [key]
-                            if name != newname :
-                                map [name] = newname
-                            if node.tag != OOo_Tag ('office', 'font-decls') :
-                                to_delete.append (idx)
-                        else :
-                            self.serialised [key] = name
-                            assert (n.tag, name) not in self.stylenames
-                            self.stylenames [(n.tag, name)] = 1
-                    idx += 1
-                to_delete.reverse ()
-                for i in to_delete :
-                    del node [i]
-                if map :
-                    r1 = set_attributes_from_dict (None, _stylename,  map)
-                    r2 = set_attributes_from_dict (None, _parentname, map)
-                    tr = Attribute_Access \
-                        (r1 + r2, transformer = self.transformer)
-                    tr.apply (self.trees ['content.xml'].getroot ())
-                    if self.pbname in map :
-                        self.pbname = map [self.pbname]
+            if node.tag not in self.style_containers :
+                continue
+            prefix = ''
+            if node.tag == OOo_Tag ('office', 'font-decls') :
+                prefix = oofile
+            self.containers [oofile][node.tag] = node
+            idx       = 0
+            to_delete = []
+            for n in node :
+                name   = n.get (_stylename, None)
+                if name :
+                    if n.tag not in name_map : name_map [n.tag] = {}
+                    repl = dict ([(k,name_map [v])
+                                  for k,v in self.ref_names.iteritems ()])
+                    sn  = tree_serialise (n, repl, prefix)
+                    if sn in self.serialised :
+                        newname = self.serialised [sn]
+                        if name != newname :
+                            name_map [n.tag][name] = newname
+                        if node.tag != OOo_Tag ('office', 'font-decls') :
+                            to_delete.append (idx)
+                    else :
+                        self.serialised [sn] = name
+                        assert prefix or (n.tag, name) not in self.stylenames
+                        self.stylenames [(n.tag, name)] = 1
+                idx += 1
+            to_delete.reverse ()
+            for i in to_delete :
+                del node [i]
+            r = []
+            for tag in name_map.iterkeys () :
+                if name_map [tag] :
+                    for n in self.ref_names + [_stylename] :
+                        r.extend (set_attributes_from_dict (tag, n, name_map))
+            tag = OOo_Tag ('style', 'style')
+            if tag in name_map and self.pbname in name_map [tag] :
+                self.pbname = name_map [tag][self.pbname]
+            tr = Attribute_Access (r, transformer = self.transformer)
+            tr.apply (self.trees ['content.xml'].getroot ())
     # end style_register
             
     def style_concat (self, oofile) :
@@ -796,39 +811,44 @@ class Concatenate (_Body_Concat) :
         """
         for idx in range (len (self.docs)) :
             stylemap = self.stylemaps [idx]
-            root     = self.treemaps [oofile][idx]
+            root     = self.treemaps  [oofile][idx]
             for node in root :
-                if node.tag in self.style_containers :
-                    for n in node :
-                        name  = n.get (_stylename, None)
-                        pname = n.get (_parentname, None)
-                        pname = stylemap.get (pname, pname)
-                        if not name : continue
-                        sn  = tree_serialise (n)
-                        key = (sn, pname)
-                        if key in self.serialised :
-                            newname = self.serialised [key]
-                            if name != newname :
-                                assert \
-                                    (  name not in stylemap
-                                    or stylemap [name] == newname
-                                    )
-                                stylemap [name] = newname
-                        else :
-                            parent = n.get (_parentname, None)
-                            if parent :
-                                newp = stylemap.get (parent, None)
-                                if newp :
-                                    n.set (_parentname, newp)
-                                else :
-                                    # keep name for cross-check
-                                    stylemap [_parentname] = newp
-                            newname = self._newname (n.tag, name)
-                            self.serialised [key] = newname
-                            if newname != name :
-                                n.set (_stylename, newname)
-                                stylemap [name]       = newname
-                            self.containers [oofile][node.tag].append (n)
+                if node.tag not in self.style_containers :
+                    continue
+                prefix = ''
+                if node.tag == OOo_Tag ('office', 'font-decls') :
+                    prefix = oofile
+                for n in node :
+                    name  = n.get (_stylename, None)
+                    if not name : continue
+                    key = prefix + n.tag
+                    if key not in stylemap : stylemap [key] = {}
+                    repl = dict ([(k,stylemap [v])
+                                  for k,v in self.ref_names.iteritems ()])
+                    sn  = tree_serialise (n, repl, prefix)
+                    if sn in self.serialised :
+                        newname = self.serialised [sn]
+                        if name != newname :
+                            assert \
+                                (  name not in stylemap [key]
+                                or stylemap [key][name] == newname
+                                )
+                            stylemap [key][name] = newname
+                    else :
+                        parent = n.get (_parentname, None)
+                        if parent :
+                            newp = stylemap [key].get (parent, None)
+                            if newp :
+                                n.set (_parentname, newp)
+                            else :
+                                # keep name for cross-check
+                                stylemap [key][_parentname] = newp
+                        newname = self._newname (key, name)
+                        self.serialised [sn] = newname
+                        if newname != name :
+                            n.set (_stylename, newname)
+                            stylemap [key][name] = newname
+                        self.containers [oofile][node.tag].append (n)
     # end def style_concat
 
 # end class Concatenate
