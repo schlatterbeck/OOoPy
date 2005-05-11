@@ -753,20 +753,21 @@ class Concatenate (_Body_Concat) :
             first document.
         """
         for idx in range (len (self.docs)) :
-            croot   = self.treemaps  ['content.xml'][idx]
-            sroot   = self.treemaps  ['styles.xml'] [idx]
+            croot  = self.treemaps  ['content.xml'][idx]
+            sroot  = self.treemaps  ['styles.xml'] [idx]
             body   = croot.find (OOo_Tag ('office', 'body'))
             para   = body.find  ('./' + OOo_Tag ('text', 'p'))
-            sname  = para.get   (OOo_Tag ('text', 'style-name'))
+            tsn    = OOo_Tag ('text', 'style-name')
+            sname  = para.get   (tsn)
             styles = croot.find (OOo_Tag ('office', 'automatic-styles'))
             ost    = sroot.find (OOo_Tag ('office', 'styles'))
             mst    = sroot.find (OOo_Tag ('office', 'master-styles'))
             assert mst
             assert mst [0].tag == OOo_Tag ('style', 'master-page')
-            master  = mst [0].get (_stylename)
-            mpn     = OOo_Tag ('style', 'master-page-name')
-            stst    = OOo_Tag ('style', 'style')
-            style   = None
+            master = mst [0].get (_stylename)
+            mpn    = OOo_Tag ('style', 'master-page-name')
+            stst   = OOo_Tag ('style', 'style')
+            style  = None
             for s in styles :
                 if s.tag == stst :
                     # Explicit references to default style converted to
@@ -783,6 +784,7 @@ class Concatenate (_Body_Concat) :
             assert style is not None
             if not style.get (mpn) :
                 newname = 'Concat_' + sname
+                para.set (tsn, newname)
                 SubElement \
                     ( styles
                     , OOo_Tag ('style', 'style')
