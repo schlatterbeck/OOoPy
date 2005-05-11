@@ -661,6 +661,7 @@ class Concatenate (_Body_Concat) :
             (get_attr, filename = 'meta.xml', transformer = self.transformer)
         self.pbname = self.transformer \
             [':'.join (('Addpagebreak_Style', 'stylename'))]
+        self.set_pagestyle ()
         for f in 'styles.xml', 'content.xml' :
             self.style_register (f)
         for f in 'styles.xml', 'content.xml' :
@@ -739,6 +740,59 @@ class Concatenate (_Body_Concat) :
         stylenum += 1
         return newname
     # end def _newname
+
+    def set_pagestyle (self) :
+        """ For all documents: search for the first paragraph of the body
+            and get its style. Modify this style to include a reference
+            to the default page-style if it doesn't contain a reference
+            to a page style. Insert the new style into the list of
+            styles and modify the first paragraph to use the new page
+            style.
+            This procedure is necessary to make appended documents use
+            their page style instead of the master page style of the
+            first document.
+        """
+        for idx in range (len (self.docs)) :
+            croot   = self.treemaps  ['content.xml'][idx]
+            sroot   = self.treemaps  ['styles.xml'] [idx]
+            body   = croot.find (OOo_Tag ('office', 'body'))
+            para   = body.find  ('./' + OOo_Tag ('text', 'p'))
+            sname  = para.get   (OOo_Tag ('text', 'style-name'))
+            styles = croot.find (OOo_Tag ('office', 'automatic-styles'))
+            ost    = sroot.find (OOo_Tag ('office', 'styles'))
+            mst    = sroot.find (OOo_Tag ('office', 'master-styles'))
+            assert mst
+            assert mst [0].tag == OOo_Tag ('style', 'master-page')
+            master  = mst [0].get (_stylename)
+            mpn     = OOo_Tag ('style', 'master-page-name')
+            stst    = OOo_Tag ('style', 'style')
+            style   = None
+            for s in styles :
+                if s.tag == stst :
+                    # Explicit references to default style converted to
+                    # explicit references to new page style.
+                    if s.get (mpn) == '' :
+                        s.set (mpn, master)
+                    if s.get (_stylename) == sname :
+                        style = s
+            if not style :
+                for s in ost :
+                    if s.tag == stst and s.get (_stylename) == sname :
+                        style = s
+                        break
+            assert style is not None
+            if not style.get (mpn) :
+                newname = 'Concat_' + sname
+                SubElement \
+                    ( styles
+                    , OOo_Tag ('style', 'style')
+                    , { OOo_Tag ('style', 'name')              : newname
+                      , OOo_Tag ('style', 'family')            : 'paragraph'
+                      , OOo_Tag ('style', 'parent-style-name') : sname
+                      , mpn                                    : master
+                      }
+                    )
+    # end def set_pagestyle
 
     def style_register (self, oofile) :
         """
