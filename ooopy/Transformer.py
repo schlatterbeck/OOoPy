@@ -372,8 +372,8 @@ class Transformer (autosuper) :
         "Concat_P2", "Concat_Frame contents"
         "P3", "Concat_Frame contents"
         "P4", "Concat_Frame contents"
-        "P5", "Standard"
-        "P6", "Standard"
+        "P5", "Concat_Standard"
+        "P6", "Concat_Standard"
         "P7", "Concat_Frame contents"
         "P8", "Concat_Frame contents"
         "P9", "Concat_Frame contents"
@@ -381,15 +381,15 @@ class Transformer (autosuper) :
         "P11", "Concat_Frame contents"
         "P12", "Concat_Frame contents"
         "P13", "Concat_Frame contents"
-        "P15", "Standard"
-        "P16", "Standard"
-        "P17", "Standard"
-        "P18", "Standard"
-        "P19", "Standard"
-        "P20", "Standard"
-        "P21", "Standard"
-        "P22", "Standard"
-        "P23", "Standard"
+        "P15", "Concat_Standard"
+        "P16", "Concat_Standard"
+        "P17", "Concat_Standard"
+        "P18", "Concat_Standard"
+        "P19", "Concat_Standard"
+        "P20", "Concat_Standard"
+        "P21", "Concat_Standard"
+        "P22", "Concat_Standard"
+        "P23", "Concat_Standard"
         "T1", "None"
         "Concat_fr1", "Concat_Frame"
         "Concat_fr2", "Concat_Frame"
@@ -400,7 +400,7 @@ class Transformer (autosuper) :
         "Concat_Sect1", "None"
         "N0", "None"
         "N2", "None"
-        "P15_Concat", "Standard"
+        "P15_Concat", "Concat_Standard"
         >>> for n in s.findall ('./*/*') :
         ...     name = n.get (OOo_Tag ('style', 'name'))
         ...     if name :
@@ -424,11 +424,13 @@ class Transformer (autosuper) :
         "Index", "Standard"
         "Frame", "None"
         "OLE", "None"
-        "Concat_Text body", "Standard"
+        "Concat_Standard", "None"
+        "Concat_Text body", "Concat_Standard"
         "Concat_List", "Concat_Text body"
-        "Concat_Caption", "Standard"
+        "Concat_Caption", "Concat_Standard"
         "Concat_Frame contents", "Concat_Text body"
-        "Horizontal Line", "Standard"
+        "Concat_Index", "Concat_Standard"
+        "Horizontal Line", "Concat_Standard"
         "Internet link", "None"
         "Visited Internet Link", "None"
         "Concat_Frame", "None"
@@ -526,6 +528,65 @@ class Transformer (autosuper) :
         ['gr1', 'P1', '18']
         ['gr1', 'P1', '16']
         ['gr1', 'P1', '15']
+        >>> for n in s.findall ('.//' + OOo_Tag ('style', 'style')) :
+        ...     if n.get (OOo_Tag ('style', 'name')).startswith ('Co') :
+        ...         attrs = 'name', 'class', 'family'
+        ...         attrs = [n.get (OOo_Tag ('style', i)) for i in attrs]
+        ...         print attrs
+        ...         props = n.find ('./' + OOo_Tag ('style', 'properties'))
+        ...         if props is not None :
+        ...             for k,v in props.attrib.iteritems () :
+        ...                 print "-- %s: %s" % (split_tag (k)[1], v)
+        ['Concat_Standard', 'text', 'paragraph']
+        -- tab-stop-distance: 0.499cm
+        ['Concat_Text body', 'text', 'paragraph']
+        -- margin-bottom: 0.212cm
+        -- margin-top: 0cm
+        ['Concat_List', 'list', 'paragraph']
+        -- font-name-complex: Tahoma1
+        ['Concat_Caption', 'extra', 'paragraph']
+        -- margin-bottom: 0.212cm
+        -- font-size: 10pt
+        -- font-size-complex: 10pt
+        -- font-name-complex: Tahoma1
+        -- line-number: 0
+        -- margin-top: 0.212cm
+        -- font-style-asian: italic
+        -- font-style: italic
+        -- font-style-complex: italic
+        -- font-size-asian: 10pt
+        -- number-lines: false
+        ['Concat_Frame contents', 'extra', 'paragraph']
+        ['Concat_Index', 'index', 'paragraph']
+        -- number-lines: false
+        -- font-name-complex: Tahoma1
+        -- line-number: 0
+        ['Concat_Frame', None, 'graphics']
+        -- margin-bottom: 0.201cm
+        -- margin-right: 0.201cm
+        -- margin-top: 0.201cm
+        -- margin-left: 0.201cm
+        -- horizontal-pos: center
+        -- vertical-rel: paragraph-content
+        -- number-wrapped-paragraphs: no-limit
+        -- wrap-contour: false
+        -- wrap: parallel
+        -- y: 0cm
+        -- padding: 0.15cm
+        -- anchor-type: paragraph
+        -- vertical-pos: top
+        -- border: 0.002cm solid #000000
+        -- x: 0cm
+        -- horizontal-rel: paragraph-content
+        ['Concat_OLE', None, 'graphics']
+        -- horizontal-pos: center
+        -- vertical-rel: paragraph
+        -- wrap: none
+        -- y: 0cm
+        -- horizontal-rel: paragraph
+        -- vertical-pos: top
+        -- x: 0cm
+        -- anchor-type: paragraph
     """
     def __init__ (self, *tf) :
         self.transforms = {}

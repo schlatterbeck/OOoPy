@@ -676,6 +676,13 @@ class Concatenate (_Body_Concat) :
             (get_attr, filename = 'meta.xml', transformer = self.transformer)
         self.pbname = self.transformer \
             [':'.join (('Addpagebreak_Style', 'stylename'))]
+        for s in self.trees ['styles.xml'][0].findall \
+            ('.//' + OOo_Tag ('style', 'default-style')) :
+            if s.get (OOo_Tag ('style', 'family')) == 'paragraph' :
+                default_style = s
+                break
+        self.default_properties = default_style.find \
+            ('./' + OOo_Tag ('style', 'properties'))
         self.set_pagestyle ()
         for f in 'styles.xml', 'content.xml' :
             self.style_merge (f)
@@ -739,6 +746,21 @@ class Concatenate (_Body_Concat) :
                     if append and s : s.append (n)
                     d [name] = 1
     # end def body_decl
+
+    def merge_defaultstyle (self, default_style, node) :
+        assert default_style is not None
+        assert node is not None
+        proppath = './' + OOo_Tag ('style', 'properties')
+        defprops = default_style.find (proppath)
+        props    = node.find          (proppath)
+        if props is None :
+            props = Element (OOo_Tag ('style', 'properties'))
+        for k,v in defprops.attrib.iteritems () :
+            if self.default_properties.get (k) != v and not props.get (k) :
+                props.set (k,v)
+        if props.attrib :
+            node.append (props)
+    # end def merge_defaultstyle
 
     def _newname (self, key, oldname) :
         stylenum = 0
@@ -844,10 +866,21 @@ class Concatenate (_Body_Concat) :
                 if node.tag == OOo_Tag ('office', 'font-decls') :
                     prefix = oofile
                 nodeidx = -1
+                default_style = None
                 for n in node :
+                    if  (   n.tag == OOo_Tag ('style', 'default-style')
+                        and n.get (OOo_Tag ('style', 'family')) == 'paragraph'
+                        ) :
+                        default_style = n
                     name     = n.get (_stylename, None)
                     nodeidx += 1
                     if not name : continue
+                    if  (   idx != 0
+                        and name == 'Standard'
+                        and n.get (OOo_Tag ('style', 'class'))  == 'text'
+                        and n.get (OOo_Tag ('style', 'family')) == 'paragraph'
+                        ) :
+                        self.merge_defaultstyle (default_style, n)
                     key = prefix + n.tag
                     if key not in namemap : namemap [key] = {}
                     tr = self._attr_rename (idx)
