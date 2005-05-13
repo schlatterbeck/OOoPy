@@ -23,7 +23,7 @@
 
 import time
 import re
-from elementtree.ElementTree import dump, SubElement, Element
+from elementtree.ElementTree import dump, SubElement, Element, tostring
 from OOoPy                   import OOoPy, autosuper
 from Transformer             import files, split_tag, OOo_Tag, Transform
 from Version                 import VERSION
@@ -47,6 +47,7 @@ class Access_Attribute (autosuper) :
 
     def __init__ (self, key = None, prefix = None, ** kw) :
         self.__super.__init__ (key = key, prefix = prefix, **kw)
+        self.key = key
         if key :
             if not prefix :
                 prefix   = self.__class__.__name__
@@ -227,12 +228,13 @@ class Attribute_Access (Transform) :
 
     def apply (self, root) :
         """ Search for all tags for which we renumber and replace name """
-        for n in root.findall ('.//*') :
-            if n.tag in self.attrchangers :
-                for r in self.attrchangers [n.tag] + self.attrchangers [None] :
-                    nval = r.use_value (n.get (r.attribute))
-                    if nval is not None :
-                        n.set (r.attribute, nval)
+        for n in [root] + root.findall ('.//*') :
+            changers = \
+                self.attrchangers [None] + self.attrchangers.get (n.tag, [])
+            for r in changers :
+                nval = r.use_value (n.get (r.attribute))
+                if nval is not None :
+                    n.set (r.attribute, nval)
     # end def apply
 
 # end class Attribute_Access
@@ -438,7 +440,7 @@ class _Body_Concat (Transform) :
     """ Various methods for modifying the body split into various pieces
         that have to keep sequence in order to not confuse OOo.
     """
-    sections = \
+    ooo_sections = \
         [ { OOo_Tag ('text', 'variable-decls') : 1
           , OOo_Tag ('text', 'sequence-decls') : 1
           }
@@ -454,11 +456,11 @@ class _Body_Concat (Transform) :
         """
         self.copyparts = _body ()
         self.copyparts.append (_body ())
-        l = len (self.sections)
+        l = len (self.ooo_sections)
         idx = 0
         for e in body :
             if idx < l :
-                if e.tag not in self.sections [idx] :
+                if e.tag not in self.ooo_sections [idx] :
                     self.copyparts.append (_body ())
                     idx += 1
             self.copyparts [-1].append (e)
@@ -581,7 +583,7 @@ _stylename  = OOo_Tag ('style', 'name')
 _parentname = OOo_Tag ('style', 'parent-style-name')
 _textname   = OOo_Tag ('text',  'name')
 
-def tree_serialise (element, replacements, prefix = '') :
+def tree_serialise (element, prefix = '') :
     """ Serialise a style-element of an OOo document (e.g., a
         style:font-decl, style:default-style, etc declaration).
         We remove the name of the style and return something that is a
@@ -591,21 +593,15 @@ def tree_serialise (element, replacements, prefix = '') :
         first item, the attributes (as key,value pairs returned by
         items()) as the second item and the following items are
         serialisations of children.
-        All names which are keys in replacements are looked up in
-        replacement [key] and replaced if found.
     """
     attr = dict (element.attrib)
     if _stylename  in attr : del attr [_stylename]
-    for k,v in replacements.iteritems () :
-        if k in attr :
-            name = attr [k]
-            attr [k] = v.get (name, name)
     attr = attr.items ()
     attr.sort ()
     attr = tuple (attr)
     serial = [prefix + element.tag, attr]
     for e in element :
-        serial.append (tree_serialise (e, replacements, prefix))
+        serial.append (tree_serialise (e, prefix))
     return tuple (serial)
 # end def tree_serialise
 
@@ -622,36 +618,52 @@ class Concatenate (_Body_Concat) :
       , OOo_Tag ('office', 'automatic-styles') : 1
       , OOo_Tag ('office', 'master-styles')    : 1
       }
-    ref_names = \
+    # Cross-references in OOo document:
+    # 'attribute' references another element with 'tag'.
+    # If attribute names change, we must replace references, too.
+    #   attribute                             : tag
+    ref_attrs = \
       { _parentname                           : OOo_Tag ('style', 'style')
       , OOo_Tag ('style', 'master-page-name') : OOo_Tag ('style', 'master-page')
       , OOo_Tag ('style', 'page-master-name') : OOo_Tag ('style', 'page-master')
       }
-        # own hash for each file
+    stylefiles = ['styles.xml', 'content.xml']
+    oofiles    = stylefiles + ['meta.xml']
+
+    body_decl_sections = ['variable-decl', 'sequence-decl']
 
     def __init__ \
         (self, * docs, ** kw) :
         self.__super.__init__ (** kw)
         self.docs       = [OOoPy (infile = doc) for doc in docs]
-        self.serialised = {}
-        self.stylenames = {}
     # end def __init__
 
     def apply_all (self, trees) :
-        self.trees      = trees
-        self.stylemaps  = []
-        self.treemaps   = {'content.xml' : [], 'styles.xml' : []}
-        self.containers = {'content.xml' : {}, 'styles.xml' : {}}
-        content = self.trees ['content.xml'].getroot ()
+        self.serialised = {}
+        self.stylenames = {}
+        self.namemaps   = [{}]
+        for s in self.ref_attrs.itervalues () :
+            self.namemaps [0][s] = {}
+        self.body_decls = {}
+        for s in self.body_decl_sections :
+            self.body_decls [s] = {}
+        self.trees      = {}
+        for f in self.oofiles :
+            self.trees [f] = [trees [f].getroot ()]
+        self.sections   = {}
+        for f in self.stylefiles :
+            self.sections [f] = {}
+            for node in self.trees [f][0] :
+                self.sections [f][node.tag] = node
         for d in self.docs :
-            self.stylemaps.append ({})
-            for s in self.ref_names.itervalues () :
-                self.stylemaps [-1][s] = {}
-            for f in 'styles.xml', 'content.xml' :
-                self.treemaps [f].append (d.read (f).getroot ())
+            self.namemaps.append ({})
+            for s in self.ref_attrs.itervalues () :
+                self.namemaps [-1][s] = {}
+            for f in self.oofiles :
+                self.trees [f].append (d.read (f).getroot ())
         # append a pagebreak style, will be optimized away if duplicate
         pbs = Addpagebreak_Style (transformer = self.transformer)
-        pbs.apply (content)
+        pbs.apply (self.trees ['content.xml'][0])
         get_attr = []
         for attr in 'character-count', 'page-count', 'paragraph-count' :
             a = OOo_Tag ('meta', attr)
@@ -663,43 +675,20 @@ class Concatenate (_Body_Concat) :
             [':'.join (('Addpagebreak_Style', 'stylename'))]
         self.set_pagestyle ()
         for f in 'styles.xml', 'content.xml' :
-            self.style_register (f)
-        for f in 'styles.xml', 'content.xml' :
-            self.style_concat   (f)
-        self.body_concat (content)
+            self.style_merge (f)
+        self.body_concat ()
     # end def apply_all
 
-    def register_decls (self) :
-        self.decl = {}
-        for decl in 'variable-decl', 'sequence-decl' :
-            d = self.decl [decl] = {}
-            t = OOo_Tag ('text', decl)
-            for n in self.declarations.findall ('.//' + t) :
-                d [n.get (_textname)] = 1
-    # end def register_decls
-
-    def update_decls (self, decls) :
-        for decl in 'variable-decl', 'sequence-decl' :
-            sect = self.declarations.find ('.//' + OOo_Tag ('text', decl + 's'))
-            d    = self.decl [decl]
-            t    = OOo_Tag ('text', decl)
-            for n in decls.findall ('.//' + t) :
-                name = n.get (_textname)
-                if name not in d :
-                    sect.append (n)
-                    d [name] = 1
-    # end def update_decls
-
-    def body_concat (self, root) :
+    def body_concat (self) :
         count = {}
         for i in 'page-count', 'character-count', 'paragraph-count' :
             count [i] = self._get_meta (i)
         pb   = Addpagebreak \
             (stylename = self.pbname, transformer = self.transformer)
-        self.divide_body (root)
-        self.register_decls ()
-        for idx in range (len (self.docs)) :
-            meta = self.docs [idx].read ('meta.xml').getroot ()
+        self.divide_body (self.trees ['content.xml'][0])
+        self.body_decl (self.declarations, append = 0)
+        for idx in range (1, len (self.docs) + 1) :
+            meta = self.trees ['meta.xml'][idx]
             self.getmeta.apply (meta)
             ra = Attribute_Access \
                 (( Reanchor (count ['page-count'], OOo_Tag ('draw', 'text-box'))
@@ -710,23 +699,35 @@ class Concatenate (_Body_Concat) :
                     [':'.join (('Get_Attribute', 'concat' + i))]
                 count [i] += int (val)
             count ['paragraph-count'] += 1
-            name_map = self.stylemaps [idx][OOo_Tag ('style', 'style')]
-            tree = self.treemaps ['content.xml'][idx]
-            for n in self.ref_names.keys () + [_stylename] :
-                r = set_attributes_from_dict (None, n, name_map)
+            namemap = self.namemaps [idx][OOo_Tag ('style', 'style')]
+            content = self.trees ['content.xml'][idx]
+            tsn = OOo_Tag ('text', 'style-name')
+            r = set_attributes_from_dict (None, tsn, namemap)
             tr = Attribute_Access (r, transformer = self.transformer)
             pb.apply (self.bodyparts [-1])
-            tr.apply (tree)
-            ra.apply (tree)
-            append = tree.find (OOo_Tag ('office', 'body'))
+            tr.apply (content)
+            ra.apply (content)
+            append = content.find (OOo_Tag ('office', 'body'))
             declarations = self._divide (append)
-            self.update_decls   (declarations)
+            self.body_decl (declarations)
             self.append_to_body (self.copyparts)
         self.append_declarations ()
         self.assemble_body       ()
         for i in 'page-count', 'character-count', 'paragraph-count' :
             self._set_meta (i, count [i])
     # end def body_concat
+
+    def body_decl (self, decl_section, append = 1) :
+        for sect in self.body_decl_sections :
+            s = self.declarations.find ('.//' + OOo_Tag ('text', sect + 's'))
+            d = self.body_decls [sect]
+            t = OOo_Tag ('text', sect)
+            for n in decl_section.findall ('.//' + t) :
+                name = n.get (_textname)
+                if name not in d :
+                    if append and s : s.append (n)
+                    d [name] = 1
+    # end def body_decl
 
     def _newname (self, key, oldname) :
         stylenum = 0
@@ -737,7 +738,7 @@ class Concatenate (_Body_Concat) :
         while (key, newname) in self.stylenames :
             stylenum += 1
             newname = '%s%d' % (basename, stylenum)
-        stylenum += 1
+        self.stylenames [(key, newname)] = 1
         return newname
     # end def _newname
 
@@ -751,10 +752,17 @@ class Concatenate (_Body_Concat) :
             This procedure is necessary to make appended documents use
             their page style instead of the master page style of the
             first document.
+            FIXME: We should search the style hierarchy backwards for
+            the style of the first paragraph to check if there is a
+            reference to a page-style somewhere and not override the
+            page-style in this case. Otherwise appending complex
+            documents that use a different page-style for the first page
+            will not work if the page style is referenced in a style
+            from which the first paragraph style derives.
         """
-        for idx in range (len (self.docs)) :
-            croot  = self.treemaps  ['content.xml'][idx]
-            sroot  = self.treemaps  ['styles.xml'] [idx]
+        for idx in range (1, len (self.docs) + 1) :
+            croot  = self.trees  ['content.xml'][idx]
+            sroot  = self.trees  ['styles.xml'] [idx]
             body   = croot.find (OOo_Tag ('office', 'body'))
             para   = body.find  ('./' + OOo_Tag ('text', 'p'))
             tsn    = OOo_Tag ('text', 'style-name')
@@ -796,58 +804,7 @@ class Concatenate (_Body_Concat) :
                     )
     # end def set_pagestyle
 
-    def style_register (self, oofile) :
-        """
-            Loop over all style elements in document, serialise them
-            and put them in a dict by their name. For each tag register
-            the various names.
-        """
-        name_map  = {}
-        for s in self.ref_names.itervalues () :
-            name_map [s] = {}
-        for node in self.trees [oofile].getroot () :
-            if node.tag not in self.style_containers :
-                continue
-            prefix = ''
-            if node.tag == OOo_Tag ('office', 'font-decls') :
-                prefix = oofile
-            self.containers [oofile][node.tag] = node
-            idx       = 0
-            to_delete = []
-            for n in node :
-                name   = n.get (_stylename, None)
-                if name :
-                    if n.tag not in name_map : name_map [n.tag] = {}
-                    repl = dict ([(k,name_map [v])
-                                  for k,v in self.ref_names.iteritems ()])
-                    sn  = tree_serialise (n, repl, prefix)
-                    if sn in self.serialised :
-                        newname = self.serialised [sn]
-                        if name != newname :
-                            name_map [n.tag][name] = newname
-                        if node.tag != OOo_Tag ('office', 'font-decls') :
-                            to_delete.append (idx)
-                    else :
-                        self.serialised [sn] = name
-                        assert prefix or (n.tag, name) not in self.stylenames
-                        self.stylenames [(n.tag, name)] = 1
-                idx += 1
-            to_delete.reverse ()
-            for i in to_delete :
-                del node [i]
-            r = []
-            for tag in name_map.iterkeys () :
-                if name_map [tag] :
-                    for n in self.ref_names + [_stylename] :
-                        r.extend (set_attributes_from_dict (tag, n, name_map))
-            tag = OOo_Tag ('style', 'style')
-            if tag in name_map and self.pbname in name_map [tag] :
-                self.pbname = name_map [tag][self.pbname]
-            tr = Attribute_Access (r, transformer = self.transformer)
-            tr.apply (self.trees ['content.xml'].getroot ())
-    # end style_register
-            
-    def style_concat (self, oofile) :
+    def style_merge (self, oofile) :
         """ Loop over all the docs in our document list and look up the
             styles there. If a style matches an existing style in the
             original document, register the style name for later
@@ -861,52 +818,63 @@ class Concatenate (_Body_Concat) :
             document.
 
             If there is a reference to a parent style that is not yet
-            defined, we insert the parent style into the stylemap dict.
-            If the parent style is defined later, it is already too
-            late, so an assertion is raised in this case.
+            defined, and the parent style is defined later, it is
+            already too late, so an assertion is raised in this case.
+            OOo seems to ensure declaration order of dependent styles,
+            so this should not be a problem.
         """
-        for idx in range (len (self.docs)) :
-            stylemap = self.stylemaps [idx]
-            root     = self.treemaps  [oofile][idx]
+        _fontdcl = OOo_Tag ('office', 'font-decls')
+        for idx in range (len (self.trees [oofile])) :
+            namemap = self.namemaps [idx]
+            root    = self.trees    [oofile][idx]
+            delnode = []
             for node in root :
                 if node.tag not in self.style_containers :
                     continue
                 prefix = ''
                 if node.tag == OOo_Tag ('office', 'font-decls') :
                     prefix = oofile
+                nodeidx = -1
                 for n in node :
-                    name  = n.get (_stylename, None)
+                    name     = n.get (_stylename, None)
+                    nodeidx += 1
                     if not name : continue
                     key = prefix + n.tag
-                    if key not in stylemap : stylemap [key] = {}
-                    repl = dict ([(k,stylemap [v])
-                                  for k,v in self.ref_names.iteritems ()])
-                    sn  = tree_serialise (n, repl, prefix)
+                    if key not in namemap : namemap [key] = {}
+                    r = sum \
+                        ( [ set_attributes_from_dict (None, k, namemap [v])
+                            for k,v in self.ref_attrs.iteritems ()
+                          ]
+                        , []
+                        )
+                    tr = Attribute_Access (r, transformer = self.transformer)
+                    tr.apply (n)
+                    sn  = tree_serialise (n, prefix)
                     if sn in self.serialised :
                         newname = self.serialised [sn]
                         if name != newname :
                             assert \
-                                (  name not in stylemap [key]
-                                or stylemap [key][name] == newname
+                                (  name not in namemap [key]
+                                or namemap [key][name] == newname
                                 )
-                            stylemap [key][name] = newname
+                            namemap [key][name] = newname
+                            # optimize original doc: remove duplicate styles
+                            if  not idx and node.tag != _fontdcl :
+                                delnode.append (nodeidx)
                     else :
-                        parent = n.get (_parentname, None)
-                        if parent :
-                            newp = stylemap [key].get (parent, None)
-                            if newp :
-                                n.set (_parentname, newp)
-                            else :
-                                # keep name for cross-check
-                                stylemap [key][_parentname] = newp
                         newname = self._newname (key, name)
                         self.serialised [sn] = newname
                         if newname != name :
                             n.set (_stylename, newname)
-                            stylemap [key][name] = newname
-                        self.containers [oofile][node.tag].append (n)
-    # end def style_concat
-
+                            namemap [key][name] = newname
+                        if idx != 0 :
+                            self.sections [oofile][node.tag].append (n)
+            assert not delnode or not idx
+            delnode.reverse ()
+            for i in delnode :
+                del node [i]
+    # end style_register
+            
 # end class Concatenate
 
 renumber_frames   = Renumber (OOo_Tag ('draw',  'text-box'), 'Frame')
