@@ -367,7 +367,7 @@ class Transformer (autosuper) :
         "Sect1", "None"
         "gr1", "None"
         "P2", "Standard"
-        "Concat_Standard1", "Standard"
+        "Standard_Concat", "Standard"
         "Concat_P1", "Concat_Frame contents"
         "Concat_P2", "Concat_Frame contents"
         "P3", "Concat_Frame contents"
@@ -400,7 +400,7 @@ class Transformer (autosuper) :
         "Concat_Sect1", "None"
         "N0", "None"
         "N2", "None"
-        "Concat_P15", "P15"
+        "P15_Concat", "P15"
         >>> for n in s.findall ('./*/*') :
         ...     name = n.get (OOo_Tag ('style', 'name'))
         ...     if name :
@@ -487,29 +487,31 @@ class Transformer (autosuper) :
         >Concat_P1<
         >Concat_P2<
         >Concat_Frame contents<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_Standard1<
-        >Concat_P151<
-        >Concat_P151<
-        >Concat_P151<
-        >Concat_P151<
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'text-box')) :
+        ...     attrs = 'name', 'style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i)) for i in attrs]
+        ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number')))
+        ...     print attrs
+        ['Frame7', 'fr1', '0', '1']
+        ['Frame8', 'fr1', '0', '2']
+        ['Frame9', 'Concat_fr1', '0', '3']
+        ['Frame10', 'Concat_fr2', '1', '3']
+        ['Frame11', 'Concat_fr3', '2', '3']
+        ['Frame12', 'Concat_fr1', '3', '3']
+        ['Frame13', 'fr4', '4', '3']
+        ['Frame14', 'fr4', '5', '3']
+        ['Frame15', 'fr4', '6', '3']
+        ['Frame16', 'fr4', '7', '3']
+        ['Frame17', 'fr4', '8', '3']
+        ['Frame18', 'fr4', '9', '3']
+        ['Frame19', 'fr5', '10', '3']
+        ['Frame20', 'fr4', '12', '3']
+        ['Frame21', 'fr4', '13', '3']
+        ['Frame22', 'fr4', '14', '3']
+        ['Frame23', 'fr6', '11', '3']
+        ['Frame24', 'fr4', '17', '3']
+        ['Frame25', 'fr3', '2', None]
+        ['Frame26', 'fr3', '2', None]
     """
     def __init__ (self, *tf) :
         self.transforms = {}

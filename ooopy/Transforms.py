@@ -626,6 +626,9 @@ class Concatenate (_Body_Concat) :
       { _parentname                           : OOo_Tag ('style', 'style')
       , OOo_Tag ('style', 'master-page-name') : OOo_Tag ('style', 'master-page')
       , OOo_Tag ('style', 'page-master-name') : OOo_Tag ('style', 'page-master')
+      , OOo_Tag ('text',  'style-name')       : OOo_Tag ('style', 'style')
+      , OOo_Tag ('draw',  'style-name')       : OOo_Tag ('style', 'style')
+      , OOo_Tag ('draw',  'text-style-name')  : OOo_Tag ('style', 'style')
       }
     stylefiles = ['styles.xml', 'content.xml']
     oofiles    = stylefiles + ['meta.xml']
@@ -679,6 +682,16 @@ class Concatenate (_Body_Concat) :
         self.body_concat ()
     # end def apply_all
 
+    def _attr_rename (self, idx) :
+        r = sum \
+            ( [ set_attributes_from_dict (None, k, self.namemaps [idx][v])
+                for k,v in self.ref_attrs.iteritems ()
+              ]
+            , []
+            )
+        return Attribute_Access (r, transformer = self.transformer)
+    # end def _attr_rename
+
     def body_concat (self) :
         count = {}
         for i in 'page-count', 'character-count', 'paragraph-count' :
@@ -701,14 +714,12 @@ class Concatenate (_Body_Concat) :
             count ['paragraph-count'] += 1
             namemap = self.namemaps [idx][OOo_Tag ('style', 'style')]
             content = self.trees ['content.xml'][idx]
-            tsn = OOo_Tag ('text', 'style-name')
-            r = set_attributes_from_dict (None, tsn, namemap)
-            tr = Attribute_Access (r, transformer = self.transformer)
+            tr      = self._attr_rename (idx)
             pb.apply (self.bodyparts [-1])
+            body = content.find (OOo_Tag ('office', 'body'))
             tr.apply (content)
             ra.apply (content)
-            append = content.find (OOo_Tag ('office', 'body'))
-            declarations = self._divide (append)
+            declarations = self._divide (body)
             self.body_decl (declarations)
             self.append_to_body (self.copyparts)
         self.append_declarations ()
@@ -792,8 +803,9 @@ class Concatenate (_Body_Concat) :
             assert style is not None
             if not style.get (mpn) :
                 # Don't register with newname: will be rewritten later
-                # when appending
-                newname = 'Concat_' + sname
+                # when appending. We assume that an original doc does
+                # not already contain a style with _Concat suffix.
+                newname = sname + '_Concat'
                 para.set (tsn, newname)
                 SubElement \
                     ( styles
@@ -843,13 +855,7 @@ class Concatenate (_Body_Concat) :
                     if not name : continue
                     key = prefix + n.tag
                     if key not in namemap : namemap [key] = {}
-                    r = sum \
-                        ( [ set_attributes_from_dict (None, k, namemap [v])
-                            for k,v in self.ref_attrs.iteritems ()
-                          ]
-                        , []
-                        )
-                    tr = Attribute_Access (r, transformer = self.transformer)
+                    tr = self._attr_rename (idx)
                     tr.apply (n)
                     sn  = tree_serialise (n, prefix)
                     if sn in self.serialised :
