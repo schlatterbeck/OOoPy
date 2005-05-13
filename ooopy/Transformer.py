@@ -23,7 +23,7 @@
 
 import time
 import re
-from elementtree.ElementTree import dump, SubElement, Element
+from elementtree.ElementTree import dump, SubElement, Element, tostring
 from OOoPy                   import OOoPy, autosuper
 from Version                 import VERSION
 from copy                    import deepcopy
@@ -534,59 +534,17 @@ class Transformer (autosuper) :
         ...         attrs = [n.get (OOo_Tag ('style', i)) for i in attrs]
         ...         print attrs
         ...         props = n.find ('./' + OOo_Tag ('style', 'properties'))
-        ...         if props is not None :
-        ...             for k,v in props.attrib.iteritems () :
-        ...                 print "-- %s: %s" % (split_tag (k)[1], v)
+        ...         if props is not None and len (props) :
+        ...             props [0].tag
         ['Concat_Standard', 'text', 'paragraph']
-        -- tab-stop-distance: 0.499cm
+        '{http://openoffice.org/2000/style}tab-stops'
         ['Concat_Text body', 'text', 'paragraph']
-        -- margin-bottom: 0.212cm
-        -- margin-top: 0cm
         ['Concat_List', 'list', 'paragraph']
-        -- font-name-complex: Tahoma1
         ['Concat_Caption', 'extra', 'paragraph']
-        -- margin-bottom: 0.212cm
-        -- font-size: 10pt
-        -- font-size-complex: 10pt
-        -- font-name-complex: Tahoma1
-        -- line-number: 0
-        -- margin-top: 0.212cm
-        -- font-style-asian: italic
-        -- font-style: italic
-        -- font-style-complex: italic
-        -- font-size-asian: 10pt
-        -- number-lines: false
         ['Concat_Frame contents', 'extra', 'paragraph']
         ['Concat_Index', 'index', 'paragraph']
-        -- number-lines: false
-        -- font-name-complex: Tahoma1
-        -- line-number: 0
         ['Concat_Frame', None, 'graphics']
-        -- margin-bottom: 0.201cm
-        -- margin-right: 0.201cm
-        -- margin-top: 0.201cm
-        -- margin-left: 0.201cm
-        -- horizontal-pos: center
-        -- vertical-rel: paragraph-content
-        -- number-wrapped-paragraphs: no-limit
-        -- wrap-contour: false
-        -- wrap: parallel
-        -- y: 0cm
-        -- padding: 0.15cm
-        -- anchor-type: paragraph
-        -- vertical-pos: top
-        -- border: 0.002cm solid #000000
-        -- x: 0cm
-        -- horizontal-rel: paragraph-content
         ['Concat_OLE', None, 'graphics']
-        -- horizontal-pos: center
-        -- vertical-rel: paragraph
-        -- wrap: none
-        -- y: 0cm
-        -- horizontal-rel: paragraph
-        -- vertical-pos: top
-        -- x: 0cm
-        -- anchor-type: paragraph
     """
     def __init__ (self, *tf) :
         self.transforms = {}

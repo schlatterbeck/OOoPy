@@ -757,8 +757,21 @@ class Concatenate (_Body_Concat) :
             props = Element (OOo_Tag ('style', 'properties'))
         for k,v in defprops.attrib.iteritems () :
             if self.default_properties.get (k) != v and not props.get (k) :
-                props.set (k,v)
-        if props.attrib :
+                if k == OOo_Tag ('style', 'tab-stop-distance') :
+                    stps = SubElement (props, OOo_Tag ('style', 'tab-stops'))
+                    l    = float (v [:-2])
+                    unit = v [-2:]
+                    for ts in range (10) :
+                        SubElement \
+                            ( stps
+                            , OOo_Tag ('style', 'tab-stop')
+                            , { OOo_Tag ('style', 'position') 
+                                : '%s%s' % (l * (ts + 1), unit)
+                              }
+                            )
+                else :
+                    props.set (k,v)
+        if len (props) or props.attrib :
             node.append (props)
     # end def merge_defaultstyle
 
