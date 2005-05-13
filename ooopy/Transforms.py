@@ -802,20 +802,15 @@ class Concatenate (_Body_Concat) :
                         break
             assert style is not None
             if not style.get (mpn) :
+                newstyle = deepcopy (style)
                 # Don't register with newname: will be rewritten later
                 # when appending. We assume that an original doc does
                 # not already contain a style with _Concat suffix.
                 newname = sname + '_Concat'
                 para.set (tsn, newname)
-                SubElement \
-                    ( styles
-                    , stytag
-                    , { OOo_Tag ('style', 'name')              : newname
-                      , OOo_Tag ('style', 'family')            : 'paragraph'
-                      , OOo_Tag ('style', 'parent-style-name') : sname
-                      , mpn                                    : master
-                      }
-                    )
+                newstyle.set (OOo_Tag ('style', 'name'), newname)
+                newstyle.set (mpn,                       master)
+                styles.append (newstyle)
     # end def set_pagestyle
 
     def style_merge (self, oofile) :

@@ -367,7 +367,7 @@ class Transformer (autosuper) :
         "Sect1", "None"
         "gr1", "None"
         "P2", "Standard"
-        "Standard_Concat", "Standard"
+        "Standard_Concat", "None"
         "Concat_P1", "Concat_Frame contents"
         "Concat_P2", "Concat_Frame contents"
         "P3", "Concat_Frame contents"
@@ -400,7 +400,7 @@ class Transformer (autosuper) :
         "Concat_Sect1", "None"
         "N0", "None"
         "N2", "None"
-        "P15_Concat", "P15"
+        "P15_Concat", "Standard"
         >>> for n in s.findall ('./*/*') :
         ...     name = n.get (OOo_Tag ('style', 'name'))
         ...     if name :
