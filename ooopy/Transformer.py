@@ -367,7 +367,7 @@ class Transformer (autosuper) :
         "Sect1", "None"
         "gr1", "None"
         "P2", "Standard"
-        "Concat_Standard", "Standard"
+        "Concat_Standard1", "Standard"
         "Concat_P1", "Concat_Frame contents"
         "Concat_P2", "Concat_Frame contents"
         "P3", "Concat_Frame contents"
@@ -480,6 +480,36 @@ class Transformer (autosuper) :
         Table
         Text
         Drawing
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'p')) :
+        ...     name = n.get (OOo_Tag ('text', 'style-name'))
+        ...     if not name or name.startswith ('Concat') :
+        ...         print ">%s<" % name
+        >Concat_P1<
+        >Concat_P2<
+        >Concat_Frame contents<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_Standard1<
+        >Concat_P151<
+        >Concat_P151<
+        >Concat_P151<
+        >Concat_P151<
     """
     def __init__ (self, *tf) :
         self.transforms = {}

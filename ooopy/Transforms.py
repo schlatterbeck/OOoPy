@@ -774,10 +774,10 @@ class Concatenate (_Body_Concat) :
             assert mst [0].tag == OOo_Tag ('style', 'master-page')
             master = mst [0].get (_stylename)
             mpn    = OOo_Tag ('style', 'master-page-name')
-            stst   = OOo_Tag ('style', 'style')
+            stytag = OOo_Tag ('style', 'style')
             style  = None
             for s in styles :
-                if s.tag == stst :
+                if s.tag == stytag :
                     # Explicit references to default style converted to
                     # explicit references to new page style.
                     if s.get (mpn) == '' :
@@ -786,16 +786,18 @@ class Concatenate (_Body_Concat) :
                         style = s
             if not style :
                 for s in ost :
-                    if s.tag == stst and s.get (_stylename) == sname :
+                    if s.tag == stytag and s.get (_stylename) == sname :
                         style = s
                         break
             assert style is not None
             if not style.get (mpn) :
+                # Don't register with newname: will be rewritten later
+                # when appending
                 newname = 'Concat_' + sname
                 para.set (tsn, newname)
                 SubElement \
                     ( styles
-                    , OOo_Tag ('style', 'style')
+                    , stytag
                     , { OOo_Tag ('style', 'name')              : newname
                       , OOo_Tag ('style', 'family')            : 'paragraph'
                       , OOo_Tag ('style', 'parent-style-name') : sname
