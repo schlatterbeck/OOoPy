@@ -512,6 +512,20 @@ class Transformer (autosuper) :
         ['Frame24', 'fr4', '17', '3']
         ['Frame25', 'fr3', '2', None]
         ['Frame26', 'fr3', '2', None]
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'rect')) :
+        ...     attrs = 'style-name', 'text-style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i)) for i in attrs]
+        ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number')))
+        ...     print attrs
+        ['gr1', 'P1', '1', '1']
+        ['gr1', 'P1', '1', '2']
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'line')) :
+        ...     attrs = 'style-name', 'text-style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i)) for i in attrs]
+        ...     print attrs
+        ['gr1', 'P1', '18']
+        ['gr1', 'P1', '16']
+        ['gr1', 'P1', '15']
     """
     def __init__ (self, *tf) :
         self.transforms = {}
