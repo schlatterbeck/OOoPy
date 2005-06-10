@@ -29,6 +29,12 @@ from Transformer             import files, split_tag, OOo_Tag, Transform
 from Version                 import VERSION
 from copy                    import deepcopy
 
+# counts in meta.xml
+meta_counts = \
+    ( 'character-count', 'image-count', 'object-count', 'page-count'
+    , 'paragraph-count', 'table-count', 'word-count'
+    )
+
 def _body () :
     """
         We use the body element as a container for various
@@ -600,12 +606,13 @@ class Mailmerge (_Body_Concat) :
             fr.apply (cp)
             self.append_to_body (cp)
         # new page-count:
-        for i in 'page-count', 'character-count' :
+        for i in meta_counts :
             self._set_meta (i, count * self._get_meta (i))
         # we have added count-1 paragraphs, because each page-break is a
         # paragraph.
-        pars = self._get_meta ('paragraph-count') * count + (count - 1)
-        self._set_meta ('paragraph-count', pars)
+        p = 'paragraph-count'
+        self._set_meta \
+            (p, self._get_meta (p, classname = 'Set_Attribute') + (count - 1))
         self.assemble_body ()
     # end def apply
 # end class Mailmerge
@@ -699,7 +706,7 @@ class Concatenate (_Body_Concat) :
         pbs = Addpagebreak_Style (transformer = self.transformer)
         pbs.apply (self.trees ['content.xml'][0])
         get_attr = []
-        for attr in 'character-count', 'page-count', 'paragraph-count' :
+        for attr in meta_counts :
             a = OOo_Tag ('meta', attr)
             t = OOo_Tag ('meta', 'document-statistic')
             get_attr.append (Get_Attribute (t, a, 'concat-' + attr))
@@ -741,7 +748,7 @@ class Concatenate (_Body_Concat) :
 
     def body_concat (self) :
         count = {}
-        for i in 'page-count', 'character-count', 'paragraph-count' :
+        for i in meta_counts :
             count [i] = self._get_meta (i)
         count ['z-index'] = self._get_meta \
             ('z-index', classname = 'Get_Max') + 1
@@ -761,7 +768,7 @@ class Concatenate (_Body_Concat) :
               ,  Reanchor (count ['page-count'], OOo_Tag ('draw', 'rect'))
               ,  Reanchor (count ['z-index'], None, OOo_Tag ('draw', 'z-index'))
               ))
-            for i in 'page-count', 'character-count', 'paragraph-count' :
+            for i in meta_counts :
                 count [i] += self._get_meta (i, prefix = 'concat-')
             count ['paragraph-count'] += 1
             count ['z-index'] += self._get_meta \
@@ -776,7 +783,7 @@ class Concatenate (_Body_Concat) :
             self.append_to_body (self.copyparts)
         self.append_declarations ()
         self.assemble_body       ()
-        for i in 'page-count', 'character-count', 'paragraph-count' :
+        for i in meta_counts :
             self._set_meta (i, count [i])
     # end def body_concat
 
@@ -990,10 +997,7 @@ renumber_all      = Attribute_Access \
 
 get_attr = []
 set_attr = []
-for attr in \
-    ( 'character-count', 'image-count', 'object-count', 'page-count'
-    , 'paragraph-count', 'table-count', 'word-count'
-    ) :
+for attr in meta_counts :
     a = OOo_Tag ('meta', attr)
     t = OOo_Tag ('meta', 'document-statistic')
     get_attr.append (Get_Attribute (t, a, attr))
