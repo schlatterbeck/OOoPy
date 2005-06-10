@@ -145,7 +145,7 @@ class Transformer (autosuper) :
         As a naming convention each transform should use its class name
         as a prefix for storing values in the dictionary.
         >>> import Transforms
-        >>> from Transforms import renumber_all, get_meta, set_meta
+        >>> from Transforms import renumber_all, get_meta, set_meta, meta_counts
         >>> from StringIO import StringIO
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
@@ -231,10 +231,15 @@ class Transformer (autosuper) :
         ...     , set_meta
         ...     )
         >>> t.transform (o)
-        >>> t [':'.join (('Set_Attribute', 'page-count'))]
-        '3'
-        >>> t [':'.join (('Set_Attribute', 'paragraph-count'))]
-        '113'
+        >>> for i in meta_counts :
+        ...     print i, t [':'.join (('Set_Attribute', i))]
+        character-count 951
+        image-count 0
+        object-count 0
+        page-count 3
+        paragraph-count 113
+        table-count 3
+        word-count 162
         >>> name = t ['Addpagebreak_Style:stylename']
         >>> name
         'P2'
@@ -316,11 +321,15 @@ class Transformer (autosuper) :
         Table3
         >>> m = o.read ('meta.xml')
         >>> metainfo = m.find ('.//' + OOo_Tag ('meta', 'document-statistic'))
-        >>> for i in 'paragraph-count', 'page-count', 'character-count' :
-        ...     metainfo.get (OOo_Tag ('meta', i))
-        '113'
-        '3'
-        '951'
+        >>> for i in meta_counts :
+        ...     print i, repr (metainfo.get (OOo_Tag ('meta', i)))
+        character-count '951'
+        image-count '0'
+        object-count '0'
+        page-count '3'
+        paragraph-count '113'
+        table-count '3'
+        word-count '162'
         >>> o.close ()
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
@@ -331,12 +340,15 @@ class Transformer (autosuper) :
         ...     , set_meta
         ...     )
         >>> t.transform (o)
-        >>> t [':'.join (('Set_Attribute', 'page-count'))]
-        '3'
-        >>> t [':'.join (('Set_Attribute', 'paragraph-count'))]
-        '168'
-        >>> t [':'.join (('Set_Attribute', 'character-count'))]
-        '1131'
+        >>> for i in meta_counts :
+        ...     print i, repr (t [':'.join (('Set_Attribute', i))])
+        character-count '1131'
+        image-count '0'
+        object-count '0'
+        page-count '3'
+        paragraph-count '168'
+        table-count '2'
+        word-count '160'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout3.sxw", "w")
