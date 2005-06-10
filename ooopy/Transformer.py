@@ -145,8 +145,7 @@ class Transformer (autosuper) :
         As a naming convention each transform should use its class name
         as a prefix for storing values in the dictionary.
         >>> import Transforms
-        >>> from Transforms import renumber_frames, renumber_sections \
-            , renumber_tables, get_meta, set_meta
+        >>> from Transforms import renumber_all, get_meta, set_meta
         >>> from StringIO import StringIO
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
@@ -228,11 +227,7 @@ class Transformer (autosuper) :
         ...         , cb
         ...         )
         ...       )
-        ...     , Transforms.Attribute_Access
-        ...       ( ( renumber_frames
-        ...         , renumber_sections
-        ...         , renumber_tables
-        ...       ) )
+        ...     , renumber_all
         ...     , set_meta
         ...     )
         >>> t.transform (o)
@@ -319,11 +314,7 @@ class Transformer (autosuper) :
         >>> t   = Transformer (
         ...       get_meta
         ...     , Transforms.Concatenate ('test.sxw', 'rechng.sxw')
-        ...     , Transforms.Attribute_Access
-        ...       ( ( renumber_frames
-        ...         , renumber_sections
-        ...         , renumber_tables
-        ...       ) )
+        ...     , renumber_all
         ...     , set_meta
         ...     )
         >>> t.transform (o)

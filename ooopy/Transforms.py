@@ -930,6 +930,12 @@ renumber_frames   = Renumber (OOo_Tag ('draw',  'text-box'), 'Frame')
 renumber_sections = Renumber (OOo_Tag ('text',  'section'))
 renumber_tables   = Renumber (OOo_Tag ('table', 'table'))
 
+renumber_all      = Attribute_Access \
+    ( ( renumber_frames
+      , renumber_sections
+      , renumber_tables
+    ) )
+
 # used to have a separate Pagecount transform -- generalized to get
 # some of the meta information using an Attribute_Access transform
 # and set the same information later after possibly being updated by
