@@ -246,6 +246,19 @@ class Transformer (autosuper) :
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
         >>> body = c.find (OOo_Tag ('office', 'body'))
+        >>> for n in body.findall ('.//*') :
+        ...     zidx = n.get (OOo_Tag ('draw', 'z-index'))
+        ...     if zidx :
+        ...         print ':'.join(split_tag (n.tag)), zidx
+        draw:text-box 0
+        draw:rect 1
+        draw:text-box 3
+        draw:rect 4
+        draw:text-box 6
+        draw:rect 7
+        draw:text-box 2
+        draw:text-box 5
+        draw:text-box 8
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'p')) :
         ...     if n.get (OOo_Tag ('text', 'style-name')) == name :
         ...         print n.tag
@@ -486,39 +499,39 @@ class Transformer (autosuper) :
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number')))
         ...     print attrs
         ['Frame7', 'fr1', '0', '1']
-        ['Frame8', 'fr1', '0', '2']
-        ['Frame9', 'Concat_fr1', '0', '3']
-        ['Frame10', 'Concat_fr2', '1', '3']
-        ['Frame11', 'Concat_fr3', '2', '3']
-        ['Frame12', 'Concat_fr1', '3', '3']
-        ['Frame13', 'fr4', '4', '3']
-        ['Frame14', 'fr4', '5', '3']
-        ['Frame15', 'fr4', '6', '3']
-        ['Frame16', 'fr4', '7', '3']
-        ['Frame17', 'fr4', '8', '3']
-        ['Frame18', 'fr4', '9', '3']
-        ['Frame19', 'fr5', '10', '3']
-        ['Frame20', 'fr4', '12', '3']
-        ['Frame21', 'fr4', '13', '3']
-        ['Frame22', 'fr4', '14', '3']
-        ['Frame23', 'fr6', '11', '3']
-        ['Frame24', 'fr4', '17', '3']
+        ['Frame8', 'fr1', '3', '2']
+        ['Frame9', 'Concat_fr1', '6', '3']
+        ['Frame10', 'Concat_fr2', '7', '3']
+        ['Frame11', 'Concat_fr3', '8', '3']
+        ['Frame12', 'Concat_fr1', '9', '3']
+        ['Frame13', 'fr4', '10', '3']
+        ['Frame14', 'fr4', '11', '3']
+        ['Frame15', 'fr4', '12', '3']
+        ['Frame16', 'fr4', '13', '3']
+        ['Frame17', 'fr4', '14', '3']
+        ['Frame18', 'fr4', '15', '3']
+        ['Frame19', 'fr5', '16', '3']
+        ['Frame20', 'fr4', '18', '3']
+        ['Frame21', 'fr4', '19', '3']
+        ['Frame22', 'fr4', '20', '3']
+        ['Frame23', 'fr6', '17', '3']
+        ['Frame24', 'fr4', '23', '3']
         ['Frame25', 'fr3', '2', None]
-        ['Frame26', 'fr3', '2', None]
+        ['Frame26', 'fr3', '5', None]
         >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'rect')) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i)) for i in attrs]
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number')))
         ...     print attrs
         ['gr1', 'P1', '1', '1']
-        ['gr1', 'P1', '1', '2']
+        ['gr1', 'P1', '4', '2']
         >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'line')) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i)) for i in attrs]
         ...     print attrs
-        ['gr1', 'P1', '18']
-        ['gr1', 'P1', '16']
-        ['gr1', 'P1', '15']
+        ['gr1', 'P1', '24']
+        ['gr1', 'P1', '22']
+        ['gr1', 'P1', '21']
         >>> for n in s.findall ('.//' + OOo_Tag ('style', 'style')) :
         ...     if n.get (OOo_Tag ('style', 'name')).startswith ('Co') :
         ...         attrs = 'name', 'class', 'family'
@@ -536,6 +549,35 @@ class Transformer (autosuper) :
         ['Concat_Index', 'index', 'paragraph']
         ['Concat_Frame', None, 'graphics']
         ['Concat_OLE', None, 'graphics']
+        >>> for n in c.findall ('.//*') :
+        ...     zidx = n.get (OOo_Tag ('draw', 'z-index'))
+        ...     if zidx :
+        ...         print ':'.join(split_tag (n.tag)), zidx
+        draw:text-box 0
+        draw:rect 1
+        draw:text-box 3
+        draw:rect 4
+        draw:text-box 6
+        draw:text-box 7
+        draw:text-box 8
+        draw:text-box 9
+        draw:text-box 10
+        draw:text-box 11
+        draw:text-box 12
+        draw:text-box 13
+        draw:text-box 14
+        draw:text-box 15
+        draw:text-box 16
+        draw:text-box 18
+        draw:text-box 19
+        draw:text-box 20
+        draw:text-box 17
+        draw:text-box 23
+        draw:line 24
+        draw:text-box 2
+        draw:text-box 5
+        draw:line 22
+        draw:line 21
     """
     def __init__ (self, *tf) :
         self.transforms = {}

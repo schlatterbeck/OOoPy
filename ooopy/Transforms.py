@@ -86,6 +86,29 @@ class Get_Attribute (Access_Attribute) :
 
 # end def Get_Attribute
 
+class Get_Max (Access_Attribute) :
+    """ Get the maximum value of an attribute """
+
+    def __init__ (self, tag, attr, key, transform = None, ** kw) :
+        self.__super.__init__ (key = key, **kw)
+        self.tag        = tag
+        self.attribute  = attr
+        self.transform  = transform
+    # end def __init__
+
+    def register (self, transformer) :
+        self.__super.register (transformer)
+        self.transformer [self.key] = -1
+    # end def register
+
+    def use_value (self, oldval = None) :
+        if  self.transformer [self.key] < oldval :
+            self.transformer [self.key] = oldval
+        return None
+    # end def use_value
+
+# end def Get_Max
+
 class Renumber (Access_Attribute) :
     """ Specifies a renumbering transform. OOo has a 'name' attribute
         for several different tags, e.g., tables, frames, sections etc.
@@ -497,14 +520,14 @@ class _Body_Concat (Transform) :
                 self.body.append (e)
     # end def assemble_body
 
-    def _get_meta (self, var) :
+    def _get_meta (self, var, classname = 'Get_Attribute', prefix = "") :
         """ get page- and paragraph-count etc. meta-info """
-        return int (self.transformer [':'.join (('Get_Attribute', var))])
+        return int (self.transformer [':'.join ((classname, prefix + var))])
     # end def _get_meta
 
-    def _set_meta (self, var, value) :
+    def _set_meta (self, var, value, classname = 'Set_Attribute', prefix = "") :
         """ set page- and paragraph-count etc. meta-info """
-        self.transformer [':'.join (('Set_Attribute', var))] = str (value)
+        self.transformer [':'.join ((classname, prefix + var))] = str (value)
     # end def _set_meta
 # end class _Body_Concat
 
@@ -546,10 +569,18 @@ class Mailmerge (_Body_Concat) :
             , stylekey    = self.stylekey
             , transformer = self.transformer
             )
+        zi = Attribute_Access \
+            ( (Get_Max (None, OOo_Tag ('draw', 'z-index'), 'z-index'),)
+            , transformer = self.transformer
+            )
+        zi.apply (root)
+
         pagecount  = self._get_meta ('page-count')
+        z_index    = self._get_meta ('z-index', classname = 'Get_Max') + 1
         ra         = Attribute_Access \
             (( Reanchor (pagecount, OOo_Tag ('draw', 'text-box'))
             ,  Reanchor (pagecount, OOo_Tag ('draw', 'rect'))
+            ,  Reanchor (z_index, None, OOo_Tag ('draw', 'z-index'))
             ))
         self.divide_body (root)
         self.bodyparts = [_body () for i in self.copyparts]
@@ -671,7 +702,16 @@ class Concatenate (_Body_Concat) :
         for attr in 'character-count', 'page-count', 'paragraph-count' :
             a = OOo_Tag ('meta', attr)
             t = OOo_Tag ('meta', 'document-statistic')
-            get_attr.append (Get_Attribute (t, a, 'concat' + attr))
+            get_attr.append (Get_Attribute (t, a, 'concat-' + attr))
+        zi = Attribute_Access \
+            ( (Get_Max (None, OOo_Tag ('draw', 'z-index'), 'z-index'),)
+            , transformer = self.transformer
+            )
+        zi.apply (self.trees ['content.xml'][0])
+        self.zi = Attribute_Access \
+            ( (Get_Max (None, OOo_Tag ('draw', 'z-index'), 'concat-z-index'),)
+            , transformer = self.transformer
+            )
         self.getmeta = Attribute_Access \
             (get_attr, filename = 'meta.xml', transformer = self.transformer)
         self.pbname = self.transformer \
@@ -703,27 +743,32 @@ class Concatenate (_Body_Concat) :
         count = {}
         for i in 'page-count', 'character-count', 'paragraph-count' :
             count [i] = self._get_meta (i)
+        count ['z-index'] = self._get_meta \
+            ('z-index', classname = 'Get_Max') + 1
         pb   = Addpagebreak \
             (stylename = self.pbname, transformer = self.transformer)
         self.divide_body (self.trees ['content.xml'][0])
         self.body_decl (self.declarations, append = 0)
         for idx in range (1, len (self.docs) + 1) :
-            meta = self.trees ['meta.xml'][idx]
-            self.getmeta.apply (meta)
-            ra = Attribute_Access \
-                (( Reanchor (count ['page-count'], OOo_Tag ('draw', 'text-box'))
-                ,  Reanchor (count ['page-count'], OOo_Tag ('draw', 'rect'))
-                ))
-            for i in 'page-count', 'character-count', 'paragraph-count' :
-                val = self.transformer \
-                    [':'.join (('Get_Attribute', 'concat' + i))]
-                count [i] += int (val)
-            count ['paragraph-count'] += 1
-            namemap = self.namemaps [idx][OOo_Tag ('style', 'style')]
+            meta    = self.trees ['meta.xml'][idx]
             content = self.trees ['content.xml'][idx]
+            body    = content.find (OOo_Tag ('office', 'body'))
+            self.getmeta.apply (meta)
+            self.zi.apply      (body)
+
+            ra = Attribute_Access \
+              (( Reanchor (count ['page-count'], OOo_Tag ('draw', 'text-box'))
+              ,  Reanchor (count ['page-count'], OOo_Tag ('draw', 'rect'))
+              ,  Reanchor (count ['z-index'], None, OOo_Tag ('draw', 'z-index'))
+              ))
+            for i in 'page-count', 'character-count', 'paragraph-count' :
+                count [i] += self._get_meta (i, prefix = 'concat-')
+            count ['paragraph-count'] += 1
+            count ['z-index'] += self._get_meta \
+                ('z-index', classname = 'Get_Max', prefix = 'concat-') + 1
+            namemap = self.namemaps [idx][OOo_Tag ('style', 'style')]
             tr      = self._attr_rename (idx)
             pb.apply (self.bodyparts [-1])
-            body = content.find (OOo_Tag ('office', 'body'))
             tr.apply (content)
             ra.apply (content)
             declarations = self._divide (body)
@@ -940,7 +985,7 @@ renumber_all      = Attribute_Access \
 # some of the meta information using an Attribute_Access transform
 # and set the same information later after possibly being updated by
 # other transforms. We use another naming convention here for storing
-# the info retrieve from the OOo document: We use the attribute name in
+# the info retrieved from the OOo document: We use the attribute name in
 # the meta-information to store (and later retrieve) the information.
 
 get_attr = []
