@@ -13,7 +13,7 @@ README.html: README
 	rst2html $< > $@
 
 dist: all
-	python setup.py sdist
+	python setup.py sdist --formats=gztar,zip
 
 %.py: %.v
 	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@
