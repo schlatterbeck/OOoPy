@@ -18,6 +18,9 @@ dist: all
 %.py: %.v
 	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@
 
+default.css: ../../html/stylesheets/default.css
+	ln -s ../../html/stylesheets/default.css
+
 clean:
 	rm -f MANIFEST README.html \
 	    ooopy/Version.py ooopy/testout.sxw ooopy/testout2.sxw
