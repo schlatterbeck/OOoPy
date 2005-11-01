@@ -19,7 +19,7 @@ dist: all
 	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@
 
 default.css: ../../html/stylesheets/default.css
-	ln -s ../../html/stylesheets/default.css
+	ln -sf ../../html/stylesheets/default.css
 
 clean:
 	rm -f MANIFEST README.html \
