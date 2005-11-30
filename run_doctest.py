@@ -73,20 +73,20 @@ if sys.version.startswith ('2.3') :
     doctest.Tester_orig = doctest.Tester
     doctest.Tester      = Tester_patched
 
-    format = "%(file)s fails %(f)s of %(t)s doc-tests"
-    for a in sys.argv [1:] :
-        sys.path [0:0] = ["./", os.path.dirname  (a)]
-        m = os.path.splitext (os.path.basename (a)) [0]
-        try :
-            module = __import__ (m)
-            file   = module.__file__
-            f, t   = doctest.testmod (module, verbose = 0)
-        except KeyboardInterrupt :
-            raise
-        except StandardError, cause :
-            print "Testing of %s resulted in exception" % (a,)
-            raise
-        else :
-            print format % locals ()
-        del sys.path [0:2]
+format = "%(file)s fails %(f)s of %(t)s doc-tests"
+for a in sys.argv [1:] :
+    sys.path [0:0] = ["./", os.path.dirname  (a)]
+    m = os.path.splitext (os.path.basename (a)) [0]
+    try :
+        module = __import__ (m)
+        file   = module.__file__
+        f, t   = doctest.testmod (module, verbose = 0)
+    except KeyboardInterrupt :
+        raise
+    except StandardError, cause :
+        print "Testing of %s resulted in exception" % (a,)
+        raise
+    else :
+        print format % locals ()
+    del sys.path [0:2]
 
