@@ -28,9 +28,13 @@ from OOoPy                   import OOoPy, autosuper
 from Version                 import VERSION
 from copy                    import deepcopy
 
-files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
+files    = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
+mimetypes = \
+    [ 'application/vnd.sun.xml.writer'
+    , 'application/vnd.oasis.opendocument.text'
+    ]
 namespace_by_name = \
-  { 'application/vnd.sun.xml.writer' :
+  { mimetypes [0] :
       { 'chart'  : "http://openoffice.org/2000/chart"
       , 'config' : "http://openoffice.org/2001/config"
       , 'dc'     : "http://purl.org/dc/elements/1.1/"
@@ -49,7 +53,7 @@ namespace_by_name = \
       , 'text'   : "http://openoffice.org/2000/text"
       , 'xlink'  : "http://www.w3.org/1999/xlink"
       }
-  , 'application/vnd.oasis.opendocument.text' :
+  , mimetypes [1] :
       { 'chart'  : "urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
       , 'config' : "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
       , 'dc'     : "http://purl.org/dc/elements/1.1/"
@@ -77,7 +81,7 @@ for version in namespace_by_name.itervalues () :
             assert (namespace_by_url [v] == k)
         namespace_by_url [v] = k
 
-def OOo_Tag (namespace, name, version = 'v2') :
+def OOo_Tag (namespace, name, version = mimetypes [1]) :
     """Return combined XML tag"""
     return "{%s}%s" % (namespace_by_name [version][namespace], name)
 # end def OOo_Tag

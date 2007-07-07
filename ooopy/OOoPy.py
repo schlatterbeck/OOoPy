@@ -79,10 +79,18 @@ class OOoPy (autosuper) :
         from OOoPy import OOoPy
         >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
         >>> e = o.read ('content.xml')
+        >>> o.mimetype
+        'application/vnd.sun.xml.writer'
         >>> e.write ()
         >>> o.close ()
     """
-    def __init__ (self, infile = None, outfile = None, write_mode = 'w') :
+    def __init__ \
+        ( self
+        , infile     = None
+        , outfile    = None
+        , write_mode = 'w'
+        , mimetype   = None
+        ) :
         """
             Open an OOo document, if no outfile is given, we open the
             file read-only. Otherwise the outfile has to be different
@@ -96,6 +104,10 @@ class OOoPy (autosuper) :
 
             Note that both, infile and outfile can either be filenames
             or file-like objects (e.g. StringIO).
+
+            The mimetype is automatically determined if an infile is
+            given. If only writing is desired, the mimetype should be
+            set.
         """
         assert (infile != outfile)
         self.izip = self.ozip = None
@@ -104,6 +116,10 @@ class OOoPy (autosuper) :
         if outfile :
             self.ozip    = ZipFile (outfile, write_mode, ZIP_DEFLATED)
             self.written = {}
+        if mimetype :
+            self.mimetype = mimetype
+        elif self.izip :
+            self.mimetype = self.izip.read ('mimetype')
     # end def __init__
 
     def read (self, zname) :
@@ -119,7 +135,9 @@ class OOoPy (autosuper) :
              * META-INF/manifest.xml: contents of the archive
 
             There is an additional file "mimetype" that always contains
-            the string "application/vnd.sun.xml.writer".
+            the string "application/vnd.sun.xml.writer" for OOo 1.X files
+            and the string "application/vnd.oasis.opendocument.text" for
+            OOo 2.X files.
         """
         assert (self.izip)
         return OOoElementTree (self, zname, fromstring (self.izip.read (zname)))
