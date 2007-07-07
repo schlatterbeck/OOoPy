@@ -30,32 +30,56 @@ from copy                    import deepcopy
 
 files = ['content.xml', 'styles.xml', 'meta.xml', 'settings.xml']
 namespace_by_name = \
-{ 'chart'  : "http://openoffice.org/2000/chart"
-, 'config' : "http://openoffice.org/2001/config"
-, 'dc'     : "http://purl.org/dc/elements/1.1/"
-, 'dr3d'   : "http://openoffice.org/2000/dr3d"
-, 'draw'   : "http://openoffice.org/2000/drawing"
-, 'fo'     : "http://www.w3.org/1999/XSL/Format"
-, 'form'   : "http://openoffice.org/2000/form"
-, 'math'   : "http://www.w3.org/1998/Math/MathML"
-, 'meta'   : "http://openoffice.org/2000/meta"
-, 'number' : "http://openoffice.org/2000/datastyle"
-, 'office' : "http://openoffice.org/2000/office"
-, 'script' : "http://openoffice.org/2000/script"
-, 'style'  : "http://openoffice.org/2000/style"
-, 'svg'    : "http://www.w3.org/2000/svg"
-, 'table'  : "http://openoffice.org/2000/table"
-, 'text'   : "http://openoffice.org/2000/text"
-, 'xlink'  : "http://www.w3.org/1999/xlink"
-}
+  { 'application/vnd.sun.xml.writer' :
+      { 'chart'  : "http://openoffice.org/2000/chart"
+      , 'config' : "http://openoffice.org/2001/config"
+      , 'dc'     : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'   : "http://openoffice.org/2000/dr3d"
+      , 'draw'   : "http://openoffice.org/2000/drawing"
+      , 'fo'     : "http://www.w3.org/1999/XSL/Format"
+      , 'form'   : "http://openoffice.org/2000/form"
+      , 'math'   : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'   : "http://openoffice.org/2000/meta"
+      , 'number' : "http://openoffice.org/2000/datastyle"
+      , 'office' : "http://openoffice.org/2000/office"
+      , 'script' : "http://openoffice.org/2000/script"
+      , 'style'  : "http://openoffice.org/2000/style"
+      , 'svg'    : "http://www.w3.org/2000/svg"
+      , 'table'  : "http://openoffice.org/2000/table"
+      , 'text'   : "http://openoffice.org/2000/text"
+      , 'xlink'  : "http://www.w3.org/1999/xlink"
+      }
+  , 'application/vnd.oasis.opendocument.text' :
+      { 'chart'  : "urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+      , 'config' : "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
+      , 'dc'     : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'   : "urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+      , 'draw'   : "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+      , 'fo'     : "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+      , 'form'   : "urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+      , 'math'   : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'   : "urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+      , 'number' : "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+      , 'office' : "urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+      , 'script' : "urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+      , 'style'  : "urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+      , 'svg'    : "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+      , 'table'  : "urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+      , 'text'   : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+      , 'xlink'  : "http://www.w3.org/1999/xlink"
+      }
+  }
 
 namespace_by_url = {}
-for k,v in namespace_by_name.iteritems () :
-    namespace_by_url [v] = k
+for version in namespace_by_name.itervalues () :
+    for k, v in version.iteritems () :
+        if v in namespace_by_url :
+            assert (namespace_by_url [v] == k)
+        namespace_by_url [v] = k
 
-def OOo_Tag (namespace, name) :
+def OOo_Tag (namespace, name, version = 'v2') :
     """Return combined XML tag"""
-    return "{%s}%s" % (namespace_by_name [namespace], name)
+    return "{%s}%s" % (namespace_by_name [version][namespace], name)
 # end def OOo_Tag
 
 def split_tag (tag) :

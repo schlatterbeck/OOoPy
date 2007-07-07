@@ -4,7 +4,7 @@ SRC=Makefile MANIFEST.in setup.py README README.html default.css \
     $(PY:%.py=$(PKG)/%.py) test.sxw
 
 VERSION=ooopy/Version.py
-LASTRELASE:=$(shell if x=`lastrelease -d` ;then echo $$x ;else echo 'NO_TAG' ;fi)
+LASTRELASE:=$(shell if x=`../svntools/lastrelease ooopy` ;then echo $$x ;else echo 'NO_TAG' ;fi)
 
 USERNAME=schlatterbeck
 HOSTNAME=shell.sourceforge.net
@@ -20,8 +20,8 @@ dist: all
 README.html: README
 	rst2html $< > $@
 
-default.css: ../../html/stylesheets/default.css
-	cp ../../html/stylesheets/default.css .
+default.css: ../../content/html/stylesheets/default.css
+	cp ../../content/html/stylesheets/default.css .
 
 %.py: %.v
 	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@

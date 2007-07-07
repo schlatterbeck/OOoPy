@@ -372,7 +372,10 @@ class Field_Replace (Transform) :
             body = body.find (OOo_Tag ('office', 'body'))
         for tag in 'variable-set', 'variable-get', 'variable-input' :
             for node in body.findall ('.//' + OOo_Tag ('text', tag)) :
-                name = node.get (OOo_Tag ('text', 'name'))
+                attr = 'name'
+                if tag == 'text-input' :
+                    attr = 'description'
+                name = node.get (OOo_Tag ('text', attr))
                 if callable (self.replace) :
                     replace = self.replace (name)
                     if replace :
@@ -597,7 +600,7 @@ class Mailmerge (_Body_Concat) :
             fr = Field_Replace (replace = i, transformer = self.transformer)
             # add page break only to non-empty body
             # reanchor only after the first mailmerge
-            if self.body :
+            if self.body is not None :
                 pb.apply (self.bodyparts [-1])
                 ra.apply (self.copyparts)
             else :
