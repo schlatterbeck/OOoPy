@@ -491,12 +491,13 @@ class _Body_Concat (Transform) :
 
     for m in mimetypes :
         ooo_sections [m] = \
-            [ { OOo_Tag ('text', 'variable-decls', m) : 1
-              , OOo_Tag ('text', 'sequence-decls', m) : 1
+            [ { OOo_Tag ('text', 'variable-decls',   m) : 1
+              , OOo_Tag ('text', 'sequence-decls',   m) : 1
+              , OOo_Tag ('text', 'user-field-decls', m) : 1
               }
-            , { OOo_Tag ('draw', 'frame',          m) : 1
-              , OOo_Tag ('draw', 'rect',           m) : 1
-              , OOo_Tag ('draw', 'text-box',       m) : 1
+            , { OOo_Tag ('draw', 'frame',            m) : 1
+              , OOo_Tag ('draw', 'rect',             m) : 1
+              , OOo_Tag ('draw', 'text-box',         m) : 1
               }
             ]
 
@@ -1047,6 +1048,10 @@ def renumber_tables (mimetype) :
     return Renumber (OOo_Tag ('table', 'table', mimetype))
 # end def renumber_tables
 
+def renumber_images (mimetype) :
+    return Renumber (OOo_Tag ('draw', 'image', mimetype))
+# end def renumber_images
+
 def renumber_all (mimetype) :
     """ Factory function for all renumberings parameterized with
         mimetype
@@ -1055,6 +1060,7 @@ def renumber_all (mimetype) :
         ( ( renumber_frames   (mimetype)
           , renumber_sections (mimetype)
           , renumber_tables   (mimetype)
+          , renumber_images   (mimetype)
         ) )
 # end def renumber_all
 
