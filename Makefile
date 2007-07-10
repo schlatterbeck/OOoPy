@@ -4,7 +4,7 @@ SRC=Makefile MANIFEST.in setup.py README README.html default.css \
     $(PY:%.py=$(PKG)/%.py) test.sxw
 
 VERSION=ooopy/Version.py
-LASTRELASE:=$(shell if x=`../svntools/lastrelease ooopy` ;then echo $$x ;else echo 'NO_TAG' ;fi)
+LASTRELASE:=$(shell ../svntools/lastrelease)
 
 USERNAME=schlatterbeck
 HOSTNAME=shell.sourceforge.net
