@@ -94,3 +94,4 @@ Version 0.3:
    the mimetype of the open office document as a parameter.
  - Since renumber_all is now a function it will (correctly) restart
    numbering for each new Attribute_Access instance it returns.
+ - Built-in elementtree support from python2.5 is used if available
