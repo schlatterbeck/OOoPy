@@ -675,6 +675,62 @@ class Transformer (autosuper) :
         draw:text-box 5
         draw:line 22
         draw:line 21
+
+        >>> sio = StringIO ()
+        >>> o   = OOoPy (infile = 'carta.stw', outfile = sio)
+        >>> t = Transformer (
+        ...     o.mimetype
+        ...   , get_meta (o.mimetype)
+        ...   , Transforms.Addpagebreak_Style ()
+        ...   , Transforms.Mailmerge
+        ...     ( iterator = 
+        ...         ( dict
+        ...             ( Spett = "Spettabile"
+        ...             , contraente = "First person"
+        ...             , indirizzo = "street? 1"
+        ...             , tipo = "racc. A.C."
+        ...             , luogo = "Varese"
+        ...             , oggetto = "Saluti"
+        ...             )
+        ...         , dict
+        ...             ( Spett = "Egregio"
+        ...             , contraente = "Second Person"
+        ...             , indirizzo = "street? 2"
+        ...             , tipo = "Raccomandata"
+        ...             , luogo = "Gavirate"
+        ...             , oggetto = "Ossequi"
+        ...             )
+        ...         )
+        ...     )
+        ...   , renumber_all (o.mimetype)
+        ...   , set_meta (o.mimetype)
+        ...   )
+        >>> t.transform(o)
+        >>> o.close()
+        >>> ov  = sio.getvalue ()
+        >>> f   = open ("carta-out.stw", "w")
+        >>> f.write (ov)
+        >>> f.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
+        >>> for node in body.findall (vset) :
+        ...     name = node.get (OOo_Tag ('text', 'name', m))
+        ...     print name, ':', node.text
+        Spett : Spettabile
+        contraente : First person
+        indirizzo : street? 1
+        Spett : Egregio
+        contraente : Second Person
+        indirizzo : street? 2
+        tipo : racc. A.C.
+        luogo : Varese
+        oggetto : Saluti
+        tipo : Raccomandata
+        luogo : Gavirate
+        oggetto : Ossequi
     """
     def __init__ (self, mimetype, *tf) :
         self.mimetype     = mimetype

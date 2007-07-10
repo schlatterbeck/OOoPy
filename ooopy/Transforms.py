@@ -494,8 +494,9 @@ class _Body_Concat (Transform) :
             [ { OOo_Tag ('text', 'variable-decls', m) : 1
               , OOo_Tag ('text', 'sequence-decls', m) : 1
               }
-            , { OOo_Tag ('draw', 'text-box',       m) : 1
+            , { OOo_Tag ('draw', 'frame',          m) : 1
               , OOo_Tag ('draw', 'rect',           m) : 1
+              , OOo_Tag ('draw', 'text-box',       m) : 1
               }
             ]
 
