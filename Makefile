@@ -1,7 +1,7 @@
 PKG=ooopy
 PY=__init__.py OOoPy.py Transformer.py Transforms.py
 SRC=Makefile MANIFEST.in setup.py README README.html default.css \
-    $(PY:%.py=$(PKG)/%.py) test.sxw
+    $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
 
 VERSION=ooopy/Version.py
 LASTRELASE:=$(shell ../svntools/lastrelease)
@@ -23,7 +23,7 @@ README.html: README
 default.css: ../../content/html/stylesheets/default.css
 	cp ../../content/html/stylesheets/default.css .
 
-%.py: %.v
+%.py: %.v $(SRC)
 	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@
 
 upload_homepage: all
