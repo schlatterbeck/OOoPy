@@ -23,7 +23,10 @@
 
 import time
 import re
-from elementtree.ElementTree import dump, SubElement, Element, tostring
+try :
+    from xml.etree.ElementTree   import dump, SubElement, Element, tostring
+except ImportError :
+    from elementtree.ElementTree import dump, SubElement, Element, tostring
 from OOoPy                   import OOoPy, autosuper
 from Version                 import VERSION
 from copy                    import deepcopy

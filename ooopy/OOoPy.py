@@ -23,7 +23,10 @@
 
 from zipfile                 import ZipFile, ZIP_DEFLATED
 from StringIO                import StringIO
-from elementtree.ElementTree import ElementTree, fromstring
+try :
+    from xml.etree.ElementTree   import ElementTree, fromstring
+except ImportError :
+    from elementtree.ElementTree import ElementTree, fromstring
 from tempfile                import mkstemp
 from Version                 import VERSION
 import os
