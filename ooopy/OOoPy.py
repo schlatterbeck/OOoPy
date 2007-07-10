@@ -83,6 +83,10 @@ class OOoPy (autosuper) :
         'application/vnd.sun.xml.writer'
         >>> e.write ()
         >>> o.close ()
+        >>> o = OOoPy (infile = 'test.odt')
+        >>> o.mimetype
+        'application/vnd.oasis.opendocument.text'
+        >>> o.close ()
     """
     def __init__ \
         ( self

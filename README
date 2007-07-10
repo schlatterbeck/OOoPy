@@ -37,11 +37,14 @@ send me a `bug report`_.
 
 Another reason for the Alpha-Status is stability of the API. I may
 still change the API slightly.
+There were some slight changes to the API when supporting the open
+document format introduced with OOo 2.0.
 
 .. _`bug report`: http://ooopy.sourceforge.net/#reporting-bugs
 
 For running the doctest on python2.3 with the metaclass trickery of
-autosuper, see the file run_doctest.py.
+autosuper, see the file run_doctest.py. For later versions of python the
+bug in doctest is already fixed.
 
 Resources
 ---------
@@ -50,8 +53,7 @@ Project information and download from `Sourceforge main page`_
 
 .. _`Sourceforge main page`: http://sourceforge.net/projects/ooopy/
 
-You need at least version 2.3 of python. I have *not* tested with 2.4,
-so if you do and encounter bugs, please file a bug report.
+You need at least version 2.3 of python.
 
 For using OOoPy, you need to download and install the
 `ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
@@ -79,3 +81,16 @@ Please use the `Sourceforge Bug Tracker`_ and
 
 .. _`Sourceforge Bug Tracker`:
     http://sourceforge.net/tracker/?group_id=134329&atid=729727
+
+Changes
+-------
+
+Version 0.3:
+
+ - OOoPy now works for OOo version 1.X and version 2.X
+ - New attribute mimetype of OOoPy -- this is automatically set when
+   reading a document, and should be set when writing one.
+ - renumber_all, get_meta, set_meta are now factory functions that take
+   the mimetype of the open office document as a parameter.
+ - Since renumber_all is now a function it will (correctly) restart
+   numbering for each new Attribute_Access instance it returns.
