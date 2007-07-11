@@ -791,7 +791,7 @@ class Transformer (autosuper) :
         image-count 0
         object-count 0
         page-count 3
-        paragraph-count 113
+        paragraph-count 53
         table-count 3
         word-count 162
         >>> name = t ['Addpagebreak_Style:stylename']
@@ -883,7 +883,7 @@ class Transformer (autosuper) :
         image-count '0'
         object-count '0'
         page-count '3'
-        paragraph-count '113'
+        paragraph-count '53'
         table-count '3'
         word-count '162'
         >>> o.close ()
@@ -960,9 +960,9 @@ class Transformer (autosuper) :
         image-count '0'
         object-count '0'
         page-count '3'
-        paragraph-count '168'
+        paragraph-count '80'
         table-count '2'
-        word-count '160'
+        word-count '159'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout3.odt", "w")
