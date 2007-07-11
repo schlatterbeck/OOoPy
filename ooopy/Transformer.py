@@ -981,10 +981,6 @@ class Transformer (autosuper) :
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
         "Nimbus Roman No9 L", "None"
-        "Courier New", "None"
-        "Arial Black", "None"
-        "New Century Schoolbook", "None"
-        "Helvetica", "None"
         "Table1", "None"
         "Table1.A", "None"
         "Table1.A1", "None"
@@ -993,25 +989,24 @@ class Transformer (autosuper) :
         "Table1.E2", "None"
         "P1", "None"
         "fr1", "Frame"
-        "fr2", "None"
-        "fr3", "Frame"
+        "fr2", "Frame"
         "Sect1", "None"
         "gr1", "None"
         "P2", "Standard"
         "Standard_Concat", "None"
-        "Concat_P1", "Concat_Frame contents"
-        "Concat_P2", "Concat_Frame contents"
-        "P3", "Concat_Frame contents"
-        "P4", "Concat_Frame contents"
+        "Concat_P1", "Concat_Frame_20_contents"
+        "Concat_P2", "Concat_Frame_20_contents"
+        "P3", "Concat_Frame_20_contents"
+        "P4", "Concat_Standard"
         "P5", "Concat_Standard"
-        "P6", "Concat_Standard"
-        "P7", "Concat_Frame contents"
-        "P8", "Concat_Frame contents"
-        "P9", "Concat_Frame contents"
-        "P10", "Concat_Frame contents"
-        "P11", "Concat_Frame contents"
-        "P12", "Concat_Frame contents"
-        "P13", "Concat_Frame contents"
+        "P6", "Concat_Frame_20_contents"
+        "P7", "Concat_Frame_20_contents"
+        "P8", "Concat_Frame_20_contents"
+        "P9", "Concat_Frame_20_contents"
+        "P10", "Concat_Frame_20_contents"
+        "P11", "Concat_Frame_20_contents"
+        "P12", "Concat_Frame_20_contents"
+        "P14", "Concat_Standard"
         "P15", "Concat_Standard"
         "P16", "Concat_Standard"
         "P17", "Concat_Standard"
@@ -1019,57 +1014,17 @@ class Transformer (autosuper) :
         "P19", "Concat_Standard"
         "P20", "Concat_Standard"
         "P21", "Concat_Standard"
-        "P22", "Concat_Standard"
-        "P23", "Concat_Standard"
         "T1", "None"
-        "Concat_fr1", "Concat_Frame"
-        "Concat_fr2", "Concat_Frame"
-        "Concat_fr3", "Concat_Frame"
-        "fr4", "Concat_Frame"
-        "fr5", "Concat_Frame"
-        "fr6", "Concat_Frame"
-        "Concat_Sect1", "None"
+        "Concat_fr1", "Frame"
+        "Concat_fr2", "Frame"
+        "fr3", "Frame"
+        "fr4", "Frame"
+        "fr5", "Frame"
+        "fr6", "Frame"
+        "Concat_gr1", "None"
         "N0", "None"
         "N2", "None"
-        "P15_Concat", "Concat_Standard"
-        >>> for n in s.findall ('./*/*') :
-        ...     name = n.get (OOo_Tag ('style', 'name', m))
-        ...     if name :
-        ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
-        ...         print '"%s", "%s"' % (name, parent)
-        "Tahoma1", "None"
-        "Bitstream Vera Sans", "None"
-        "Tahoma", "None"
-        "Nimbus Roman No9 L", "None"
-        "Courier New", "None"
-        "Arial Black", "None"
-        "New Century Schoolbook", "None"
-        "Helvetica", "None"
-        "Standard", "None"
-        "Text body", "Standard"
-        "List", "Text body"
-        "Table Contents", "Text body"
-        "Table Heading", "Table Contents"
-        "Caption", "Standard"
-        "Frame contents", "Text body"
-        "Index", "Standard"
-        "Frame", "None"
-        "OLE", "None"
-        "Concat_Standard", "None"
-        "Concat_Text body", "Concat_Standard"
-        "Concat_List", "Concat_Text body"
-        "Concat_Caption", "Concat_Standard"
-        "Concat_Frame contents", "Concat_Text body"
-        "Concat_Index", "Concat_Standard"
-        "Horizontal Line", "Concat_Standard"
-        "Internet link", "None"
-        "Visited Internet Link", "None"
-        "Concat_Frame", "None"
-        "Concat_OLE", "None"
-        "pm1", "None"
-        "Concat_pm1", "None"
-        "Standard", "None"
-        "Concat_Standard", "None"
+        "P14_Concat", "Concat_Standard"
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl', m)) :
         ...     name = n.get (OOo_Tag ('text', 'name', m))
         ...     print name
@@ -1116,10 +1071,25 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'p', m)) :
         ...     name = n.get (OOo_Tag ('text', 'style-name', m))
         ...     if not name or name.startswith ('Concat') :
-        ...         print ">%s<" % name
-        >Concat_P1<
-        >Concat_P2<
-        >Concat_Frame contents<
+        ...         print ':'.join(split_tag (n.tag)), ">%s<" % name
+        text:p >None<
+        text:p >None<
+        text:p >Concat_P1<
+        text:p >Concat_P1<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_P2<
+        text:p >Concat_Frame_20_contents<
+        text:p >None<
+        text:p >None<
+        text:p >None<
         >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'frame', m)) :
         ...     attrs = 'name', 'style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
@@ -1129,7 +1099,7 @@ class Transformer (autosuper) :
         ['Frame2', 'fr1', '3', '2']
         ['Frame3', 'Concat_fr1', '6', '3']
         ['Frame4', 'Concat_fr2', '7', '3']
-        ['Frame5', 'Concat_fr3', '8', '3']
+        ['Frame5', 'fr3', '8', '3']
         ['Frame6', 'Concat_fr1', '9', '3']
         ['Frame7', 'fr4', '10', '3']
         ['Frame8', 'fr4', '11', '3']
@@ -1143,8 +1113,8 @@ class Transformer (autosuper) :
         ['Frame16', 'fr4', '20', '3']
         ['Frame17', 'fr6', '17', '3']
         ['Frame18', 'fr4', '23', '3']
-        ['Frame19', 'fr3', '2', None]
-        ['Frame20', 'fr3', '5', None]
+        ['Frame19', 'fr2', '2', None]
+        ['Frame20', 'fr2', '5', None]
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'section', m)) :
         ...     attrs = 'name', 'style-name'
         ...     attrs = [n.get (OOo_Tag ('text', i, m)) for i in attrs]
@@ -1155,27 +1125,27 @@ class Transformer (autosuper) :
         ['Section4', 'Sect1']
         ['Section5', 'Sect1']
         ['Section6', 'Sect1']
-        ['Section7', 'Concat_Sect1']
-        ['Section8', 'Concat_Sect1']
-        ['Section9', 'Concat_Sect1']
-        ['Section10', 'Concat_Sect1']
-        ['Section11', 'Concat_Sect1']
-        ['Section12', 'Concat_Sect1']
-        ['Section13', 'Concat_Sect1']
-        ['Section14', 'Concat_Sect1']
-        ['Section15', 'Concat_Sect1']
-        ['Section16', 'Concat_Sect1']
-        ['Section17', 'Concat_Sect1']
-        ['Section18', 'Concat_Sect1']
-        ['Section19', 'Concat_Sect1']
-        ['Section20', 'Concat_Sect1']
-        ['Section21', 'Concat_Sect1']
-        ['Section22', 'Concat_Sect1']
-        ['Section23', 'Concat_Sect1']
-        ['Section24', 'Concat_Sect1']
-        ['Section25', 'Concat_Sect1']
-        ['Section26', 'Concat_Sect1']
-        ['Section27', 'Concat_Sect1']
+        ['Section7', 'Sect1']
+        ['Section8', 'Sect1']
+        ['Section9', 'Sect1']
+        ['Section10', 'Sect1']
+        ['Section11', 'Sect1']
+        ['Section12', 'Sect1']
+        ['Section13', 'Sect1']
+        ['Section14', 'Sect1']
+        ['Section15', 'Sect1']
+        ['Section16', 'Sect1']
+        ['Section17', 'Sect1']
+        ['Section18', 'Sect1']
+        ['Section19', 'Sect1']
+        ['Section20', 'Sect1']
+        ['Section21', 'Sect1']
+        ['Section22', 'Sect1']
+        ['Section23', 'Sect1']
+        ['Section24', 'Sect1']
+        ['Section25', 'Sect1']
+        ['Section26', 'Sect1']
+        ['Section27', 'Sect1']
         ['Section28', 'Sect1']
         ['Section29', 'Sect1']
         ['Section30', 'Sect1']
@@ -1193,9 +1163,9 @@ class Transformer (autosuper) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
         ...     print attrs
-        ['gr1', 'P1', '24']
-        ['gr1', 'P1', '22']
-        ['gr1', 'P1', '21']
+        ['Concat_gr1', 'P1', '24']
+        ['Concat_gr1', 'P1', '22']
+        ['Concat_gr1', 'P1', '21']
         >>> for n in s.findall ('.//' + OOo_Tag ('style', 'style', m)) :
         ...     if n.get (OOo_Tag ('style', 'name', m)).startswith ('Co') :
         ...         attrs = 'name', 'class', 'family'
@@ -1205,14 +1175,11 @@ class Transformer (autosuper) :
         ...         if props is not None and len (props) :
         ...             props [0].tag
         ['Concat_Standard', 'text', 'paragraph']
-        '{http://openoffice.org/2000/style}tab-stops'
-        ['Concat_Text body', 'text', 'paragraph']
+        ['Concat_Text_20_body', 'text', 'paragraph']
         ['Concat_List', 'list', 'paragraph']
         ['Concat_Caption', 'extra', 'paragraph']
-        ['Concat_Frame contents', 'extra', 'paragraph']
+        ['Concat_Frame_20_contents', 'extra', 'paragraph']
         ['Concat_Index', 'index', 'paragraph']
-        ['Concat_Frame', None, 'graphics']
-        ['Concat_OLE', None, 'graphics']
         >>> for n in c.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :
