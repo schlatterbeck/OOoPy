@@ -427,11 +427,6 @@ class Addpagebreak_Style (Transform) :
     prio     = 30
     para     = re.compile (r'P([0-9]+)')
 
-    properties = \
-        { mimetypes [0] : 'properties'
-        , mimetypes [1] : 'paragraph-properties'
-        }
-
     def apply (self, root) :
         max_style = 0
         styles = root.find (self.oootag ('office', 'automatic-styles'))
@@ -452,7 +447,7 @@ class Addpagebreak_Style (Transform) :
             )
         SubElement \
             ( new
-            , self.oootag ('style', self.properties [self.mimetype])
+            , self.properties_tag
             , { self.oootag ('fo', 'break-after') : 'page' }
             )
         self.set ('stylename', stylename)
@@ -807,7 +802,7 @@ class Concatenate (_Body_Concat) :
                 default_style = s
                 break
         self.default_properties = default_style.find \
-            ('./' + self.oootag ('style', 'properties'))
+            ('./' + self.properties_tag)
         self.set_pagestyle ()
         for f in 'styles.xml', 'content.xml' :
             self.style_merge (f)
@@ -888,12 +883,14 @@ class Concatenate (_Body_Concat) :
     def merge_defaultstyle (self, default_style, node) :
         assert default_style is not None
         assert node is not None
-        proppath = './' + self.oootag ('style', 'properties')
+        proppath = './' + self.properties_tag
+        import sys
+        print >> sys.stderr, default_style.tag, proppath, default_style [0].tag
         defprops = default_style.find (proppath)
         props    = node.find          (proppath)
         if props is None :
-            props = Element (self.oootag ('style', 'properties'))
-        for k,v in defprops.attrib.iteritems () :
+            props = Element (self.properties_tag)
+        for k, v in defprops.attrib.iteritems () :
             if self.default_properties.get (k) != v and not props.get (k) :
                 if k == self.oootag ('style', 'tab-stop-distance') :
                     stps = SubElement \

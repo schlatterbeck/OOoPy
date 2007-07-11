@@ -129,6 +129,10 @@ class Transform (autosuper) :
         { mimetypes [0] : 'body'
         , mimetypes [1] : 'text'
         }
+    paragraph_props = \
+        { mimetypes [0] : 'properties'
+        , mimetypes [1] : 'paragraph-properties'
+        }
 
     def __init__ (self, prio = None, transformer = None) :
         if prio is not None :
@@ -160,7 +164,7 @@ class Transform (autosuper) :
         """
         tbody = root
         if tbody.tag != self.textbody_tag :
-            tbody = tbody.find (self.textbody_tag)
+            tbody = tbody.find ('.//' + self.textbody_tag)
         return tbody
     # end def find_tbody
 
@@ -171,10 +175,12 @@ class Transform (autosuper) :
             Also needed for tag-computation: The transformer knows which
             version of OOo document we are processing.
         """
-        self.transformer   = transformer
-        self.mimetype      = transformer.mimetype
-        self.textbody_name = self.textbody_names [self.mimetype]
-        self.textbody_tag  = self.oootag ('office', self.textbody_name)
+        self.transformer     = transformer
+        self.mimetype        = transformer.mimetype
+        self.textbody_name   = self.textbody_names [self.mimetype]
+        self.paragraph_props = self.paragraph_props [self.mimetype]
+        self.properties_tag  = self.oootag ('style', self.paragraph_props)
+        self.textbody_tag    = self.oootag ('office', self.textbody_name)
     # end def register
 
     def oootag (self, namespace, name) :
@@ -937,6 +943,305 @@ class Transformer (autosuper) :
         tipo : Raccomandata
         luogo : Gavirate
         oggetto : Ossequi
+        >>> sio = StringIO ()
+        >>> o   = OOoPy (infile = 'test.odt', outfile = sio)
+        >>> t   = Transformer (
+        ...       o.mimetype
+        ...     , get_meta (o.mimetype)
+        ...     , Transforms.Concatenate ('test.odt', 'rechng.odt')
+        ...     , renumber_all (o.mimetype)
+        ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
+        ...     )
+        >>> t.transform (o)
+        >>> for i in meta_counts :
+        ...     print i, repr (t [':'.join (('Set_Attribute', i))])
+        character-count '1131'
+        image-count '0'
+        object-count '0'
+        page-count '3'
+        paragraph-count '168'
+        table-count '2'
+        word-count '160'
+        >>> o.close ()
+        >>> ov  = sio.getvalue ()
+        >>> f   = open ("testout3.odt", "w")
+        >>> f.write (ov)
+        >>> f.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> s = o.read ('styles.xml')
+        >>> for n in c.findall ('./*/*') :
+        ...     name = n.get (OOo_Tag ('style', 'name', m))
+        ...     if name :
+        ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
+        ...         print '"%s", "%s"' % (name, parent)
+        "Tahoma1", "None"
+        "Bitstream Vera Sans", "None"
+        "Tahoma", "None"
+        "Nimbus Roman No9 L", "None"
+        "Courier New", "None"
+        "Arial Black", "None"
+        "New Century Schoolbook", "None"
+        "Helvetica", "None"
+        "Table1", "None"
+        "Table1.A", "None"
+        "Table1.A1", "None"
+        "Table1.E1", "None"
+        "Table1.A2", "None"
+        "Table1.E2", "None"
+        "P1", "None"
+        "fr1", "Frame"
+        "fr2", "None"
+        "fr3", "Frame"
+        "Sect1", "None"
+        "gr1", "None"
+        "P2", "Standard"
+        "Standard_Concat", "None"
+        "Concat_P1", "Concat_Frame contents"
+        "Concat_P2", "Concat_Frame contents"
+        "P3", "Concat_Frame contents"
+        "P4", "Concat_Frame contents"
+        "P5", "Concat_Standard"
+        "P6", "Concat_Standard"
+        "P7", "Concat_Frame contents"
+        "P8", "Concat_Frame contents"
+        "P9", "Concat_Frame contents"
+        "P10", "Concat_Frame contents"
+        "P11", "Concat_Frame contents"
+        "P12", "Concat_Frame contents"
+        "P13", "Concat_Frame contents"
+        "P15", "Concat_Standard"
+        "P16", "Concat_Standard"
+        "P17", "Concat_Standard"
+        "P18", "Concat_Standard"
+        "P19", "Concat_Standard"
+        "P20", "Concat_Standard"
+        "P21", "Concat_Standard"
+        "P22", "Concat_Standard"
+        "P23", "Concat_Standard"
+        "T1", "None"
+        "Concat_fr1", "Concat_Frame"
+        "Concat_fr2", "Concat_Frame"
+        "Concat_fr3", "Concat_Frame"
+        "fr4", "Concat_Frame"
+        "fr5", "Concat_Frame"
+        "fr6", "Concat_Frame"
+        "Concat_Sect1", "None"
+        "N0", "None"
+        "N2", "None"
+        "P15_Concat", "Concat_Standard"
+        >>> for n in s.findall ('./*/*') :
+        ...     name = n.get (OOo_Tag ('style', 'name', m))
+        ...     if name :
+        ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
+        ...         print '"%s", "%s"' % (name, parent)
+        "Tahoma1", "None"
+        "Bitstream Vera Sans", "None"
+        "Tahoma", "None"
+        "Nimbus Roman No9 L", "None"
+        "Courier New", "None"
+        "Arial Black", "None"
+        "New Century Schoolbook", "None"
+        "Helvetica", "None"
+        "Standard", "None"
+        "Text body", "Standard"
+        "List", "Text body"
+        "Table Contents", "Text body"
+        "Table Heading", "Table Contents"
+        "Caption", "Standard"
+        "Frame contents", "Text body"
+        "Index", "Standard"
+        "Frame", "None"
+        "OLE", "None"
+        "Concat_Standard", "None"
+        "Concat_Text body", "Concat_Standard"
+        "Concat_List", "Concat_Text body"
+        "Concat_Caption", "Concat_Standard"
+        "Concat_Frame contents", "Concat_Text body"
+        "Concat_Index", "Concat_Standard"
+        "Horizontal Line", "Concat_Standard"
+        "Internet link", "None"
+        "Visited Internet Link", "None"
+        "Concat_Frame", "None"
+        "Concat_OLE", "None"
+        "pm1", "None"
+        "Concat_pm1", "None"
+        "Standard", "None"
+        "Concat_Standard", "None"
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl', m)) :
+        ...     name = n.get (OOo_Tag ('text', 'name', m))
+        ...     print name
+        salutation
+        firstname
+        lastname
+        street
+        country
+        postalcode
+        city
+        date
+        invoice.invoice_no
+        invoice.abo.aboprice.abotype.description
+        address.salutation
+        address.title
+        address.firstname
+        address.lastname
+        address.function
+        address.street
+        address.country
+        address.postalcode
+        address.city
+        invoice.subscriber.salutation
+        invoice.subscriber.title
+        invoice.subscriber.firstname
+        invoice.subscriber.lastname
+        invoice.subscriber.function
+        invoice.subscriber.street
+        invoice.subscriber.country
+        invoice.subscriber.postalcode
+        invoice.subscriber.city
+        invoice.period_start
+        invoice.period_end
+        invoice.currency.name
+        invoice.amount
+        invoice.subscriber.initial
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'sequence-decl', m)) :
+        ...     name = n.get (OOo_Tag ('text', 'name', m))
+        ...     print name
+        Illustration
+        Table
+        Text
+        Drawing
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'p', m)) :
+        ...     name = n.get (OOo_Tag ('text', 'style-name', m))
+        ...     if not name or name.startswith ('Concat') :
+        ...         print ">%s<" % name
+        >Concat_P1<
+        >Concat_P2<
+        >Concat_Frame contents<
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'frame', m)) :
+        ...     attrs = 'name', 'style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
+        ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
+        ...     print attrs
+        ['Frame1', 'fr1', '0', '1']
+        ['Frame2', 'fr1', '3', '2']
+        ['Frame3', 'Concat_fr1', '6', '3']
+        ['Frame4', 'Concat_fr2', '7', '3']
+        ['Frame5', 'Concat_fr3', '8', '3']
+        ['Frame6', 'Concat_fr1', '9', '3']
+        ['Frame7', 'fr4', '10', '3']
+        ['Frame8', 'fr4', '11', '3']
+        ['Frame9', 'fr4', '12', '3']
+        ['Frame10', 'fr4', '13', '3']
+        ['Frame11', 'fr4', '14', '3']
+        ['Frame12', 'fr4', '15', '3']
+        ['Frame13', 'fr5', '16', '3']
+        ['Frame14', 'fr4', '18', '3']
+        ['Frame15', 'fr4', '19', '3']
+        ['Frame16', 'fr4', '20', '3']
+        ['Frame17', 'fr6', '17', '3']
+        ['Frame18', 'fr4', '23', '3']
+        ['Frame19', 'fr3', '2', None]
+        ['Frame20', 'fr3', '5', None]
+        >>> for n in c.findall ('.//' + OOo_Tag ('text', 'section', m)) :
+        ...     attrs = 'name', 'style-name'
+        ...     attrs = [n.get (OOo_Tag ('text', i, m)) for i in attrs]
+        ...     print attrs
+        ['Section1', 'Sect1']
+        ['Section2', 'Sect1']
+        ['Section3', 'Sect1']
+        ['Section4', 'Sect1']
+        ['Section5', 'Sect1']
+        ['Section6', 'Sect1']
+        ['Section7', 'Concat_Sect1']
+        ['Section8', 'Concat_Sect1']
+        ['Section9', 'Concat_Sect1']
+        ['Section10', 'Concat_Sect1']
+        ['Section11', 'Concat_Sect1']
+        ['Section12', 'Concat_Sect1']
+        ['Section13', 'Concat_Sect1']
+        ['Section14', 'Concat_Sect1']
+        ['Section15', 'Concat_Sect1']
+        ['Section16', 'Concat_Sect1']
+        ['Section17', 'Concat_Sect1']
+        ['Section18', 'Concat_Sect1']
+        ['Section19', 'Concat_Sect1']
+        ['Section20', 'Concat_Sect1']
+        ['Section21', 'Concat_Sect1']
+        ['Section22', 'Concat_Sect1']
+        ['Section23', 'Concat_Sect1']
+        ['Section24', 'Concat_Sect1']
+        ['Section25', 'Concat_Sect1']
+        ['Section26', 'Concat_Sect1']
+        ['Section27', 'Concat_Sect1']
+        ['Section28', 'Sect1']
+        ['Section29', 'Sect1']
+        ['Section30', 'Sect1']
+        ['Section31', 'Sect1']
+        ['Section32', 'Sect1']
+        ['Section33', 'Sect1']
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'rect', m)) :
+        ...     attrs = 'style-name', 'text-style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
+        ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
+        ...     print attrs
+        ['gr1', 'P1', '1', '1']
+        ['gr1', 'P1', '4', '2']
+        >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'line', m)) :
+        ...     attrs = 'style-name', 'text-style-name', 'z-index'
+        ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
+        ...     print attrs
+        ['gr1', 'P1', '24']
+        ['gr1', 'P1', '22']
+        ['gr1', 'P1', '21']
+        >>> for n in s.findall ('.//' + OOo_Tag ('style', 'style', m)) :
+        ...     if n.get (OOo_Tag ('style', 'name', m)).startswith ('Co') :
+        ...         attrs = 'name', 'class', 'family'
+        ...         attrs = [n.get (OOo_Tag ('style', i, m)) for i in attrs]
+        ...         print attrs
+        ...         props = n.find ('./' + OOo_Tag ('style', 'properties', m))
+        ...         if props is not None and len (props) :
+        ...             props [0].tag
+        ['Concat_Standard', 'text', 'paragraph']
+        '{http://openoffice.org/2000/style}tab-stops'
+        ['Concat_Text body', 'text', 'paragraph']
+        ['Concat_List', 'list', 'paragraph']
+        ['Concat_Caption', 'extra', 'paragraph']
+        ['Concat_Frame contents', 'extra', 'paragraph']
+        ['Concat_Index', 'index', 'paragraph']
+        ['Concat_Frame', None, 'graphics']
+        ['Concat_OLE', None, 'graphics']
+        >>> for n in c.findall ('.//*') :
+        ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
+        ...     if zidx :
+        ...         print ':'.join(split_tag (n.tag)), zidx
+        draw:frame 0
+        draw:rect 1
+        draw:frame 3
+        draw:rect 4
+        draw:frame 6
+        draw:frame 7
+        draw:frame 8
+        draw:frame 9
+        draw:frame 10
+        draw:frame 11
+        draw:frame 12
+        draw:frame 13
+        draw:frame 14
+        draw:frame 15
+        draw:frame 16
+        draw:frame 18
+        draw:frame 19
+        draw:frame 20
+        draw:frame 17
+        draw:frame 23
+        draw:line 24
+        draw:frame 2
+        draw:frame 5
+        draw:line 22
+        draw:line 21
     """
     def __init__ (self, mimetype, *tf) :
         self.mimetype     = mimetype
