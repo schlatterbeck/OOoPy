@@ -38,42 +38,45 @@ mimetypes = \
     ]
 namespace_by_name = \
   { mimetypes [0] :
-      { 'chart'  : "http://openoffice.org/2000/chart"
-      , 'config' : "http://openoffice.org/2001/config"
-      , 'dc'     : "http://purl.org/dc/elements/1.1/"
-      , 'dr3d'   : "http://openoffice.org/2000/dr3d"
-      , 'draw'   : "http://openoffice.org/2000/drawing"
-      , 'fo'     : "http://www.w3.org/1999/XSL/Format"
-      , 'form'   : "http://openoffice.org/2000/form"
-      , 'math'   : "http://www.w3.org/1998/Math/MathML"
-      , 'meta'   : "http://openoffice.org/2000/meta"
-      , 'number' : "http://openoffice.org/2000/datastyle"
-      , 'office' : "http://openoffice.org/2000/office"
-      , 'script' : "http://openoffice.org/2000/script"
-      , 'style'  : "http://openoffice.org/2000/style"
-      , 'svg'    : "http://www.w3.org/2000/svg"
-      , 'table'  : "http://openoffice.org/2000/table"
-      , 'text'   : "http://openoffice.org/2000/text"
-      , 'xlink'  : "http://www.w3.org/1999/xlink"
+      { 'chart'    : "http://openoffice.org/2000/chart"
+      , 'config'   : "http://openoffice.org/2001/config"
+      , 'dc'       : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'     : "http://openoffice.org/2000/dr3d"
+      , 'draw'     : "http://openoffice.org/2000/drawing"
+      , 'fo'       : "http://www.w3.org/1999/XSL/Format"
+      , 'form'     : "http://openoffice.org/2000/form"
+      , 'math'     : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'     : "http://openoffice.org/2000/meta"
+      , 'number'   : "http://openoffice.org/2000/datastyle"
+      , 'office'   : "http://openoffice.org/2000/office"
+      , 'script'   : "http://openoffice.org/2000/script"
+      , 'style'    : "http://openoffice.org/2000/style"
+      , 'svg'      : "http://www.w3.org/2000/svg"
+      , 'table'    : "http://openoffice.org/2000/table"
+      , 'text'     : "http://openoffice.org/2000/text"
+      , 'xlink'    : "http://www.w3.org/1999/xlink"
+      , 'manifest' : "http://openoffice.org/2001/manifest"
       }
   , mimetypes [1] :
-      { 'chart'  : "urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
-      , 'config' : "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
-      , 'dc'     : "http://purl.org/dc/elements/1.1/"
-      , 'dr3d'   : "urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
-      , 'draw'   : "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
-      , 'fo'     : "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
-      , 'form'   : "urn:oasis:names:tc:opendocument:xmlns:form:1.0"
-      , 'math'   : "http://www.w3.org/1998/Math/MathML"
-      , 'meta'   : "urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
-      , 'number' : "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
-      , 'office' : "urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-      , 'script' : "urn:oasis:names:tc:opendocument:xmlns:script:1.0"
-      , 'style'  : "urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-      , 'svg'    : "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
-      , 'table'  : "urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-      , 'text'   : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-      , 'xlink'  : "http://www.w3.org/1999/xlink"
+      { 'chart'    : "urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+      , 'config'   : "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
+      , 'dc'       : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'     : "urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+      , 'draw'     : "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+      , 'fo'       : "urn:oasis:names:tc:opendocument:xmlns:"
+                     "xsl-fo-compatible:1.0"
+      , 'form'     : "urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+      , 'math'     : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'     : "urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+      , 'number'   : "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+      , 'office'   : "urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+      , 'script'   : "urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+      , 'style'    : "urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+      , 'svg'      : "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+      , 'table'    : "urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+      , 'text'     : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+      , 'xlink'    : "http://www.w3.org/1999/xlink"
+      , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
       }
   }
 
@@ -114,6 +117,11 @@ class Transform (autosuper) :
         OOo's settings (menu Tools->Configure).
     """
     prio = 100
+    textbody_names = \
+        { mimetypes [0] : 'body'
+        , mimetypes [1] : 'text'
+        }
+
     def __init__ (self, prio = None, transformer = None) :
         if prio is not None :
             self.prio    = prio
@@ -138,6 +146,16 @@ class Transform (autosuper) :
         self.apply (trees [self.filename].getroot ())
     # end def apply_all
 
+    def find_tbody (self, root) :
+        """ Find the node which really contains the text -- different
+            for different OOo versions.
+        """
+        tbody = root
+        if tbody.tag != self.textbody_tag :
+            tbody = tbody.find (self.textbody_tag)
+        return tbody
+    # end def find_tbody
+
     def register (self, transformer) :
         """ Registering with a transformer means being able to access
             variables stored in the tranformer by other transforms.
@@ -145,8 +163,10 @@ class Transform (autosuper) :
             Also needed for tag-computation: The transformer knows which
             version of OOo document we are processing.
         """
-        self.transformer = transformer
-        self.mimetype    = transformer.mimetype
+        self.transformer   = transformer
+        self.mimetype      = transformer.mimetype
+        self.textbody_name = self.textbody_names [self.mimetype]
+        self.textbody_tag  = self.oootag ('office', self.textbody_name)
     # end def register
 
     def oootag (self, namespace, name) :
@@ -675,7 +695,6 @@ class Transformer (autosuper) :
         draw:text-box 5
         draw:line 22
         draw:line 21
-
         >>> sio = StringIO ()
         >>> o   = OOoPy (infile = 'carta.stw', outfile = sio)
         >>> t = Transformer (
@@ -709,6 +728,180 @@ class Transformer (autosuper) :
         >>> o.close()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("carta-out.stw", "w")
+        >>> f.write (ov)
+        >>> f.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
+        >>> for node in body.findall (vset) :
+        ...     name = node.get (OOo_Tag ('text', 'name', m))
+        ...     print name, ':', node.text
+        Spett : Spettabile
+        contraente : First person
+        indirizzo : street? 1
+        Spett : Egregio
+        contraente : Second Person
+        indirizzo : street? 2
+        tipo : racc. A.C.
+        luogo : Varese
+        oggetto : Saluti
+        tipo : Raccomandata
+        luogo : Gavirate
+        oggetto : Ossequi
+        >>> sio = StringIO ()
+        >>> o   = OOoPy (infile = 'test.odt', outfile = sio)
+        >>> t   = Transformer (
+        ...       o.mimetype
+        ...     , get_meta (o.mimetype)
+        ...     , Transforms.Addpagebreak_Style ()
+        ...     , Transforms.Mailmerge
+        ...       ( iterator = 
+        ...         ( dict (firstname = 'Erika', lastname = 'Nobody')
+        ...         , dict (firstname = 'Eric',  lastname = 'Wizard')
+        ...         , cb
+        ...         )
+        ...       )
+        ...     , renumber_all (o.mimetype)
+        ...     , set_meta (o.mimetype)
+        ...     )
+        >>> t.transform (o)
+        >>> for i in meta_counts :
+        ...     print i, t [':'.join (('Set_Attribute', i))]
+        character-count 951
+        image-count 0
+        object-count 0
+        page-count 3
+        paragraph-count 113
+        table-count 3
+        word-count 162
+        >>> name = t ['Addpagebreak_Style:stylename']
+        >>> name
+        'P2'
+        >>> o.close ()
+        >>> ov  = sio.getvalue ()
+        >>> f   = open ("testout.odt", "w")
+        >>> f.write (ov)
+        >>> f.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', m))
+        >>> for n in body.findall ('.//*') :
+        ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
+        ...     if zidx :
+        ...         print ':'.join(split_tag (n.tag)), zidx
+        draw:frame 0
+        draw:rect 1
+        draw:frame 3
+        draw:rect 4
+        draw:frame 6
+        draw:rect 7
+        draw:frame 2
+        draw:frame 5
+        draw:frame 8
+        >>> for n in body.findall ('.//' + OOo_Tag ('text', 'p', m)) :
+        ...     if n.get (OOo_Tag ('text', 'style-name', m)) == name :
+        ...         print n.tag
+        {urn:oasis:names:tc:opendocument:xmlns:text:1.0}p
+        {urn:oasis:names:tc:opendocument:xmlns:text:1.0}p
+        >>> vset = './/' + OOo_Tag ('text', 'variable-set', m)
+        >>> for n in body.findall (vset) :
+        ...     if n.get (OOo_Tag ('text', 'name', m), None).endswith ('name') :
+        ...         name = n.get (OOo_Tag ('text', 'name', m))
+        ...         print name, ':', n.text
+        firstname : Erika
+        lastname : Nobody
+        firstname : Eric
+        lastname : Wizard
+        firstname : Hugo
+        lastname : Testman
+        firstname : Erika
+        lastname : Nobody
+        firstname : Eric
+        lastname : Wizard
+        firstname : Hugo
+        lastname : Testman
+        >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'frame', m)) :
+        ...     print n.get (OOo_Tag ('draw', 'name', m)),
+        ...     print n.get (OOo_Tag ('text', 'anchor-page-number', m))
+        Frame1 1
+        Frame2 2
+        Frame3 3
+        Frame4 None
+        Frame5 None
+        Frame6 None
+        >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section', m)) :
+        ...     print n.get (OOo_Tag ('text', 'name', m))
+        Section1
+        Section2
+        Section3
+        Section4
+        Section5
+        Section6
+        Section7
+        Section8
+        Section9
+        Section10
+        Section11
+        Section12
+        Section13
+        Section14
+        Section15
+        Section16
+        Section17
+        Section18
+        >>> for n in body.findall ('.//' + OOo_Tag ('table', 'table', m)) :
+        ...     print n.get (OOo_Tag ('table', 'name', m))
+        Table1
+        Table2
+        Table3
+        >>> r = o.read ('meta.xml')
+        >>> meta = r.find ('.//' + OOo_Tag ('meta', 'document-statistic', m))
+        >>> for i in meta_counts :
+        ...     print i, repr (meta.get (OOo_Tag ('meta', i, m)))
+        character-count '951'
+        image-count '0'
+        object-count '0'
+        page-count '3'
+        paragraph-count '113'
+        table-count '3'
+        word-count '162'
+        >>> o.close ()
+        >>> sio = StringIO ()
+        >>> o   = OOoPy (infile = 'carta.odt', outfile = sio)
+        >>> t = Transformer (
+        ...     o.mimetype
+        ...   , get_meta (o.mimetype)
+        ...   , Transforms.Addpagebreak_Style ()
+        ...   , Transforms.Mailmerge
+        ...     ( iterator = 
+        ...         ( dict
+        ...             ( Spett = "Spettabile"
+        ...             , contraente = "First person"
+        ...             , indirizzo = "street? 1"
+        ...             , tipo = "racc. A.C."
+        ...             , luogo = "Varese"
+        ...             , oggetto = "Saluti"
+        ...             )
+        ...         , dict
+        ...             ( Spett = "Egregio"
+        ...             , contraente = "Second Person"
+        ...             , indirizzo = "street? 2"
+        ...             , tipo = "Raccomandata"
+        ...             , luogo = "Gavirate"
+        ...             , oggetto = "Ossequi"
+        ...             )
+        ...         )
+        ...     )
+        ...   , renumber_all (o.mimetype)
+        ...   , set_meta (o.mimetype)
+        ...   )
+        >>> t.transform(o)
+        >>> o.close()
+        >>> ov  = sio.getvalue ()
+        >>> f   = open ("carta-out.odt", "w")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)

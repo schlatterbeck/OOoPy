@@ -22,32 +22,50 @@
 # ****************************************************************************
 
 import sys
+from optparse          import OptionParser
 from ooopy.OOoPy       import OOoPy
 from ooopy.Transformer import split_tag
 
 def cleantag (tag) :
     return ':'.join (split_tag (tag))
 
-def pretty (n, indent = 0) :
+def pretty (n, indent = 0, with_text = False) :
     s = ["    " * indent]
     s.append (cleantag (n.tag))
     attrkeys = n.attrib.keys ()
     attrkeys.sort ()
     for a in attrkeys :
         s.append (' %s="%s"' % (cleantag (a), n.attrib [a]))
+    if with_text and n.text is not None :
+        s.append (' TEXT="%s"' % n.text)
+    if with_text and n.tail is not None :
+        s.append (' TAIL="%s"' % n.tail)
     print ''.join (s).encode ('utf-8')
     for sub in n :
-        pretty (sub, indent + 1)
+        pretty (sub, indent + 1, with_text)
 
 if __name__ == '__main__' :
-    ooofile = 'content.xml'
-    idx = 1
-    if len (sys.argv) >= 2 :
-        if sys.argv [1].startswith ('--file') :
-            ooofile = sys.argv [1].split ('=') [1]
-            idx = 2
-    for f in sys.argv [idx:] :
+    usage  = "%prog [-f|--file <xml-file>] [-t|--with-text] file ..."
+    parser = OptionParser (usage = usage)
+    parser.add_option \
+        ( "-f", "--file"
+        , dest = "ooofile"
+        , help = "XML-File inside OOo File"
+        , default = 'content.xml'
+        )
+    parser.add_option \
+        ( "-t", "--with-text"
+        , dest    = "with_text"
+        , action  = "store_true"
+        , help    = "Print text of xml nodes"
+        , default = False
+        )
+    (options, args) = parser.parse_args ()
+    if len (args) < 1 :
+        parser.print_help (sys.stderr)
+        sys.exit (23)
+    for f in args :
         o = OOoPy (infile = f)
-        e = o.read (ooofile)
-        pretty (e.getroot ())
+        e = o.read (options.ooofile)
+        pretty (e.getroot (), with_text = options.with_text)
         o.close ()

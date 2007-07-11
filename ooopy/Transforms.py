@@ -120,15 +120,20 @@ class Renumber (Access_Attribute) :
         Renumber transforms can be applied to correct the numbering
         after operations that destroy the unique numbering, e.g., after
         a mailmerge where the same document is repeatedly appended.
+
+        The force parameter specifies if the new renumbered name should
+        be inserted even if the attribute in question does not exist.
     """
 
-    def __init__ (self, tag, name = None, attr = None, start = 1) :
+    def __init__ \
+        (self, tag, name = None, attr = None, start = 1, force = False) :
         self.__super.__init__ ()
         tag_ns, tag_name = split_tag (tag)
         self.tag_ns      = tag_ns
         self.tag         = tag
         self.name        = name or tag_name [0].upper () + tag_name [1:]
         self.num         = start
+        self.force       = force
         self.attribute   = attr
     # end def __init__
 
@@ -139,6 +144,8 @@ class Renumber (Access_Attribute) :
     # end def register
 
     def use_value (self, oldval = None) :
+        if oldval is None and not self.force :
+            return
         name = "%s%d" % (self.name, self.num)
         self.num += 1
         return name
@@ -382,11 +389,9 @@ class Field_Replace (Transform) :
     # end def __init__
 
     def apply (self, root) :
-        body = root
-        if body.tag != self.oootag ('office', 'body') :
-            body = body.find (self.oootag ('office', 'body'))
+        tbody = self.find_tbody (root)
         for tag in 'variable-set', 'variable-get', 'variable-input' :
-            for node in body.findall ('.//' + self.oootag ('text', tag)) :
+            for node in tbody.findall ('.//' + self.oootag ('text', tag)) :
                 attr = 'name'
                 if tag == 'text-input' :
                     attr = 'description'
@@ -422,6 +427,11 @@ class Addpagebreak_Style (Transform) :
     prio     = 30
     para     = re.compile (r'P([0-9]+)')
 
+    properties = \
+        { mimetypes [0] : 'properties'
+        , mimetypes [1] : 'paragraph-properties'
+        }
+
     def apply (self, root) :
         max_style = 0
         styles = root.find (self.oootag ('office', 'automatic-styles'))
@@ -442,7 +452,7 @@ class Addpagebreak_Style (Transform) :
             )
         SubElement \
             ( new
-            , self.oootag ('style', 'properties')
+            , self.oootag ('style', self.properties [self.mimetype])
             , { self.oootag ('fo', 'break-after') : 'page' }
             )
         self.set ('stylename', stylename)
@@ -453,7 +463,7 @@ class Addpagebreak (Transform) :
     """
         This transformation adds a page break to the last page of the OOo
         text. This is needed, e.g., when doing mail-merge: We append a
-        page break to the body and then append the next page. This
+        page break to the tbody and then append the next page. This
         transform needs the name of the paragraph style specifying the
         page break style. Default is to use
         'Addpagebreak_Style:stylename' as the key for
@@ -470,13 +480,11 @@ class Addpagebreak (Transform) :
     # end def __init__
 
     def apply (self, root) :
-        """append to body e.g., <text:p text:style-name="P4"/>"""
-        body = root
-        if body.tag != self.oootag ('office', 'body') :
-            body = body.find (self.oootag ('office', 'body'))
+        """append to tbody e.g., <text:p text:style-name="P4"/>"""
+        tbody     = self.find_tbody (root)
         stylename = self.stylename or self.transformer [self.stylekey]
         SubElement \
-            ( body
+            ( tbody
             , self.oootag ('text', 'p')
             , { self.oootag ('text', 'style-name') : stylename }
             )
@@ -484,16 +492,16 @@ class Addpagebreak (Transform) :
 # end class Addpagebreak
 
 class _Body_Concat (Transform) :
-    """ Various methods for modifying the body split into various pieces
+    """ Various methods for modifying the tbody split into various pieces
         that have to keep sequence in order to not confuse OOo.
     """
-    ooo_sections = {}
-
+    ooo_sections  = {}
     for m in mimetypes :
         ooo_sections [m] = \
             [ { OOo_Tag ('text', 'variable-decls',   m) : 1
               , OOo_Tag ('text', 'sequence-decls',   m) : 1
               , OOo_Tag ('text', 'user-field-decls', m) : 1
+              , OOo_Tag ('office', 'forms',          m) : 1
               }
             , { OOo_Tag ('draw', 'frame',            m) : 1
               , OOo_Tag ('draw', 'rect',             m) : 1
@@ -501,27 +509,27 @@ class _Body_Concat (Transform) :
               }
             ]
 
-    def _body (self) :
+    def _textbody (self) :
         """
-            We use the body element as a container for various
-            transforms...
+            We use the office:body (OOo 1.X)/office:text (OOo 1.X)
+            element as a container for various transforms...
         """
-        return Element (self.oootag ('office', 'body'))
-    # end def _body
+        return Element (self.textbody_tag)
+    # end def _textbody
 
-    def _divide (self, body) :
+    def _divide (self, textbody) :
         """ Divide self.copy into parts that must keep their sequence.
-            We use another body tag for storing the parts...
-            Side-effect that self.copyparts is set is intended.
+            We use another textbody tag for storing the parts...
+            Side-effect of setting self.copyparts is intended.
         """
-        self.copyparts = self._body ()
-        self.copyparts.append (self._body ())
+        self.copyparts = self._textbody ()
+        self.copyparts.append (self._textbody ())
         l = len (self.ooo_sections [self.mimetype])
         idx = 0
-        for e in body :
+        for e in textbody :
             if idx < l :
                 if e.tag not in self.ooo_sections [self.mimetype][idx] :
-                    self.copyparts.append (self._body ())
+                    self.copyparts.append (self._textbody ())
                     idx += 1
             self.copyparts [-1].append (e)
         declarations = self.copyparts [0]
@@ -533,16 +541,21 @@ class _Body_Concat (Transform) :
         cont       = root
         if cont.tag != self.oootag ('office', 'document-content') :
             cont   = root.find  (self.oootag ('office', 'document-content'))
-        body       = cont.find  (self.oootag ('office', 'body'))
-        idx        = cont [:].index (body)
-        self.body  = cont [idx] = self._body ()
-        self.declarations = self._divide (body)
+        tbody      = cont.find  (self.oootag ('office', 'body'))
+        # OOo 2.X has an office:text inside office:body that contains
+        # the real text contents:
+        if self.mimetype == mimetypes [1] :
+            cont   = tbody
+            tbody  = cont.find (self.oootag ('office', 'text'))
+        idx        = cont [:].index (tbody)
+        self.tbody = cont [idx] = self._textbody ()
+        self.declarations = self._divide (tbody)
         self.bodyparts    = self.copyparts
     # end def divide_body
 
     def append_declarations (self) :
         for e in self.declarations :
-            self.body.append (e)
+            self.tbody.append (e)
     # end def append_declarations
 
     def append_to_body (self, cp) :
@@ -554,7 +567,7 @@ class _Body_Concat (Transform) :
     def assemble_body (self) :
         for p in self.bodyparts :
             for e in p :
-                self.body.append (e)
+                self.tbody.append (e)
     # end def assemble_body
 
     def _get_meta (self, var, classname = 'Get_Attribute', prefix = "") :
@@ -598,8 +611,8 @@ class Mailmerge (_Body_Concat) :
 
     def apply (self, root) :
         """
-            Copy old body, create new empty one and repeatedly append the
-            new body.
+            Copy old tbody, create new empty one and repeatedly append the
+            new tbody.
         """
         pb = Addpagebreak \
             ( stylename   = self.stylename
@@ -617,20 +630,21 @@ class Mailmerge (_Body_Concat) :
         ra         = Attribute_Access \
             ( ( Reanchor (pagecount, self.oootag ('draw', 'text-box'))
               , Reanchor (pagecount, self.oootag ('draw', 'rect'))
+              , Reanchor (pagecount, self.oootag ('draw', 'frame'))
               , Reanchor (z_index, None, self.oootag ('draw', 'z-index'))
               )
             , transformer = self.transformer # transformer added
             )
         self.divide_body (root)
-        self.bodyparts = [self._body () for i in self.copyparts]
+        self.bodyparts = [self._textbody () for i in self.copyparts]
 
         count = 0
         for i in self.iterator :
             count += 1
             fr = Field_Replace (replace = i, transformer = self.transformer)
-            # add page break only to non-empty body
+            # add page break only to non-empty tbody
             # reanchor only after the first mailmerge
-            if self.body : # body non-empty (but existing!)
+            if self.tbody : # tbody non-empty (but existing!)
                 pb.apply (self.bodyparts [-1])
                 ra.apply (self.copyparts)
             else :
@@ -805,15 +819,17 @@ class Concatenate (_Body_Concat) :
         for idx in range (1, len (self.docs) + 1) :
             meta    = self.trees ['meta.xml'][idx]
             content = self.trees ['content.xml'][idx]
-            body    = content.find (self.oootag ('office', 'body'))
+            tbody   = self.find_tbody (content)
             self.getmeta.apply (meta)
-            self.zi.apply      (body)
+            self.zi.apply      (tbody)
 
             ra = Attribute_Access \
               ( ( Reanchor 
                     (count ['page-count'], self.oootag ('draw', 'text-box'))
                 , Reanchor
                     (count ['page-count'], self.oootag ('draw', 'rect'))
+                , Reanchor
+                    (count ['page-count'], self.oootag ('draw', 'frame'))
                 , Reanchor
                     (count ['z-index'], None, self.oootag ('draw', 'z-index'))
                 )
@@ -829,7 +845,7 @@ class Concatenate (_Body_Concat) :
             pb.apply (self.bodyparts [-1])
             tr.apply (content)
             ra.apply (content)
-            declarations = self._divide (body)
+            declarations = self._divide (tbody)
             self.body_decl (declarations)
             self.append_to_body (self.copyparts)
         self.append_declarations ()
@@ -894,7 +910,7 @@ class Concatenate (_Body_Concat) :
     # end def _newname
 
     def set_pagestyle (self) :
-        """ For all documents: search for the first paragraph of the body
+        """ For all documents: search for the first paragraph of the tbody
             and get its style. Modify this style to include a reference
             to the default page-style if it doesn't contain a reference
             to a page style. Insert the new style into the list of
@@ -914,13 +930,13 @@ class Concatenate (_Body_Concat) :
         for idx in range (1, len (self.docs) + 1) :
             croot  = self.trees  ['content.xml'][idx]
             sroot  = self.trees  ['styles.xml'] [idx]
-            body   = croot.find (self.oootag ('office', 'body'))
-            para   = body.find  ('./' + self.oootag ('text', 'p'))
+            tbody  = self.find_tbody (croot)
+            para   = tbody.find  ('./' + self.oootag ('text', 'p'))
             tsn    = self.oootag ('text', 'style-name')
-            sname  = para.get   (tsn)
-            styles = croot.find (self.oootag ('office', 'automatic-styles'))
-            ost    = sroot.find (self.oootag ('office', 'styles'))
-            mst    = sroot.find (self.oootag ('office', 'master-styles'))
+            sname  = para.get    (tsn)
+            styles = croot.find  (self.oootag ('office', 'automatic-styles'))
+            ost    = sroot.find  (self.oootag ('office', 'styles'))
+            mst    = sroot.find  (self.oootag ('office', 'master-styles'))
             assert mst
             assert mst [0].tag == self.oootag ('style', 'master-page')
             sntag  = self.oootag ('style', 'name')
@@ -1037,19 +1053,22 @@ class Concatenate (_Body_Concat) :
 # end class Concatenate
 
 def renumber_frames (mimetype) :
-    return Renumber (OOo_Tag ('draw',  'text-box', mimetype), 'Frame')
+    return \
+        [ Renumber (OOo_Tag ('draw',  'text-box', mimetype), 'Frame') # OOo 1.X
+        , Renumber (OOo_Tag ('draw',  'frame',    mimetype), 'Frame') # OOo 2.X
+        ]
 # end def renumber_frames
 
 def renumber_sections (mimetype) :
-    return Renumber (OOo_Tag ('text',  'section', mimetype))
+    return [Renumber (OOo_Tag ('text',  'section', mimetype))]
 # end def renumber_sections
 
 def renumber_tables (mimetype) :
-    return Renumber (OOo_Tag ('table', 'table', mimetype))
+    return [Renumber (OOo_Tag ('table', 'table', mimetype))]
 # end def renumber_tables
 
 def renumber_images (mimetype) :
-    return Renumber (OOo_Tag ('draw', 'image', mimetype))
+    return [Renumber (OOo_Tag ('draw', 'image', mimetype))]
 # end def renumber_images
 
 def renumber_all (mimetype) :
@@ -1057,11 +1076,11 @@ def renumber_all (mimetype) :
         mimetype
     """
     return Attribute_Access \
-        ( ( renumber_frames   (mimetype)
-          , renumber_sections (mimetype)
-          , renumber_tables   (mimetype)
-          , renumber_images   (mimetype)
-        ) )
+        ( renumber_frames   (mimetype)
+        + renumber_sections (mimetype)
+        + renumber_tables   (mimetype)
+        + renumber_images   (mimetype)
+        ) 
 # end def renumber_all
 
 # used to have a separate Pagecount transform -- generalized to get
