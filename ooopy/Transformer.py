@@ -1237,7 +1237,6 @@ class Transformer (autosuper) :
         self.trees = {}
         for f in files :
             self.trees [f] = ooopy.read (f)
-            
         #self.dictionary = {} # clear dict when transforming another ooopy
         prios = self.transforms.keys ()
         prios.sort ()

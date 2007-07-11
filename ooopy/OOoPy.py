@@ -148,7 +148,7 @@ class OOoPy (autosuper) :
         """
         assert (self.izip)
         return OOoElementTree (self, zname, fromstring (self.izip.read (zname)))
-    # end def tree
+    # end def read
 
     def write (self, zname, etree) :
         assert (self.ozip)
@@ -156,7 +156,7 @@ class OOoPy (autosuper) :
         etree.write (str)
         self.ozip.writestr (zname, str.getvalue ())
         self.written [zname] = 1
-    # end def
+    # end def write
 
     def close (self) :
         """
