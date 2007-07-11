@@ -884,8 +884,6 @@ class Concatenate (_Body_Concat) :
         assert default_style is not None
         assert node is not None
         proppath = './' + self.properties_tag
-        import sys
-        print >> sys.stderr, default_style.tag, proppath, default_style [0].tag
         defprops = default_style.find (proppath)
         props    = node.find          (proppath)
         if props is None :
