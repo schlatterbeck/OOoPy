@@ -29,7 +29,7 @@ except ImportError :
     from elementtree.ElementTree import dump, SubElement, Element, tostring
 from OOoPy                   import OOoPy, autosuper
 from Transformer             import files, split_tag, OOo_Tag, Transform
-from Transformer             import mimetypes
+from Transformer             import mimetypes, namespace_by_name
 from Version                 import VERSION
 from copy                    import deepcopy
 
@@ -490,6 +490,24 @@ class Addpagebreak (Transform) :
             )
     # end def apply
 # end class Addpagebreak
+
+class Fix_OOo_Tag (Transform) :
+    """
+        OOo writer conditions are attributes where the *value* is
+        prefixed by an XML namespace. If the ooow namespace declaration
+        is not in scope, all conditions will evaluate to false. I
+        consider this a bug (a violation of the ideas of XML) of OOo.
+        Nevertheless to make conditions work, we insert the ooow
+        namespace declaration into the top-level element.
+    """
+    filename = 'content.xml'
+    prio     = 10000
+
+    def apply (self, root) :
+        if self.mimetype == mimetypes [1] :
+            root.set ('xmlns:ooow', namespace_by_name [self.mimetype]['ooow'])
+    # end def apply
+# end class Fix_OOo_Tag
 
 class _Body_Concat (Transform) :
     """ Various methods for modifying the tbody split into various pieces

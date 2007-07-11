@@ -77,6 +77,14 @@ namespace_by_name = \
       , 'text'     : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
       , 'xlink'    : "http://www.w3.org/1999/xlink"
       , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+      # OOo 1.X tags and some others:
+      , 'ooo'      : "http://openoffice.org/2004/office"
+      , 'ooow'     : "http://openoffice.org/2004/writer"
+      , 'oooc'     : "http://openoffice.org/2004/calc"
+      , 'dom'      : "http://www.w3.org/2001/xml-events"
+      , 'xforms'   : "http://www.w3.org/2002/xforms"
+      , 'xsd'      : "http://www.w3.org/2001/XMLSchema"
+      , 'xsi'      : "http://www.w3.org/2001/XMLSchema-instance"
       }
   }
 
@@ -293,6 +301,7 @@ class Transformer (autosuper) :
         ...       )
         ...     , renumber_all (o.mimetype)
         ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
@@ -405,6 +414,7 @@ class Transformer (autosuper) :
         ...     , Transforms.Concatenate ('test.sxw', 'rechng.sxw')
         ...     , renumber_all (o.mimetype)
         ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
@@ -723,6 +733,7 @@ class Transformer (autosuper) :
         ...     )
         ...   , renumber_all (o.mimetype)
         ...   , set_meta (o.mimetype)
+        ...   , Transforms.Fix_OOo_Tag ()
         ...   )
         >>> t.transform(o)
         >>> o.close()
@@ -765,6 +776,7 @@ class Transformer (autosuper) :
         ...       )
         ...     , renumber_all (o.mimetype)
         ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
@@ -897,6 +909,7 @@ class Transformer (autosuper) :
         ...     )
         ...   , renumber_all (o.mimetype)
         ...   , set_meta (o.mimetype)
+        ...   , Transforms.Fix_OOo_Tag ()
         ...   )
         >>> t.transform(o)
         >>> o.close()
