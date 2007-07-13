@@ -757,6 +757,7 @@ class Concatenate (_Body_Concat) :
         self.serialised = {}
         self.stylenames = {}
         self.namemaps   = [{}]
+        self.tab_depend = {}
         for s in self.ref_attrs.itervalues () :
             self.namemaps [0][s] = {}
         self.body_decls = {}
@@ -811,6 +812,31 @@ class Concatenate (_Body_Concat) :
             self.style_merge (f)
         self.body_concat ()
     # end def apply_all
+
+    def apply_tab_correction (self, node) :
+        """ Check if node depends on a style which has corrected tabs
+            if yes, insert all the default tabs *after* the maximum tab
+            position in that style.
+        """
+        tab_stops = self.oootag ('style', 'tab-stops')
+        tab_stop  = self.oootag ('style', 'tab-stop')
+        tab_pos   = self.oootag ('style', 'position')
+        parent    = node.get (self.oootag ('style', 'parent-style-name'))
+        if parent in self.tab_depend :
+            for prop in node :
+                if prop.tag != self.properties_tag :
+                    continue
+                for sub in prop :
+                    if sub.tag == tab_stops :
+                        self.tab_depend [parent] = 1
+                        max = 0
+                        for ts in sub :
+                            assert (ts.tag == tab_stop)
+                            pos = float (ts.get (tab_pos) [:-2])
+                            if max < pos :
+                                max = pos
+                        self.insert_tabs (sub, max)
+    # end def apply_tab_correction
 
     def _attr_rename (self, idx) :
         r = sum \
@@ -883,29 +909,44 @@ class Concatenate (_Body_Concat) :
                     d [name] = 1
     # end def body_decl
 
+    def insert_tabs (self, element, max = 0) :
+        """ Insert tab stops into the current element. Optionally after
+            max = the current maximum tab-position
+        """
+        dist_tag = self.oootag ('style', 'tab-stop-distance')
+        for k in range (1, len (self.tab_correct)) :
+            if self.tab_correct [-k].isdigit() :
+                break
+        l    = float (self.tab_correct [:-k])
+        unit = self.tab_correct [-k:]
+        for ts in range (35) :
+            pos = l * (ts + 1)
+            if pos > max :
+                SubElement \
+                    ( element
+                    , self.oootag ('style', 'tab-stop')
+                    , { self.oootag ('style', 'position') : '%s%s' % (pos, unit)
+                      }
+                    )
+    # end def insert_tabs
+
     def merge_defaultstyle (self, default_style, node) :
         assert default_style is not None
         assert node is not None
         proppath = './' + self.properties_tag
         defprops = default_style.find (proppath)
         props    = node.find          (proppath)
+        sn       = self.oootag ('style', 'name')
         if props is None :
             props = Element (self.properties_tag)
         for k, v in defprops.attrib.iteritems () :
             if self.default_properties.get (k) != v and not props.get (k) :
                 if k == self.oootag ('style', 'tab-stop-distance') :
+                    self.tab_correct = v
+                    self.tab_depend  = {node.get (sn) : 1}
                     stps = SubElement \
                         (props, self.oootag ('style', 'tab-stops'))
-                    l    = float (v [:-2])
-                    unit = v [-2:]
-                    for ts in range (35) :
-                        SubElement \
-                            ( stps
-                            , self.oootag ('style', 'tab-stop')
-                            , { self.oootag ('style', 'position') 
-                                : '%s%s' % (l * (ts + 1), unit)
-                              }
-                            )
+                    self.insert_tabs (stps)
                 else :
                     props.set (k,v)
         if len (props) or props.attrib :
@@ -1034,6 +1075,7 @@ class Concatenate (_Body_Concat) :
                             )
                         ) :
                         self.merge_defaultstyle (default_style, n)
+                    self.apply_tab_correction (n)
                     key = prefix + n.tag
                     if key not in namemap : namemap [key] = {}
                     tr = self._attr_rename (idx)
