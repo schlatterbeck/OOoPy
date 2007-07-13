@@ -1014,7 +1014,8 @@ class Transformer (autosuper) :
         "P19", "Concat_Standard"
         "P20", "Concat_Standard"
         "P21", "Concat_Standard"
-        "T1", "None"
+        "P22", "Concat_Standard"
+        "P23", "Concat_Standard"
         "Concat_fr1", "Frame"
         "Concat_fr2", "Frame"
         "fr3", "Frame"
@@ -1168,18 +1169,18 @@ class Transformer (autosuper) :
         ['Concat_gr1', 'P1', '21']
         >>> for n in s.findall ('.//' + OOo_Tag ('style', 'style', m)) :
         ...     if n.get (OOo_Tag ('style', 'name', m)).startswith ('Co') :
-        ...         attrs = 'name', 'class', 'family'
+        ...         attrs = 'name', 'display-name', 'class', 'family'
         ...         attrs = [n.get (OOo_Tag ('style', i, m)) for i in attrs]
         ...         print attrs
         ...         props = n.find ('./' + OOo_Tag ('style', 'properties', m))
         ...         if props is not None and len (props) :
         ...             props [0].tag
-        ['Concat_Standard', 'text', 'paragraph']
-        ['Concat_Text_20_body', 'text', 'paragraph']
-        ['Concat_List', 'list', 'paragraph']
-        ['Concat_Caption', 'extra', 'paragraph']
-        ['Concat_Frame_20_contents', 'extra', 'paragraph']
-        ['Concat_Index', 'index', 'paragraph']
+        ['Concat_Standard', None, 'text', 'paragraph']
+        ['Concat_Text_20_body', 'Concat Text body', 'text', 'paragraph']
+        ['Concat_List', None, 'list', 'paragraph']
+        ['Concat_Caption', None, 'extra', 'paragraph']
+        ['Concat_Frame_20_contents', 'Concat Frame contents', 'extra', 'paragraph']
+        ['Concat_Index', None, 'index', 'paragraph']
         >>> for n in c.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :

@@ -1007,13 +1007,12 @@ class Concatenate (_Body_Concat) :
             namemap = self.namemaps [idx]
             root    = self.trees    [oofile][idx]
             delnode = []
-            for node in root :
+            for nodeidx, node in enumerate (root) :
                 if node.tag not in self.style_containers :
                     continue
                 prefix = ''
                 if node.tag == self.oootag ('office', 'font-decls') :
                     prefix = oofile
-                nodeidx = -1
                 default_style = None
                 for n in node :
                     if  (   n.tag == self.oootag ('style', 'default-style')
@@ -1023,7 +1022,6 @@ class Concatenate (_Body_Concat) :
                         ) :
                         default_style = n
                     name     = n.get (self.oootag ('style', 'name'), None)
-                    nodeidx += 1
                     if not name : continue
                     if  (   idx != 0
                         and name == 'Standard'
@@ -1054,13 +1052,17 @@ class Concatenate (_Body_Concat) :
                         self.serialised [sn] = newname
                         if newname != name :
                             n.set (self.oootag ('style', 'name'), newname)
+                            dn = self.oootag ('style', 'display-name')
+                            disp_name = n.get (dn)
+                            if disp_name :
+                                n.set (dn, 'Concat ' + disp_name)
                             namemap [key][name] = newname
                         if idx != 0 :
                             self.sections [oofile][node.tag].append (n)
-            assert not delnode or not idx
-            delnode.reverse ()
-            for i in delnode :
-                del node [i]
+                assert not delnode or not idx
+                delnode.reverse ()
+                for i in delnode :
+                    del node [i]
     # end style_register
             
 # end class Concatenate
