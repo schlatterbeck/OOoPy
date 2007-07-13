@@ -4,7 +4,7 @@ SRC=Makefile MANIFEST.in setup.py README README.html default.css \
     $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
 
 VERSION=ooopy/Version.py
-LASTRELASE:=$(shell ../svntools/lastrelease)
+LASTRELASE:=$(shell ../svntools/lastrelease -n)
 
 USERNAME=schlatterbeck
 HOSTNAME=shell.sourceforge.net
