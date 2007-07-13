@@ -898,7 +898,7 @@ class Concatenate (_Body_Concat) :
                         (props, self.oootag ('style', 'tab-stops'))
                     l    = float (v [:-2])
                     unit = v [-2:]
-                    for ts in range (10) :
+                    for ts in range (35) :
                         SubElement \
                             ( stps
                             , self.oootag ('style', 'tab-stop')
