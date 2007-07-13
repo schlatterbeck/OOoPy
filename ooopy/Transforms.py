@@ -1049,7 +1049,8 @@ class Concatenate (_Body_Concat) :
                             namemap [key][name] = newname
                             # optimize original doc: remove duplicate styles
                             if  not idx and node.tag != self.font_decls_tag :
-                                delnode.append (nodeidx)
+                                pass
+                                #delnode.append (nodeidx)
                     else :
                         newname = self._newname (key, name)
                         self.serialised [sn] = newname
