@@ -133,6 +133,10 @@ class Transform (autosuper) :
         { mimetypes [0] : 'properties'
         , mimetypes [1] : 'paragraph-properties'
         }
+    font_decls = \
+        { mimetypes [0] : 'font-decls'
+        , mimetypes [1] : 'font-face-decls'
+        }
 
     def __init__ (self, prio = None, transformer = None) :
         if prio is not None :
@@ -176,11 +180,12 @@ class Transform (autosuper) :
             version of OOo document we are processing.
         """
         self.transformer     = transformer
-        self.mimetype        = transformer.mimetype
-        self.textbody_name   = self.textbody_names [self.mimetype]
-        self.paragraph_props = self.paragraph_props [self.mimetype]
+        mt                   = self.mimetype = transformer.mimetype
+        self.textbody_name   = self.textbody_names [mt]
+        self.paragraph_props = self.paragraph_props [mt]
         self.properties_tag  = self.oootag ('style', self.paragraph_props)
         self.textbody_tag    = self.oootag ('office', self.textbody_name)
+        self.font_decls_tag  = self.oootag ('office', self.font_decls [mt])
     # end def register
 
     def oootag (self, namespace, name) :
@@ -981,6 +986,12 @@ class Transformer (autosuper) :
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
         "Nimbus Roman No9 L", "None"
+        "Courier New", "None"
+        "Arial Black", "None"
+        "New Century Schoolbook", "None"
+        "Times New Roman", "None"
+        "Arial", "None"
+        "Helvetica", "None"
         "Table1", "None"
         "Table1.A", "None"
         "Table1.A1", "None"

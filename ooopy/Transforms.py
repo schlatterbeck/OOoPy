@@ -712,6 +712,7 @@ class Concatenate (_Body_Concat) :
     for m in mimetypes :
         style_containers.update \
             ({ OOo_Tag ('office', 'font-decls',       m) : 1
+             , OOo_Tag ('office', 'font-face-decls',  m) : 1
              , OOo_Tag ('office', 'styles',           m) : 1
              , OOo_Tag ('office', 'automatic-styles', m) : 1
              , OOo_Tag ('office', 'master-styles',    m) : 1
@@ -1002,7 +1003,6 @@ class Concatenate (_Body_Concat) :
             OOo seems to ensure declaration order of dependent styles,
             so this should not be a problem.
         """
-        _fontdcl = self.oootag ('office', 'font-decls')
         for idx in range (len (self.trees [oofile])) :
             namemap = self.namemaps [idx]
             root    = self.trees    [oofile][idx]
@@ -1011,7 +1011,8 @@ class Concatenate (_Body_Concat) :
                 if node.tag not in self.style_containers :
                     continue
                 prefix = ''
-                if node.tag == self.oootag ('office', 'font-decls') :
+                # font_decls may have same name in styles.xml and content.xml
+                if node.tag == self.font_decls_tag :
                     prefix = oofile
                 default_style = None
                 for n in node :
@@ -1045,7 +1046,7 @@ class Concatenate (_Body_Concat) :
                                 )
                             namemap [key][name] = newname
                             # optimize original doc: remove duplicate styles
-                            if  not idx and node.tag != _fontdcl :
+                            if  not idx and node.tag != self.font_decls_tag :
                                 delnode.append (nodeidx)
                     else :
                         newname = self._newname (key, name)
@@ -1063,7 +1064,7 @@ class Concatenate (_Body_Concat) :
                 delnode.reverse ()
                 for i in delnode :
                     del node [i]
-    # end style_register
+    # end style_merge
             
 # end class Concatenate
 
