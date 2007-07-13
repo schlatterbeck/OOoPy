@@ -87,6 +87,7 @@ Changes
 
 Version 0.3:
 
+ - Tested with python 2.3, 2.4, 2.5
  - OOoPy now works for OOo version 1.X and version 2.X
  - New attribute mimetype of OOoPy -- this is automatically set when
    reading a document, and should be set when writing one.
@@ -95,3 +96,4 @@ Version 0.3:
  - Since renumber_all is now a function it will (correctly) restart
    numbering for each new Attribute_Access instance it returns.
  - Built-in elementtree support from python2.5 is used if available
+ - Fix bug in optimisation of original document for concatenation
