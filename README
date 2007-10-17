@@ -55,7 +55,8 @@ Project information and download from `Sourceforge main page`_
 
 You need at least version 2.3 of python.
 
-For using OOoPy, you need to download and install the
+For using OOoPy with Python versions below 2.5, you need to download and
+install the
 `ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
 XML file format, see the book by J. David Eisenberg called
 `OpenOffice.org XML Essentials`_ which is under the Gnu Free
