@@ -47,6 +47,7 @@ setup \
     , packages         = ['ooopy']
     , platforms        = 'Any'
     , data_files       = [('share/ooopy' , ['test.sxw','run_doctest.py'])]
+    , scripts          = ['ooo_as_text']
     , classifiers      = \
         [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license
