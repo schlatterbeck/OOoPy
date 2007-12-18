@@ -7,6 +7,10 @@ VERSION=ooopy/Version.py
 LASTRELASE:=$(shell ../svntools/lastrelease -n)
 
 USERNAME=schlatterbeck
+PROJECT=ooopy
+PACKAGE=${PKG}
+CHANGES=changes
+NOTES=notes
 HOSTNAME=shell.sourceforge.net
 PROJECTDIR=/home/groups/o/oo/ooopy/htdocs
 
@@ -33,5 +37,7 @@ upload_homepage: all
 clean:
 	rm -f MANIFEST README.html default.css \
 	    $(PKG)/Version.py $(PKG)/Version.pyc $(PKG)/testout.sxw \
-	    $(PKG)/testout2.sxw
+	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
 	rm -rf dist build
+
+include ../make/Makefile-sf

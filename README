@@ -88,6 +88,8 @@ Changes
 
 Version 0.3:
 
+Now works with version 2.X of OpenOffice.org. Minor API changes.
+
  - Tested with python 2.3, 2.4, 2.5
  - OOoPy now works for OOo version 1.X and version 2.X
  - New attribute mimetype of OOoPy -- this is automatically set when
