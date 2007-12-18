@@ -86,7 +86,11 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
-Version 0.3:
+Version 0.4: Minor bugfixes
+
+TBD
+
+Version 0.3: Major feature enhancements
 
 Now works with version 2.X of OpenOffice.org. Minor API changes.
 
