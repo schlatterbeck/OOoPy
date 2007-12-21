@@ -1,3 +1,9 @@
+.. image:: http://sflogo.sourceforge.net/sflogo.php?group_id=134329&type=7
+    :height: 62
+    :width: 210
+    :alt: SourceForge.net Logo
+    :target: http://sourceforge.net
+
 OOoPy: Modify OpenOffice.org documents in Python
 ================================================
 
@@ -59,7 +65,7 @@ For using OOoPy with Python versions below 2.5, you need to download and
 install the
 `ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
 XML file format, see the book by J. David Eisenberg called
-`OpenOffice.org XML Essentials`_ which is under the Gnu Free
+`OASIS OpenDocument Essentials`_ which is under the Gnu Free
 Documentation License and will probably be printed soon. For a reference
 document you may want to check out the `XML File Format Specification`_
 (PDF) by OpenOffice.org.
@@ -67,7 +73,7 @@ document you may want to check out the `XML File Format Specification`_
 A german page for OOoPy exists at `runtux.com`_
 
 .. _`ElementTree Library`: http://effbot.org/downloads/#elementtree
-.. _`OpenOffice.org XML Essentials`: http://books.evc-cit.info/
+.. _`OASIS OpenDocument Essentials`: http://books.evc-cit.info/
 .. _`XML File Format Specification`: http://xml.openoffice.org/xml_specification.pdf
 .. _`runtux.com`: http://www.runtux.com/ooopy.html
 
@@ -86,11 +92,16 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
-Version 0.4: Minor bugfixes
+Version 1.1: Minor bugfixes
 
-TBD
+Small Documentation changes
 
-Version 0.3: Major feature enhancements
+ - Fix css stylesheet
+ - Link to SF logo for Homepage
+ - Link to other information updated
+ - Version numbers in documentation fixed
+
+Version 1.0: Major feature enhancements
 
 Now works with version 2.X of OpenOffice.org. Minor API changes.
 

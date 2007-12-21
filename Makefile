@@ -21,8 +21,8 @@ $(VERSION): $(SRC)
 dist: all
 	python setup.py sdist --formats=gztar,zip
 
-README.html: README
-	rst2html $< > $@
+README.html: README default.css
+	rst2html --stylesheet=default.css $< > $@
 
 default.css: ../../content/html/stylesheets/default.css
 	cp ../../content/html/stylesheets/default.css .
