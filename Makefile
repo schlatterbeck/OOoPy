@@ -4,7 +4,7 @@ SRC=Makefile MANIFEST.in setup.py README README.html default.css \
     $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
 
 VERSION=ooopy/Version.py
-LASTRELASE:=$(shell ../svntools/lastrelease -n)
+LASTRELEASE:=$(shell ../svntools/lastrelease -n)
 
 USERNAME=schlatterbeck
 PROJECT=ooopy
@@ -28,7 +28,7 @@ default.css: ../../content/html/stylesheets/default.css
 	cp ../../content/html/stylesheets/default.css .
 
 %.py: %.v $(SRC)
-	sed -e 's/RELEASE/$(LASTRELASE)/' $< > $@
+	sed -e 's/RELEASE/$(LASTRELEASE)/' $< > $@
 
 upload_homepage: all
 	scp README.html $(USERNAME)@$(HOSTNAME):$(PROJECTDIR)/index.html
