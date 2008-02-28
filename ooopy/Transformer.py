@@ -1223,6 +1223,7 @@ class Transformer (autosuper) :
         draw:line 21
     """
     def __init__ (self, mimetype, *tf) :
+        assert (mimetype in mimetypes)
         self.mimetype     = mimetype
         self.transforms   = {}
         for t in tf :

@@ -48,9 +48,48 @@ document format introduced with OOo 2.0.
 
 .. _`bug report`: http://ooopy.sourceforge.net/#reporting-bugs
 
+There is currently not much documentation except for a python doctest in
+OOoPy.py and Transformer.py. For running these test, after installing
+ooopy (assuming here you installed using python2.4 into /usr/local)::
+
+ cd /usr/local/share/ooopy
+ python2.4 run_doctest.py /usr/local/lib/python2.4/site-packages/ooopy/Transformer.py
+ python2.4 run_doctest.py /usr/local/lib/python2.4/site-packages/ooopy/OOoPy.py
+
+Both should report no failed tests.
 For running the doctest on python2.3 with the metaclass trickery of
 autosuper, see the file run_doctest.py. For later versions of python the
 bug in doctest is already fixed.
+
+Usage
+-----
+
+See the online documentation, e.g.::
+
+ % python
+ >>> from ooopy.OOoPy import OOoPy
+ >>> help (OOoPy)
+ >>> from ooopy.Transformer import Transformer
+ >>> help (Transformer)
+
+Help, I'm getting an AssertionError traceback from Transformer, e.g.::
+
+ Traceback (most recent call last):
+   File "./replace.py", line 17, in ?
+     t = Transformer(Field_Replace(replace = replace_dictionary))
+   File "/usr/local/lib/python2.4/site-packages/ooopy/Transformer.py", line 1226, in __init__
+     assert (mimetype in mimetypes)
+ AssertionError
+
+The API changed slightly when implementing handling of different
+versions of OOo files. Now the first parameter you pass to the
+Transformer constructor is the mimetype of the OpenOffice.org document
+you intend to transform. The mimetype can be fetched from another opened
+OOo document, e.g.::
+
+  ooo = OOoPy (infile = 'test.odt', outfile = 'test_out.odt')
+  t = Transformer(ooo.mimetype, ...
+
 
 Resources
 ---------
@@ -100,6 +139,9 @@ Small Documentation changes
  - Link to SF logo for Homepage
  - Link to other information updated
  - Version numbers in documentation fixed
+ - Add some checks for new API -- first parameter of Transformer is checked now
+ - Ship files needed for running the doctest and explain how to run it
+ - Usage section
 
 Version 1.0: Major feature enhancements
 

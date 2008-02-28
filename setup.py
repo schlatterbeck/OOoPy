@@ -46,7 +46,18 @@ setup \
     , url              = "http://ooopy.sourceforge.net/"
     , packages         = ['ooopy']
     , platforms        = 'Any'
-    , data_files       = [('share/ooopy' , ['test.sxw','run_doctest.py'])]
+    , data_files       = \
+        [ ('share/ooopy'
+          , ['test.sxw'
+            , 'carta.stw'
+            , 'test.odt'
+            , 'carta.odt'
+            , 'rechng.sxw'
+            , 'rechng.odt'
+            , 'run_doctest.py'
+            ]
+          )
+        ]
     , scripts          = ['ooo_as_text']
     , classifiers      = \
         [ 'Development Status :: 3 - Alpha'
