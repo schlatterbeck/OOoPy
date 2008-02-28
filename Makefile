@@ -34,6 +34,9 @@ upload_homepage: all
 	scp README.html $(USERNAME)@$(HOSTNAME):$(PROJECTDIR)/index.html
 	scp default.css $(USERNAME)@$(HOSTNAME):$(PROJECTDIR)
 
+announce_pypi: all
+	python setup.py register
+
 clean:
 	rm -f MANIFEST README.html default.css \
 	    $(PKG)/Version.py $(PKG)/Version.pyc $(PKG)/testout.sxw \
