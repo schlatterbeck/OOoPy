@@ -48,7 +48,7 @@ clean:
 	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
 	rm -rf dist build
 	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
-	    testout3.sxw testout3.odt                           \
+	    testout3.sxw testout3.odt out.html                  \
 	    out.sxw carta-out.stw carta-out.odt
 
 include ../make/Makefile-sf
