@@ -1249,6 +1249,29 @@ class Transformer (autosuper) :
         postalcode : 00815
         city : Niemandsdorf
         >>> o.close ()
+        >>> system ("ooo_mailmerge -o testout.odt -d, carta.odt x.csv")
+        0
+        >>> o = OOoPy (infile = 'testout.odt')
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
+        >>> for node in body.findall (vset) :
+        ...     name = node.get (OOo_Tag ('text', 'name', m))
+        ...     print name, ':', node.text
+        Spett : Spettabile
+        contraente : First person
+        indirizzo : street? 1
+        Spett : Egregio
+        contraente : Second Person
+        indirizzo : street? 2
+        tipo : racc. A.C.
+        luogo : Varese
+        oggetto : Saluti
+        tipo : Raccomandata
+        luogo : Gavirate
+        oggetto : Ossequi
+        >>> o.close ()
     """
     def __init__ (self, mimetype, *tf) :
         assert (mimetype in mimetypes)
