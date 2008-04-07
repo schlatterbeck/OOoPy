@@ -55,7 +55,7 @@ setup \
             , 'rechng.sxw'
             , 'rechng.odt'
             , 'run_doctest.py'
-            , x.csv
+            , 'x.csv'
             ]
           )
         ]
