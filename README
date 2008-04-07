@@ -142,11 +142,11 @@ Changes
 
 Version 1.2: Minor feature enhancements
 
-Minor bug-fix when concatenating documents; Add ooo_cat,
-ooo_fieldreplace, ooo_mailmerge command-line utilities. Fix ooo_as_text
-to allow specification of output-file. Note that handling of
-non-seekable input/output (pipes) for command-line utils will work only
-starting with python2.5.
+Minor bug-fix when concatenating documents. Add ooo_fieldreplace,
+ooo_cat, ooo_mailmerge command-line utilities. Fix ooo_as_text to allow
+specification of output-file. Note that handling of non-seekable
+input/output (pipes) for command-line utils will work only starting with
+python2.5.
 
  - Fix _divide (used for dividing body into parts that must keep
    sequence). If one of the sections was empty, body parts would change
