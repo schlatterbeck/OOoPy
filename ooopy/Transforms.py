@@ -1018,7 +1018,7 @@ class Concatenate (_Body_Concat) :
                     if s.tag == stytag and s.get (sntag) == sname :
                         style = s
                         break
-            if style and not style.get (mpn) :
+            if style is not None and not style.get (mpn) :
                 newstyle = deepcopy (style)
                 # Don't register with newname: will be rewritten later
                 # when appending. We assume that an original doc does
