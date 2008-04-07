@@ -1221,6 +1221,34 @@ class Transformer (autosuper) :
         draw:frame 5
         draw:line 22
         draw:line 21
+        >>> from os import system
+        >>> system ("ooo_fieldreplace -o testout.odt salutation='Frau' firstname=Erika "
+        ...         "lastname=Musterfrau country=D postalcode=00815 city=Niemandsdorf "
+        ...         "street='Beispielstrasse 42' < test.odt")
+        0
+        >>> o = OOoPy (infile = 'testout.odt')
+        >>> c = o.read ('content.xml')
+        >>> m = o.mimetype
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
+        >>> for node in body.findall (vset) :
+        ...     name = node.get (OOo_Tag ('text', 'name', m))
+        ...     print name, ':', node.text
+        salutation : Frau
+        firstname : Erika
+        lastname : Musterfrau
+        street : Beispielstrasse 42
+        country : D
+        postalcode : 00815
+        city : Niemandsdorf
+        salutation : Frau
+        firstname : Erika
+        lastname : Musterfrau
+        street : Beispielstrasse 42
+        country : D
+        postalcode : 00815
+        city : Niemandsdorf
+        >>> o.close ()
     """
     def __init__ (self, mimetype, *tf) :
         assert (mimetype in mimetypes)

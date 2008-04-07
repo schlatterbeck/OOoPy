@@ -37,10 +37,18 @@ upload_homepage: all
 announce_pypi: all
 	python setup.py register
 
+test: $(VERSION)
+	python run_doctest.py ooopy/OOoPy.py
+	python run_doctest.py ooopy/Transforms.py
+	python run_doctest.py ooopy/Transformer.py
+
 clean:
 	rm -f MANIFEST README.html default.css \
 	    $(PKG)/Version.py $(PKG)/Version.pyc $(PKG)/testout.sxw \
 	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
 	rm -rf dist build
+	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
+	    testout3.sxw testout3.odt                           \
+	    out.sxw carta-out.stw carta-out.odt
 
 include ../make/Makefile-sf
