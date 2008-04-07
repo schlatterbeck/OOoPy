@@ -48,13 +48,14 @@ setup \
     , platforms        = 'Any'
     , data_files       =
         [ ('share/ooopy'
-          , ['test.sxw'
+          , [ 'test.sxw'
             , 'carta.stw'
             , 'test.odt'
             , 'carta.odt'
             , 'rechng.sxw'
             , 'rechng.odt'
             , 'run_doctest.py'
+            , x.csv
             ]
           )
         ]
