@@ -46,7 +46,7 @@ setup \
     , url              = "http://ooopy.sourceforge.net/"
     , packages         = ['ooopy']
     , platforms        = 'Any'
-    , data_files       = \
+    , data_files       =
         [ ('share/ooopy'
           , ['test.sxw'
             , 'carta.stw'
@@ -58,8 +58,13 @@ setup \
             ]
           )
         ]
-    , scripts          = ['ooo_as_text', 'ooo_cat', 'ooo_fieldreplace']
-    , classifiers      = \
+    , scripts          = 
+        [ 'ooo_as_text'
+        , 'ooo_cat'
+        , 'ooo_fieldreplace'
+        , 'ooo_mailmerge'
+        ]
+    , classifiers      =
         [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license
         , 'Operating System :: OS Independent'
