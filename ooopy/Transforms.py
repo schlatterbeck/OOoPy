@@ -991,7 +991,7 @@ class Concatenate (_Body_Concat) :
             sroot  = self.trees  ['styles.xml'] [idx]
             tbody  = self.find_tbody (croot)
             para   = tbody.find  ('./' + self.oootag ('text', 'p'))
-            if not para :
+            if para is None :
                 para = tbody.find  ('./' + self.oootag ('text', 'list'))
             tsn    = self.oootag ('text', 'style-name')
             sname  = para.get    (tsn)
