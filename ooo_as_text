@@ -1,17 +1,36 @@
 #!/usr/bin/env python
 
 import sys
+from optparse    import OptionParser
 from ooopy.OOoPy import OOoPy
 
-def as_text (node) :
+def as_text (node, out) :
     if node.text is not None :
-        print node.text.encode ('utf-8'),
+        print >> out, node.text.encode ('utf-8'),
     for subnode in node :
-        as_text (subnode)
+        as_text (subnode, out)
     if node.tail is not None :
-        print node.tail.encode ('utf-8'),
+        print >> out, node.tail.encode ('utf-8'),
 
 if __name__ == '__main__' :
-    o = OOoPy  (infile = sys.argv [1])
-    e = o.read ('content.xml')
-    as_text (e.getroot ())
+    usage  = '%prog [-o|--output-file <filename>] [file, ...]'
+    parser = OptionParser (usage = usage)
+    parser.add_option \
+        ( "-o", "--output-file"
+        , dest    = "output_file"
+        , help    = "Output file (defaults to stdout)"
+        , default = None
+        )
+    (options, args) = parser.parse_args ()
+    if options.output_file is None :
+        outfile = sys.stdout
+    else :
+        outfile = open (options.output_file, "w")
+    if len (args) < 1 :
+        infiles = [sys.stdin]
+    else :
+        infiles = args
+    for f in infiles :
+        o = OOoPy  (infile = f)
+        e = o.read ('content.xml')
+        as_text (e.getroot (), outfile)

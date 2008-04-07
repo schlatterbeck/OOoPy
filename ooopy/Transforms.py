@@ -540,8 +540,10 @@ class _Body_Concat (Transform) :
         l = len (self.ooo_sections [self.mimetype])
         idx = 0
         for e in textbody :
-            if idx < l :
-                if e.tag not in self.ooo_sections [self.mimetype][idx] :
+            while idx < l :
+                if e.tag in self.ooo_sections [self.mimetype][idx] :
+                    break
+                else :
                     self.copyparts.append (self._textbody ())
                     idx += 1
             self.copyparts [-1].append (e)
@@ -989,6 +991,8 @@ class Concatenate (_Body_Concat) :
             sroot  = self.trees  ['styles.xml'] [idx]
             tbody  = self.find_tbody (croot)
             para   = tbody.find  ('./' + self.oootag ('text', 'p'))
+            if not para :
+                para = tbody.find  ('./' + self.oootag ('text', 'list'))
             tsn    = self.oootag ('text', 'style-name')
             sname  = para.get    (tsn)
             styles = croot.find  (self.oootag ('office', 'automatic-styles'))
@@ -1014,8 +1018,7 @@ class Concatenate (_Body_Concat) :
                     if s.tag == stytag and s.get (sntag) == sname :
                         style = s
                         break
-            assert style is not None
-            if not style.get (mpn) :
+            if style and not style.get (mpn) :
                 newstyle = deepcopy (style)
                 # Don't register with newname: will be rewritten later
                 # when appending. We assume that an original doc does
