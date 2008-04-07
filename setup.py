@@ -33,7 +33,7 @@ for line in f :
         break
     description.append (line)
 
-license = 'GNU Lesser General Public License (LGPL)'
+license = 'GNU Library or Lesser General Public License (LGPL)'
 
 setup \
     ( name             = "OOoPy"
