@@ -58,7 +58,7 @@ setup \
             ]
           )
         ]
-    , scripts          = ['ooo_as_text', 'ooo_cat']
+    , scripts          = ['ooo_as_text', 'ooo_cat', 'ooo_fieldreplace']
     , classifiers      = \
         [ 'Development Status :: 3 - Alpha'
         , 'License :: OSI Approved :: ' + license

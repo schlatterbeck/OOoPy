@@ -7,7 +7,8 @@ from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
 
 if __name__ == '__main__' :
-    usage  = '%prog [-i|--input-file <filename>] [-o|--output-file <filename>] [name=value, ...]'
+    usage  = '%prog [-i|--input-file <filename>] ' \
+             '[-o|--output-file <filename>] [name=value, ...]'
     parser = OptionParser (usage = usage)
     parser.add_option \
         ( "-i", "--input-file"
