@@ -2,29 +2,37 @@
 
 import sys
 from optparse           import OptionParser
+from StringIO           import StringIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
 
 if __name__ == '__main__' :
-    usage  = '%prog [-i|--input-file <filename>] ' \
-             '[-o|--output-file <filename>] [name=value, ...]'
+    usage  = \
+        '''%prog [-i|--input-file <filename>]
+           [-o|--output-file <filename>] [name=value, ...]'''
     parser = OptionParser (usage = usage)
     parser.add_option \
         ( "-i", "--input-file"
         , dest    = "input_file"
         , help    = "Input file (defaults to stdin)"
-        , default = sys.stdin
+        , default = None
         )
     parser.add_option \
         ( "-o", "--output-file"
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
-        , default = sys.stdout
+        , default = None
         )
     (options, args) = parser.parse_args ()
-    fields = dict (arg.split ('=', 1) for arg in args)
-    o = OOoPy (infile = options.input_file, outfile = options.output_file)
+    fields  = dict (arg.split ('=', 1) for arg in args)
+    infile  = options.input_file
+    outfile = options.output_file
+    if infile is None :
+        infile = StringIO (sys.stdin.read ())
+    if outfile is None :
+        outfile = StringIO ()
+    o = OOoPy (infile = infile, outfile = outfile)
     t = Transformer \
         ( o.mimetype
         , Transforms.Editinfo      ()
@@ -33,3 +41,5 @@ if __name__ == '__main__' :
         )
     t.transform (o)
     o.close ()
+    if options.output_file is None :
+        sys.stdout.write (outfile.getvalue ())

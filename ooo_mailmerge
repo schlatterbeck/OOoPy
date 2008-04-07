@@ -3,7 +3,7 @@
 import sys
 from optparse           import OptionParser
 from csv                import DictReader
-from textwrap           import dedent
+from StringIO           import StringIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
@@ -16,21 +16,24 @@ if __name__ == '__main__' :
     parser.add_option \
         ( "-d", "--delimiter"
         , dest    = "delimiter"
-        , help    = "Delimiter of cvs-format"
+        , help    = "Delimiter of cvs-format (Default Tab)"
         , default = '\t'
         )
     parser.add_option \
         ( "-o", "--output-file"
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
-        , default = sys.stdout
+        , default = None
         )
     (options, args) = parser.parse_args ()
     if len (args) != 2 :
         parser.error ('Missing arguments')
         sys.exit (1)
+    outfile = options.output_file
+    if outfile is None :
+        outfile = StringIO ()
     d = DictReader (open (args [1]))
-    o = OOoPy (infile = args [0], outfile = options.output_file)
+    o = OOoPy (infile = args [0], outfile = outfile)
     t = Transformer \
         ( o.mimetype
         , Transforms.get_meta           (o.mimetype)
@@ -42,3 +45,5 @@ if __name__ == '__main__' :
         )
     t.transform (o)
     o.close ()
+    if options.output_file is None :
+        sys.stdout.write (outfile.getvalue ())

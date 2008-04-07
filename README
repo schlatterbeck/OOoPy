@@ -49,7 +49,8 @@ document format introduced with OOo 2.0.
 .. _`bug report`: http://ooopy.sourceforge.net/#reporting-bugs
 
 There is currently not much documentation except for a python doctest in
-OOoPy.py and Transformer.py. For running these test, after installing
+OOoPy.py and Transformer.py and the command-line utilities_.
+For running these test, after installing
 ooopy (assuming here you installed using python2.4 into /usr/local)::
 
  cd /usr/local/share/ooopy
@@ -90,6 +91,14 @@ OOo document, e.g.::
   ooo = OOoPy (infile = 'test.odt', outfile = 'test_out.odt')
   t = Transformer(ooo.mimetype, ...
 
+A, well, there are command-line _`utilities` now:
+
+- ooo_cat for concatenating several OOo files into one
+- ooo_fieldreplace for replacing fields in an OOo document
+- ooo_mailmerge for doing a mailmerge from a template OOo document and a
+  CSV (comma separated values) input
+- ooo_as_text for getting the text from an OOo-File (e.g., for doing a
+  "grep" on the output).
 
 Resources
 ---------
@@ -133,7 +142,11 @@ Changes
 
 Version 1.2: Minor feature enhancements
 
-Minor bug-fix when concatenating documents; Add ooo_cat command-line utility.
+Minor bug-fix when concatenating documents; Add ooo_cat,
+ooo_fieldreplace, ooo_mailmerge command-line utilities. Fix ooo_as_text
+to allow specification of output-file. Note that handling of
+non-seekable input/output (pipes) for command-line utils will work only
+starting with python2.5.
 
  - Fix _divide (used for dividing body into parts that must keep
    sequence). If one of the sections was empty, body parts would change
@@ -141,6 +154,10 @@ Minor bug-fix when concatenating documents; Add ooo_cat command-line utility.
  - Fix handling of cases where we don't have a paragraph (only list) elements
  - Implement ooo_cat
  - Fix ooo_as_text to include more command-line handling
+ - Fix reading/writing stdin/stdout for command-line utilities, this
+   will work reliably (reading/writing non-seekable input/output like,
+   e.g., pipes) only with python2.5
+ - implement ooo_fieldreplace and ooo_mailmerge
 
 Version 1.1: Minor bugfixes
 

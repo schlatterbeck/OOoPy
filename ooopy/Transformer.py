@@ -1222,7 +1222,7 @@ class Transformer (autosuper) :
         draw:line 22
         draw:line 21
         >>> from os import system
-        >>> system ("ooo_fieldreplace -o testout.odt salutation='Frau' firstname=Erika "
+        >>> system ("./ooo_fieldreplace -o testout.odt salutation='Frau' firstname=Erika "
         ...         "lastname=Musterfrau country=D postalcode=00815 city=Niemandsdorf "
         ...         "street='Beispielstrasse 42' < test.odt")
         0
@@ -1249,7 +1249,7 @@ class Transformer (autosuper) :
         postalcode : 00815
         city : Niemandsdorf
         >>> o.close ()
-        >>> system ("ooo_mailmerge -o testout.odt -d, carta.odt x.csv")
+        >>> system ("./ooo_mailmerge -o testout.odt -d, carta.odt x.csv")
         0
         >>> o = OOoPy (infile = 'testout.odt')
         >>> m = o.mimetype

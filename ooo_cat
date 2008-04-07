@@ -2,6 +2,7 @@
 
 import sys
 from optparse           import OptionParser
+from StringIO           import StringIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
@@ -13,14 +14,17 @@ if __name__ == '__main__' :
         ( "-o", "--output-file"
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
-        , default = sys.stdout
+        , default = None
         )
     (options, args) = parser.parse_args ()
     if len (args) < 1 :
-        infiles = [sys.stdin]
+        infiles = [StringIO (sys.stdin.read ())]
     else :
         infiles = args
-    o = OOoPy (infile = infiles [0], outfile = options.output_file)
+    outfile = options.output_file
+    if outfile is None :
+        outfile = StringIO ()
+    o = OOoPy (infile = infiles [0], outfile = outfile)
     if len (infiles) > 1 :
         t = Transformer \
             ( o.mimetype
@@ -32,3 +36,5 @@ if __name__ == '__main__' :
             )
         t.transform (o)
     o.close ()
+    if options.output_file is None :
+        sys.stdout.write (outfile.getvalue ())

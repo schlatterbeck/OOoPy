@@ -2,6 +2,7 @@
 
 import sys
 from optparse    import OptionParser
+from StringIO    import StringIO
 from ooopy.OOoPy import OOoPy
 
 def as_text (node, out) :
@@ -27,7 +28,7 @@ if __name__ == '__main__' :
     else :
         outfile = open (options.output_file, "w")
     if len (args) < 1 :
-        infiles = [sys.stdin]
+        infiles = [StringIO (sys.stdin.read ())]
     else :
         infiles = args
     for f in infiles :
