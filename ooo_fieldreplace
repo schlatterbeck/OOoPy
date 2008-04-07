@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import sys
+from optparse           import OptionParser
+from ooopy.OOoPy        import OOoPy
+from ooopy.Transformer  import Transformer
+import ooopy.Transforms as     Transforms
+
+if __name__ == '__main__' :
+    usage  = '%prog [-i|--input-file <filename>] [-o|--output-file <filename>] [name=value, ...]'
+    parser = OptionParser (usage = usage)
+    parser.add_option \
+        ( "-i", "--input-file"
+        , dest    = "input_file"
+        , help    = "Input file (defaults to stdin)"
+        , default = sys.stdin
+        )
+    parser.add_option \
+        ( "-o", "--output-file"
+        , dest    = "output_file"
+        , help    = "Output file (defaults to stdout)"
+        , default = sys.stdout
+        )
+    (options, args) = parser.parse_args ()
+    fields = dict (arg.split ('=', 1) for arg in args)
+    o = OOoPy (infile = options.input_file, outfile = options.output_file)
+    t = Transformer \
+        ( o.mimetype
+        , Transforms.Editinfo      ()
+        , Transforms.Field_Replace (replace = fields)
+        , Transforms.Fix_OOo_Tag   ()
+        )
+    t.transform (o)
+    o.close ()
