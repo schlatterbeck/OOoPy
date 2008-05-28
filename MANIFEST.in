@@ -1,6 +1,16 @@
 include test.sxw
+include carta.stw
+include test.odt
+include carta.odt
+include rechng.sxw
+include rechng.odt
+include x.csv
 include ooopy/*.py
 include README
 include default.css
 include README.html
 include run_doctest.py
+include ooo_as_text
+include ooo_cat
+include ooo_fieldreplace
+include ooo_mailmerge

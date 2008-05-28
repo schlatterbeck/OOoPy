@@ -140,6 +140,14 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.3: Minor bugfixes
+
+Regression-test failed because some files were not distributed.
+Fixes SF Bugs 1970389 and 1972900.
+
+ - Fix MANIFEST.in to include all files needed for regression test
+   (doctest).
+
 Version 1.2: Major feature enhancements
 
 Add ooo_fieldreplace, ooo_cat, ooo_mailmerge command-line utilities. Fix
