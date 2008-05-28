@@ -51,4 +51,6 @@ clean:
 	    testout3.sxw testout3.odt out.html                  \
 	    out.sxw carta-out.stw carta-out.odt
 
+release: upload upload_homepage announce_pypi announce
+
 include ../make/Makefile-sf
