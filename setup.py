@@ -26,11 +26,11 @@ from ooopy.Version  import VERSION
 
 description = []
 f = open ('README')
-f.next ()
-f.next ()
+logo_stripped = False
 for line in f :
-    if line.strip () == 'Resources' :
-        break
+    if not logo_stripped and line.strip () :
+        continue
+    logo_stripped = True
     description.append (line)
 
 license = 'GNU Library or Lesser General Public License (LGPL)'
