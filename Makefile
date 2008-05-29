@@ -3,7 +3,8 @@ PY=__init__.py OOoPy.py Transformer.py Transforms.py
 SRC=Makefile MANIFEST.in setup.py README README.html \
     $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
 
-VERSION=ooopy/Version.py
+VERSIONPY=ooopy/Version.py
+VERSION=$(VERSIONPY)
 LASTRELEASE:=$(shell ../svntools/lastrelease -n)
 
 USERNAME=schlatterbeck
