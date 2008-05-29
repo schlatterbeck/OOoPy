@@ -269,7 +269,7 @@ class Transformer (autosuper) :
         >>> t.transform (o)
         >>> o.close ()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("testout.sxw", "w")
+        >>> f   = open ("testout.sxw", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -329,7 +329,7 @@ class Transformer (autosuper) :
         'P2'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("testout2.sxw", "w")
+        >>> f   = open ("testout2.sxw", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -439,7 +439,7 @@ class Transformer (autosuper) :
         word-count '160'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("testout3.sxw", "w")
+        >>> f   = open ("testout3.sxw", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -749,7 +749,7 @@ class Transformer (autosuper) :
         >>> t.transform(o)
         >>> o.close()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("carta-out.stw", "w")
+        >>> f   = open ("carta-out.stw", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -804,7 +804,7 @@ class Transformer (autosuper) :
         'P2'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("testout.odt", "w")
+        >>> f   = open ("testout.odt", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -925,7 +925,7 @@ class Transformer (autosuper) :
         >>> t.transform(o)
         >>> o.close()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("carta-out.odt", "w")
+        >>> f   = open ("carta-out.odt", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -970,7 +970,7 @@ class Transformer (autosuper) :
         word-count '159'
         >>> o.close ()
         >>> ov  = sio.getvalue ()
-        >>> f   = open ("testout3.odt", "w")
+        >>> f   = open ("testout3.odt", "wb")
         >>> f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
@@ -1222,9 +1222,10 @@ class Transformer (autosuper) :
         draw:line 22
         draw:line 21
         >>> from os import system
-        >>> system ("./ooo_fieldreplace -o testout.odt salutation='Frau' firstname=Erika "
-        ...         "lastname=Musterfrau country=D postalcode=00815 city=Niemandsdorf "
-        ...         "street='Beispielstrasse 42' < test.odt")
+        >>> system ('./ooo_fieldreplace -i test.odt -o testout.odt '
+        ...         'salutation=Frau firstname=Erika lastname=Musterfrau '
+        ...         'country=D postalcode=00815 city=Niemandsdorf '
+        ...         'street="Beispielstrasse 42"')
         0
         >>> o = OOoPy (infile = 'testout.odt')
         >>> c = o.read ('content.xml')

@@ -140,6 +140,17 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.4: Minor bugfixes
+
+Fix Doctest to hopefully run on windows.
+
+ - Open output-files in "wb" mode instead of "w" in doctest to not
+   create corrupt OOo documents on windows.
+ - Use double quotes for arguments when calling system, single quotes
+   don't seem to work on windows.
+ - Dont use redirection when calling system, use -i option for input
+   file instead. Redirection seems to be a problem on windows.
+
 Version 1.3: Minor bugfixes
 
 Regression-test failed because some files were not distributed.
