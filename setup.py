@@ -22,7 +22,10 @@
 # ****************************************************************************
 
 from distutils.core import setup
-from ooopy.Version  import VERSION
+try :
+    from ooopy.Version  import VERSION
+except :
+    VERSION = None
 
 description = []
 f = open ('README')
