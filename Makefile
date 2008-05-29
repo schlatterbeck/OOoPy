@@ -1,6 +1,6 @@
 PKG=ooopy
 PY=__init__.py OOoPy.py Transformer.py Transforms.py
-SRC=Makefile MANIFEST.in setup.py README README.html default.css \
+SRC=Makefile MANIFEST.in setup.py README README.html \
     $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
 
 VERSION=ooopy/Version.py
@@ -20,22 +20,6 @@ $(VERSION): $(SRC)
 
 dist: all
 	python setup.py sdist --formats=gztar,zip
-
-README.html: README default.css
-	rst2html --stylesheet=default.css $< > $@
-
-default.css: ../../content/html/stylesheets/default.css
-	cp ../../content/html/stylesheets/default.css .
-
-%.py: %.v $(SRC)
-	sed -e 's/RELEASE/$(LASTRELEASE)/' $< > $@
-
-upload_homepage: all
-	scp README.html $(USERNAME)@$(HOSTNAME):$(PROJECTDIR)/index.html
-	scp default.css $(USERNAME)@$(HOSTNAME):$(PROJECTDIR)
-
-announce_pypi: all
-	python setup.py register
 
 test: $(VERSION)
 	python run_doctest.py ooopy/OOoPy.py
