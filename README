@@ -142,7 +142,8 @@ Changes
 
 Version 1.4: Minor bugfixes
 
-Fix Doctest to hopefully run on windows.
+Fix Doctest to hopefully run on windows. Thanks to Dani Budinova for
+testing thoroughly under windows.
 
  - Open output-files in "wb" mode instead of "w" in doctest to not
    create corrupt OOo documents on windows.
