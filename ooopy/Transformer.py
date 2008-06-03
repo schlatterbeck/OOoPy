@@ -1222,7 +1222,7 @@ class Transformer (autosuper) :
         draw:line 22
         draw:line 21
         >>> from os import system
-        >>> system ('./ooo_fieldreplace -i test.odt -o testout.odt '
+        >>> system ('python ./ooo_fieldreplace -i test.odt -o testout.odt '
         ...         'salutation=Frau firstname=Erika lastname=Musterfrau '
         ...         'country=D postalcode=00815 city=Niemandsdorf '
         ...         'street="Beispielstrasse 42"')
