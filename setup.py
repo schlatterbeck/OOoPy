@@ -66,6 +66,7 @@ setup \
         [ 'ooo_as_text'
         , 'ooo_cat'
         , 'ooo_fieldreplace'
+        , 'ooo_grep'
         , 'ooo_mailmerge'
         ]
     , classifiers      =
