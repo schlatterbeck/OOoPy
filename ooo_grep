@@ -1,0 +1,11 @@
+#!/bin/sh
+# Run all given ooo files through ooo_as_text and grep -l for pattern
+if [ $# -lt 2 ] ; then
+    echo "Usage: $0 <pattern> <ooofile> ..." 2>&1
+    exit 42
+fi
+pattern=$1
+shift
+for k in "$@" ; do
+    ooo_as_text "$k" | grep -l --label="$k" "$pattern"
+done

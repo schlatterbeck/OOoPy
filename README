@@ -94,6 +94,9 @@ OOo document, e.g.::
 A, well, there are command-line _`utilities` now:
 
 - ooo_cat for concatenating several OOo files into one
+- ooo_grep to do equivalent of grep -l on OOo files -- only runs on
+  Unix-like operating systems, probably only with the GNU version of grep
+  (it's a shell-script using ooo_cat)
 - ooo_fieldreplace for replacing fields in an OOo document
 - ooo_mailmerge for doing a mailmerge from a template OOo document and a
   CSV (comma separated values) input
@@ -139,6 +142,12 @@ Please use the `Sourceforge Bug Tracker`_ and
 
 Changes
 -------
+
+Version 1.X: Minor feature enhancements
+
+Add ooo_grep to search for OOo files containing a pattern.
+
+ - New shell-script ooo_grep (does equivalent to grep -l on OOo Files)
 
 Version 1.4: Minor bugfixes
 
