@@ -21,12 +21,13 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
-from zipfile                 import ZipFile, ZIP_DEFLATED
+from zipfile                 import ZipFile, ZIP_DEFLATED, ZipInfo
 from StringIO                import StringIO
+from datetime                import datetime
 try :
-    from xml.etree.ElementTree   import ElementTree, fromstring
+    from xml.etree.ElementTree   import ElementTree, fromstring, _namespace_map
 except ImportError :
-    from elementtree.ElementTree import ElementTree, fromstring
+    from elementtree.ElementTree import ElementTree, fromstring, _namespace_map
 from tempfile                import mkstemp
 from Version                 import VERSION
 import os
@@ -42,6 +43,76 @@ class autosuper (object) :
     __metaclass__ = _autosuper
     pass
 # end class autosuper
+
+files = \
+    [ 'content.xml'
+    , 'styles.xml'
+    , 'meta.xml'
+    , 'settings.xml'
+    , 'META-INF/manifest.xml'
+    ]
+
+mimetypes = \
+    [ 'application/vnd.sun.xml.writer'
+    , 'application/vnd.oasis.opendocument.text'
+    ]
+namespace_by_name = \
+  { mimetypes [0] :
+      { 'chart'    : "http://openoffice.org/2000/chart"
+      , 'config'   : "http://openoffice.org/2001/config"
+      , 'dc'       : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'     : "http://openoffice.org/2000/dr3d"
+      , 'draw'     : "http://openoffice.org/2000/drawing"
+      , 'fo'       : "http://www.w3.org/1999/XSL/Format"
+      , 'form'     : "http://openoffice.org/2000/form"
+      , 'math'     : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'     : "http://openoffice.org/2000/meta"
+      , 'number'   : "http://openoffice.org/2000/datastyle"
+      , 'office'   : "http://openoffice.org/2000/office"
+      , 'script'   : "http://openoffice.org/2000/script"
+      , 'style'    : "http://openoffice.org/2000/style"
+      , 'svg'      : "http://www.w3.org/2000/svg"
+      , 'table'    : "http://openoffice.org/2000/table"
+      , 'text'     : "http://openoffice.org/2000/text"
+      , 'xlink'    : "http://www.w3.org/1999/xlink"
+      , 'manifest' : "http://openoffice.org/2001/manifest"
+      }
+  , mimetypes [1] :
+      { 'chart'    : "urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+      , 'config'   : "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
+      , 'dc'       : "http://purl.org/dc/elements/1.1/"
+      , 'dr3d'     : "urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+      , 'draw'     : "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+      , 'fo'       : "urn:oasis:names:tc:opendocument:xmlns:"
+                     "xsl-fo-compatible:1.0"
+      , 'form'     : "urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+      , 'math'     : "http://www.w3.org/1998/Math/MathML"
+      , 'meta'     : "urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+      , 'number'   : "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+      , 'office'   : "urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+      , 'script'   : "urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+      , 'style'    : "urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+      , 'svg'      : "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+      , 'table'    : "urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+      , 'text'     : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+      , 'xlink'    : "http://www.w3.org/1999/xlink"
+      , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+      # OOo 1.X tags and some others:
+      , 'ooo'      : "http://openoffice.org/2004/office"
+      , 'ooow'     : "http://openoffice.org/2004/writer"
+      , 'oooc'     : "http://openoffice.org/2004/calc"
+      , 'dom'      : "http://www.w3.org/2001/xml-events"
+      , 'xforms'   : "http://www.w3.org/2002/xforms"
+      , 'xsd'      : "http://www.w3.org/2001/XMLSchema"
+      , 'xsi'      : "http://www.w3.org/2001/XMLSchema-instance"
+      }
+  }
+
+for mimetype in namespace_by_name.itervalues () :
+    for k, v in mimetype.iteritems () :
+        if v in _namespace_map :
+            assert (_namespace_map [v] == k)
+        _namespace_map [v] = k
 
 class OOoElementTree (autosuper) :
     """
@@ -81,15 +152,39 @@ class OOoPy (autosuper) :
 
         from OOoPy import OOoPy
         >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
-        >>> e = o.read ('content.xml')
         >>> o.mimetype
         'application/vnd.sun.xml.writer'
-        >>> e.write ()
+        >>> for f in files :
+        ...     e = o.read (f)
+        ...     e.write ()
+        ...
         >>> o.close ()
-        >>> o = OOoPy (infile = 'test.odt')
+        >>> o = OOoPy (infile = 'test.odt', outfile = 'out2.odt')
         >>> o.mimetype
         'application/vnd.oasis.opendocument.text'
+        >>> for f in files :
+        ...     e = o.read (f)
+        ...     e.write ()
+        ...
         >>> o.close ()
+        >>> o = OOoPy (infile = 'out2.odt')
+        >>> for f in o.izip.infolist () :
+        ...     print f.filename, f.create_system
+        mimetype 0
+        content.xml 0
+        styles.xml 0
+        meta.xml 0
+        settings.xml 0
+        META-INF/manifest.xml 0
+        Configurations2/statusbar/ 0
+        Configurations2/accelerator/current.xml 0
+        Configurations2/floater/ 0
+        Configurations2/popupmenu/ 0
+        Configurations2/progressbar/ 0
+        Configurations2/menubar/ 0
+        Configurations2/toolbar/ 0
+        Configurations2/images/Bitmaps/ 0
+        Thumbnails/thumbnail.png 0
     """
     def __init__ \
         ( self
@@ -108,6 +203,14 @@ class OOoPy (autosuper) :
             existing file, see pythons ZipFile documentation for
             details). If no infile is given, the user is responsible for
             providing all necessary files in the resulting output file.
+
+            It seems that OOo needs to have the mimetype as the first
+            archive member (at least with mimetype as the first member
+            it works, the order may not be arbitrary) to recognize a zip
+            archive as an OOo file. When copying from a given infile, we
+            use the same order of elements in the resulting output. When
+            creating new elements we make sure the mimetype is the first
+            in the resulting archive.
 
             Note that both, infile and outfile can either be filenames
             or file-like objects (e.g. StringIO).
@@ -150,12 +253,22 @@ class OOoPy (autosuper) :
         return OOoElementTree (self, zname, fromstring (self.izip.read (zname)))
     # end def read
 
+    def _write (self, zname, str) :
+        now  = datetime.utcnow ().timetuple ()
+        info = ZipInfo (zname, date_time = now)
+        info.create_system = 0 # pretend to be fat
+        self.ozip.writestr (info, str)
+        self.written [zname] = 1
+    # end def _write
+
     def write (self, zname, etree) :
         assert (self.ozip)
+        # assure mimetype is the first member in new archive
+        if not self.written.has_key ('mimetype') :
+            self._write ('mimetype', self.mimetype)
         str = StringIO ()
         etree.write (str)
-        self.ozip.writestr (zname, str.getvalue ())
-        self.written [zname] = 1
+        self._write (zname, str.getvalue ())
     # end def write
 
     def close (self) :
@@ -171,5 +284,8 @@ class OOoPy (autosuper) :
                     self.ozip.writestr (f, self.izip.read (f.filename))
         for i in self.izip, self.ozip :
             if i : i.close ()
+        self.izip = self.ozip = None
     # end def close
+
+    __del__ = close # auto-close on deletion of object
 # end class OOoPy
