@@ -101,10 +101,10 @@ namespace_by_name = \
       , 'ooo'      : "http://openoffice.org/2004/office"
       , 'ooow'     : "http://openoffice.org/2004/writer"
       , 'oooc'     : "http://openoffice.org/2004/calc"
-      , 'dom'      : "http://www.w3.org/2001/xml-events"
-      , 'xforms'   : "http://www.w3.org/2002/xforms"
-      , 'xsd'      : "http://www.w3.org/2001/XMLSchema"
-      , 'xsi'      : "http://www.w3.org/2001/XMLSchema-instance"
+      , 'o_dom'    : "http://www.w3.org/2001/xml-events"
+      , 'o_xforms' : "http://www.w3.org/2002/xforms"
+      , 'o_xsd'    : "http://www.w3.org/2001/XMLSchema"
+      , 'o_xsi'    : "http://www.w3.org/2001/XMLSchema-instance"
       }
   }
 
