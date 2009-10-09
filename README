@@ -26,25 +26,16 @@ information are also given as examples.
 Applications like this come in handy in applications where calling
 native OOo is not an option, e.g., in server-side Web applications.
 
-Don't be alarmed by the Alpha-Status of the Software: Reading and
-writing of OOo documents is stable as well as most transforms.
-
-The only problematic transform is mailmerge: The OOo format is well
+If the mailmerge transform doesn't work for your document: The OOo format is well
 documented but there are ordering constraints in the body of an OOo
 document. I've not yet figured out all the tags and their order in the
-OOo body.  Another known shortcoming of OOoPys mailmerge is the
-renumbering of body parts of an OOo document. Individual parts (like
-e.g., frames, sections, tables) need to have their own unique names.
-After a mailmerge, there are duplicate names for some items. So far I'm
-renumbering only frames, sections, and tables. See the renumber objects
-at the end of ooopy/Transforms.py. So if you encounter missing parts of
-the mailmerged document, check if there are some renumberings missing or
-send me a `bug report`_.
-
-Another reason for the Alpha-Status is stability of the API. I may
-still change the API slightly.
-There were some slight changes to the API when supporting the open
-document format introduced with OOo 2.0.
+OOo body. Individual elements in an OOo document (like e.g., frames,
+sections, tables) need to have their own unique names.  After a mailmerge,
+there are duplicate names for some items. So far I'm renumbering only
+frames, sections, and tables. See the renumber objects at the end of
+ooopy/Transforms.py. So if you encounter missing parts of the mailmerged
+document, check if there are some renumberings missing or send me a `bug
+report`_.
 
 .. _`bug report`: http://ooopy.sourceforge.net/#reporting-bugs
 
@@ -64,6 +55,10 @@ bug in doctest is already fixed.
 
 Usage
 -----
+
+There were some slight changes to the API when supporting the open
+document format introduced with OOo 2.0. See below if you get a traceback
+when upgrading from an old version.
 
 See the online documentation, e.g.::
 
@@ -91,6 +86,9 @@ OOo document, e.g.::
   ooo = OOoPy (infile = 'test.odt', outfile = 'test_out.odt')
   t = Transformer(ooo.mimetype, ...
 
+Usage of Command-Line Utilities
+-------------------------------
+
 A, well, there are command-line _`utilities` now:
 
 - ooo_cat for concatenating several OOo files into one
@@ -102,6 +100,8 @@ A, well, there are command-line _`utilities` now:
   CSV (comma separated values) input
 - ooo_as_text for getting the text from an OOo-File (e.g., for doing a
   "grep" on the output).
+
+All utilities take a ``--help`` option.
 
 Resources
 ---------
@@ -164,6 +164,8 @@ manifest.xml.
    archive as if it was a DOS system (type fat) and ensure we use the
    current date/time (UTC). This also fixes problems with file
    permissions on newer versions of pythons ZipFile.
+ - Finally -- since OOoPy is in production in some projects -- change the
+   development status to "Production/Stable".
 
 Version 1.4: Minor bugfixes
 

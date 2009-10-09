@@ -70,7 +70,7 @@ setup \
         , 'ooo_mailmerge'
         ]
     , classifiers      =
-        [ 'Development Status :: 3 - Alpha'
+        [ 'Development Status :: 5 - Production/Stable'
         , 'License :: OSI Approved :: ' + license
         , 'Operating System :: OS Independent'
         , 'Programming Language :: Python'
