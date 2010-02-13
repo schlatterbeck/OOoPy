@@ -41,7 +41,9 @@ class _autosuper (type) :
 
 class autosuper (object) :
     __metaclass__ = _autosuper
-    pass
+    def __init__ (self, *args, **kw) :
+        pass
+    # end def __init__
 # end class autosuper
 
 files = \
