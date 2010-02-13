@@ -13,7 +13,8 @@ PACKAGE=${PKG}
 CHANGES=changes
 NOTES=notes
 HOSTNAME=shell.sourceforge.net
-PROJECTDIR=/home/groups/o/oo/ooopy/htdocs
+PROJECT_DOCDIR=/home/groups/o/oo/ooopy/htdocs
+PROJECT_RELEASEDIR=/home/frs/project/o/oo/ooopy/ooopy
 
 all: $(VERSION)
 
