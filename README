@@ -148,6 +148,8 @@ Version 1.5: Minor feature enhancements
 Add ooo_grep to search for OOo files containing a pattern. Thanks to
 Mathieu Chauvinc for the reporting the problems with modified
 manifest.xml.
+Support python2.6, thanks to Erik Myllymaki for reporting and anonymous
+contributor(s) for confirming the bug.
 
  - New shell-script ooo_grep (does equivalent to grep -l on OOo Files)
  - On deletion of an OOoPy object close it explicitly (uses __del__)
@@ -164,9 +166,8 @@ manifest.xml.
    archive as if it was a DOS system (type fat) and ensure we use the
    current date/time (UTC). This also fixes problems with file
    permissions on newer versions of pythons ZipFile.
- - Fix python2.6 behavior that __init__ of object may not take any
-   arguments. Fixes SF Bug 2948617, thanks to Erik Myllymaki for
-   reporting and anonymous contributor(s) for confirming the bug.
+ - Fix for python2.6 behavior that __init__ of object may not take any
+   arguments. Fixes SF Bug 2948617.
  - Finally -- since OOoPy is in production in some projects -- change the
    development status to "Production/Stable".
 
