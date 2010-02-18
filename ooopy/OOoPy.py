@@ -42,7 +42,7 @@ class _autosuper (type) :
 class autosuper (object) :
     __metaclass__ = _autosuper
     def __init__ (self, *args, **kw) :
-        pass
+        self.__super.__init__ ()
     # end def __init__
 # end class autosuper
 
