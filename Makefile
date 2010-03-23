@@ -12,9 +12,6 @@ PROJECT=ooopy
 PACKAGE=${PKG}
 CHANGES=changes
 NOTES=notes
-HOSTNAME=shell.sourceforge.net
-PROJECT_DOCDIR=/home/groups/o/oo/ooopy/htdocs
-PROJECT_RELEASEDIR=/home/frs/project/o/oo/ooopy/ooopy
 
 all: $(VERSION)
 
