@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -152,7 +152,7 @@ class OOoPy (autosuper) :
         Wrapper for OpenOffice.org zip files (all OOo documents are
         really zip files internally).
 
-        from OOoPy import OOoPy
+        from ooopy.OOoPy import OOoPy
         >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
         >>> o.mimetype
         'application/vnd.sun.xml.writer'
@@ -187,6 +187,23 @@ class OOoPy (autosuper) :
         Configurations2/toolbar/ 0
         Configurations2/images/Bitmaps/ 0
         Thumbnails/thumbnail.png 0
+        >>> for f in o.izip.infolist () :
+        ...     print f.filename, f.compress_type, f.compress_size, f.file_size
+        mimetype 8 41 39
+        content.xml 8 1930 16212
+        styles.xml 8 1888 12743
+        meta.xml 8 436 1545
+        settings.xml 8 1376 7862
+        META-INF/manifest.xml 8 286 1845
+        Configurations2/statusbar/ 0 0 0
+        Configurations2/accelerator/current.xml 8 2 0
+        Configurations2/floater/ 0 0 0
+        Configurations2/popupmenu/ 0 0 0
+        Configurations2/progressbar/ 0 0 0
+        Configurations2/menubar/ 0 0 0
+        Configurations2/toolbar/ 0 0 0
+        Configurations2/images/Bitmaps/ 0 0 0
+        Thumbnails/thumbnail.png 8 2145 2367
     """
     def __init__ \
         ( self
@@ -259,6 +276,7 @@ class OOoPy (autosuper) :
         now  = datetime.utcnow ().timetuple ()
         info = ZipInfo (zname, date_time = now)
         info.create_system = 0 # pretend to be fat
+        info.compress_type = ZIP_DEFLATED
         self.ozip.writestr (info, str)
         self.written [zname] = 1
     # end def _write

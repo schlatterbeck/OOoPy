@@ -143,6 +143,14 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.6: Minor bugfixes
+
+Fix compression: when writing new files these would be stored instead of
+compressed. Thanks to Hans-Peter Jansen for the patch.
+
+ - fix compression flag, patch by Hans-Peter Jansen
+ - add regression test to check for compression
+
 Version 1.5: Minor feature enhancements
 
 Add ooo_grep to search for OOo files containing a pattern. Thanks to
