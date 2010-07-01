@@ -14,3 +14,4 @@ include ooo_as_text
 include ooo_cat
 include ooo_fieldreplace
 include ooo_mailmerge
+include ooo_prettyxml

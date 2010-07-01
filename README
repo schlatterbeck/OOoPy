@@ -100,6 +100,8 @@ A, well, there are command-line _`utilities` now:
   CSV (comma separated values) input
 - ooo_as_text for getting the text from an OOo-File (e.g., for doing a
   "grep" on the output).
+- ooo_prettyxml for pretty-printing the XML nodes of one of the XML
+  files inside an OOo document. Mainly useful for debugging.
 
 All utilities take a ``--help`` option.
 
@@ -117,7 +119,7 @@ install the
 `ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
 XML file format, see the book by J. David Eisenberg called
 `OASIS OpenDocument Essentials`_ which is under the Gnu Free
-Documentation License and will probably be printed soon. For a reference
+Documentation License and is also available `in print`_. For a reference
 document you may want to check out the `XML File Format Specification`_
 (PDF) by OpenOffice.org.
 
@@ -125,6 +127,8 @@ A german page for OOoPy exists at `runtux.com`_
 
 .. _`ElementTree Library`: http://effbot.org/downloads/#elementtree
 .. _`OASIS OpenDocument Essentials`: http://books.evc-cit.info/
+.. _`in print`:
+   http://www.lulu.com/product/paperback/oasis-opendocument-essentials/392512
 .. _`XML File Format Specification`: http://xml.openoffice.org/xml_specification.pdf
 .. _`runtux.com`: http://www.runtux.com/ooopy.html
 
@@ -145,11 +149,14 @@ Changes
 
 Version 1.6: Minor bugfixes
 
-Fix compression: when writing new files these would be stored instead of
-compressed. Thanks to Hans-Peter Jansen for the patch.
+Fix compression: when writing new XML-files these would be stored
+instead of compressed in the OOo zip-file resulting in big documents.
+Thanks to Hans-Peter Jansen for the patch.
 
  - fix compression flag, patch by Hans-Peter Jansen
  - add regression test to check for compression
+ - now release ooo_prettyxml -- I've used this for testing for quite
+   some time, may be useful to others
 
 Version 1.5: Minor feature enhancements
 
