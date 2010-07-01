@@ -26,9 +26,10 @@ information are also given as examples.
 Applications like this come in handy in applications where calling
 native OOo is not an option, e.g., in server-side Web applications.
 
-If the mailmerge transform doesn't work for your document: The OOo format is well
-documented but there are ordering constraints in the body of an OOo
-document. I've not yet figured out all the tags and their order in the
+If the mailmerge transform doesn't work for your document: The OOo
+format is well documented but there are ordering constraints in the body
+of an OOo document.
+I've not yet figured out all the tags and their order in the
 OOo body. Individual elements in an OOo document (like e.g., frames,
 sections, tables) need to have their own unique names.  After a mailmerge,
 there are duplicate names for some items. So far I'm renumbering only
@@ -129,7 +130,8 @@ A german page for OOoPy exists at `runtux.com`_
 .. _`OASIS OpenDocument Essentials`: http://books.evc-cit.info/
 .. _`in print`:
    http://www.lulu.com/product/paperback/oasis-opendocument-essentials/392512
-.. _`XML File Format Specification`: http://xml.openoffice.org/xml_specification.pdf
+.. _`XML File Format Specification`:
+   http://xml.openoffice.org/xml_specification.pdf
 .. _`runtux.com`: http://www.runtux.com/ooopy.html
 
 Reporting Bugs
