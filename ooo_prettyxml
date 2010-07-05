@@ -28,23 +28,26 @@ from ooopy.Transformer import split_tag
 def cleantag (tag) :
     return ':'.join (split_tag (tag))
 
-def pretty (n, indent = 0, with_text = False) :
+def pretty (n, indent = 0, with_text = False, ext_ns = False) :
     s = ["    " * indent]
-    s.append (cleantag (n.tag))
+    clean = cleantag
+    if ext_ns :
+        clean = lambda x : x
+    s.append (clean (n.tag))
     attrkeys = n.attrib.keys ()
     attrkeys.sort ()
     for a in attrkeys :
-        s.append (' %s="%s"' % (cleantag (a), n.attrib [a]))
+        s.append (' %s="%s"' % (clean (a), n.attrib [a]))
     if with_text and n.text is not None :
         s.append (' TEXT="%s"' % n.text)
     if with_text and n.tail is not None :
         s.append (' TAIL="%s"' % n.tail)
     print ''.join (s).encode ('utf-8')
     for sub in n :
-        pretty (sub, indent + 1, with_text)
+        pretty (sub, indent + 1, with_text, ext_ns)
 
 if __name__ == '__main__' :
-    usage  = "%prog [-f|--file <xml-file>] [-t|--with-text] file ..."
+    usage  = "%prog [options] file ..."
     parser = OptionParser (usage = usage)
     parser.add_option \
         ( "-f", "--file"
@@ -59,12 +62,19 @@ if __name__ == '__main__' :
         , help    = "Print text of xml nodes"
         , default = False
         )
-    (options, args) = parser.parse_args ()
+    parser.add_option \
+        ( "-x", "--extend_namespaces"
+        , dest    = "ext_ns"
+        , action  = "store_true"
+        , help    = "Print full text of namespace name"
+        , default = False
+        )
+    (opt, args) = parser.parse_args ()
     if len (args) < 1 :
         parser.print_help (sys.stderr)
         sys.exit (23)
     for f in args :
         o = OOoPy (infile = f)
-        e = o.read (options.ooofile)
-        pretty (e.getroot (), with_text = options.with_text)
+        e = o.read (opt.ooofile)
+        pretty (e.getroot (), with_text = opt.with_text, ext_ns = opt.ext_ns)
         o.close ()
