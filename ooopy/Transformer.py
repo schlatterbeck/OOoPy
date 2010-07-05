@@ -1236,6 +1236,17 @@ class Transformer (autosuper) :
         ...     )
         >>> t.transform (o)
         >>> o.close ()
+        >>> o = OOoPy (infile = 'xyzzy.odt')
+        >>> m = o.mimetype
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> textlist = './/' + OOo_Tag ('text', 'list', m)
+        >>> for node in body.findall (textlist) :
+        ...     id = node.get (OOo_Tag ('xml', 'id', m))
+        ...     print 'xml:id', ':', id
+        xml:id : list1
+        xml:id : list2
+        xml:id : list3
     """
     def __init__ (self, mimetype, *tf) :
         assert (mimetype in mimetypes)
