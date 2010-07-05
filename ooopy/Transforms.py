@@ -1135,6 +1135,13 @@ def renumber_images (mimetype) :
     return [Renumber (OOo_Tag ('draw', 'image', mimetype))]
 # end def renumber_images
 
+def renumber_xml_id (mimetype) :
+    if mimetype == mimetypes [0] :
+        return []
+    xmlid = OOo_Tag ('xml', 'id', mimetype)
+    return [Renumber (OOo_Tag ('text', 'list', mimetype), 'list', xmlid)]
+# end def renumber_xml_id
+
 def renumber_all (mimetype) :
     """ Factory function for all renumberings parameterized with
         mimetype
@@ -1144,6 +1151,7 @@ def renumber_all (mimetype) :
         + renumber_sections (mimetype)
         + renumber_tables   (mimetype)
         + renumber_images   (mimetype)
+        + renumber_xml_id   (mimetype)
         ) 
 # end def renumber_all
 

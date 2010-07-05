@@ -99,6 +99,7 @@ namespace_by_name = \
       , 'text'     : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
       , 'xlink'    : "http://www.w3.org/1999/xlink"
       , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+      , 'transformation' : "http://www.w3.org/2003/g/data-view#"
       # OOo 1.X tags and some others:
       , 'ooo'      : "http://openoffice.org/2004/office"
       , 'ooow'     : "http://openoffice.org/2004/writer"
@@ -107,6 +108,11 @@ namespace_by_name = \
       , 'o_xforms' : "http://www.w3.org/2002/xforms"
       , 'o_xsd'    : "http://www.w3.org/2001/XMLSchema"
       , 'o_xsi'    : "http://www.w3.org/2001/XMLSchema-instance"
+      # predefined xml namespace, see
+      # http://www.w3.org/TR/2006/REC-xml-names11-20060816/
+      # "It MAY, but need not, be declared, and MUST NOT be undeclared
+      # or bound to any other namespace name."
+      , 'xml'      : "http://www.w3.org/XML/1998/namespace"
       }
   }
 

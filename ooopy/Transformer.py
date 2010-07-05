@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-9 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -35,7 +35,13 @@ from Version                 import VERSION
 from copy                    import deepcopy
 
 def OOo_Tag (namespace, name, mimetype) :
-    """Return combined XML tag"""
+    """Return combined XML tag
+    
+       >>> OOo_Tag ('xml', 'id', mimetypes [1])
+       '{http://www.w3.org/XML/1998/namespace}id'
+       >>> OOo_Tag ('text', 'list', mimetypes [1])
+       '{urn:oasis:names:tc:opendocument:xmlns:text:1.0}list'
+    """
     return "{%s}%s" % (namespace_by_name [mimetype][namespace], name)
 # end def OOo_Tag
 
@@ -1211,6 +1217,24 @@ class Transformer (autosuper) :
         tipo : Raccomandata
         luogo : Gavirate
         oggetto : Ossequi
+        >>> o.close ()
+        >>> o   = OOoPy (infile = 'testenum.odt', outfile = 'xyzzy.odt')
+        >>> t   = Transformer (
+        ...       o.mimetype
+        ...     , get_meta (o.mimetype)
+        ...     , Transforms.Addpagebreak_Style ()
+        ...     , Transforms.Mailmerge
+        ...       ( iterator = 
+        ...         ( dict (firstname = 'Erika', lastname = 'Nobody')
+        ...         , dict (firstname = 'Eric',  lastname = 'Wizard')
+        ...         , cb
+        ...         )
+        ...       )
+        ...     , renumber_all (o.mimetype)
+        ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
+        ...     )
+        >>> t.transform (o)
         >>> o.close ()
     """
     def __init__ (self, mimetype, *tf) :

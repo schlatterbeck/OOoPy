@@ -153,12 +153,18 @@ Version 1.6: Minor bugfixes
 
 Fix compression: when writing new XML-files these would be stored
 instead of compressed in the OOo zip-file resulting in big documents.
-Thanks to Hans-Peter Jansen for the patch.
+Thanks to Hans-Peter Jansen for the patch. Add copyright notice to
+command-line utils (SF Bug 2650042). Fix mailmerge for OOo 3.X lists (SF
+Bug 2949643).
 
  - fix compression flag, patch by Hans-Peter Jansen
  - add regression test to check for compression
  - now release ooo_prettyxml -- I've used this for testing for quite
    some time, may be useful to others
+ - Add copyright (LGPL) notice to command-line utilities, fixes SF Bug
+   2650042
+ - OOo 3.X adds xml:id tags to lists, we now renumber these in the
+   mailmerge app., fixes SF Bug 2949643
 
 Version 1.5: Minor feature enhancements
 
