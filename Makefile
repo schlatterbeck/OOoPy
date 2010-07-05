@@ -31,8 +31,9 @@ clean:
 	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
 	rm -rf dist build
 	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
-	    testout3.sxw testout3.odt out.html                  \
-	    out.sxw carta-out.stw carta-out.odt
+	    testout3.sxw testout3.odt out.html out2.odt         \
+	    out.sxw carta-out.stw carta-out.odt xyzzy.odt       \
+            upload upload_homepage announce_pypi announce
 
 release: upload upload_homepage announce_pypi announce
 
