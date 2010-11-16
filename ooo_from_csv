@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+# Copyright (C) 2010 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Reichergasse 131, A-3411 Weidling.
+# Web: http://www.runtux.com Email: office@runtux.com
+# All rights reserved
+# ****************************************************************************
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# ****************************************************************************
+
+import sys
+from csv                import reader
+from optparse           import OptionParser
+from StringIO           import StringIO
+from ooopy.OOoPy        import OOoPy, OOoElementTree, mimetypes
+from ooopy.Transformer  import OOo_Tag
+from ooopy.Transforms   import Element, SubElement
+
+def from_csv (ooopy, incsv) :
+    """ Produce ElementTree from the CSV, then convert the Tree to the
+        content.csv file inside the given ooopy container
+    """
+    mt = mimetypes [1]
+    root  = Element (OOo_Tag ('office', 'document-content', mt))
+    body  = SubElement (root,  OOo_Tag ('office', 'body', mt))
+    #scrpt = SubElement (body,  OOo_Tag ('office', 'scripts'))
+    #decl  = SubElement (body,  OOo_Tag ('office', 'font-face-decls'))
+    sheet = SubElement (body,  OOo_Tag ('office', 'spreadsheet', mt))
+    table = SubElement (sheet, OOo_Tag ('table', 'table', mt), name = 'Sheet1')
+    tree  = OOoElementTree (ooopy, 'content.xml', root)
+    for line in incsv :
+        row = SubElement (table, OOo_Tag ('table', 'table-row', mt))
+        for element in line :
+            cell = SubElement \
+                ( row
+                , OOo_Tag ('table', 'table-cell', mt)
+                , {OOo_Tag ('office', 'value-type', mt) : "string"}
+                )
+            p = SubElement (cell, OOo_Tag ('text', 'p', mt))
+            p.text = element
+    tree.write ()
+    # Add META-INF/manifest.xml
+    root  = Element (OOo_Tag ('manifest', 'manifest', mt))
+    SubElement \
+        ( root, OOo_Tag ('manifest', 'file-entry', mt)
+        , { OOo_Tag ('manifest', 'media-type', mt) :
+            'application/vnd.oasis.opendocument.spreadsheet'
+          , OOo_Tag ('manifest', 'full-path', mt)  : '/'
+          }
+        )
+    SubElement \
+        ( root, OOo_Tag ('manifest', 'file-entry', mt)
+        , { OOo_Tag ('manifest', 'media-type', mt) : 'text/xml'
+          , OOo_Tag ('manifest', 'full-path', mt)  : 'content.xml'
+          }
+        )
+    tree = OOoElementTree (ooopy, 'META-INF/manifest.xml', root)
+    tree.write ()
+# end def from_csv
+
+if __name__ == '__main__' :
+    parser = OptionParser ()
+    parser.add_option \
+        ( "-i", "--input-file"
+        , dest    = "input_file"
+        , help    = "CSV Input file (defaults to stdin)"
+        , default = None
+        )
+    parser.add_option \
+        ( "-o", "--output-file"
+        , dest    = "output_file"
+        , help    = "Output file (defaults to stdout)"
+        , default = None
+        )
+    parser.add_option \
+        ( "-d", "--delimiter"
+        , help    = "Delimiter of CSV file"
+        , default = ','
+        )
+    (opt, args) = parser.parse_args ()
+    outfile = opt.output_file
+    if opt.input_file :
+        incsv = reader (open (opt.input_file), delimiter = opt.delimiter)
+    else :
+        incsv = reader (sys.stdin, delimiter = opt.delimiter)
+    if outfile is None :
+        outfile = StringIO ()
+    o = OOoPy (outfile = outfile, mimetype = mimetypes [1])
+    from_csv (o, incsv)
+    o.close ()
+    if opt.output_file is None :
+        sys.stdout.write (outfile.getvalue ())
