@@ -21,17 +21,21 @@
 # ****************************************************************************
 
 import sys
-from optparse    import OptionParser
-from StringIO    import StringIO
-from ooopy.OOoPy import OOoPy
+from optparse         import OptionParser
+from StringIO         import StringIO
+from ooopy.OOoPy      import OOoPy
+from ooopy.Transforms import OOo_Tag
 
-def as_text (node, out) :
+def as_text (node, out, mimetype, newlines=False) :
     if node.text is not None :
         print >> out, node.text.encode ('utf-8'),
     for subnode in node :
-        as_text (subnode, out)
+        as_text (subnode, out, mimetype, newlines)
     if node.tail is not None :
         print >> out, node.tail.encode ('utf-8'),
+    if newlines and node.tag == OOo_Tag ('text', 'p', mimetype) :
+        print >> out, ""
+
 
 if __name__ == '__main__' :
     usage  = '%prog [-o|--output-file <filename>] [file, ...]'
@@ -41,6 +45,11 @@ if __name__ == '__main__' :
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
         , default = None
+        )
+    parser.add_option \
+        ( "-n", "--newlines"
+        , help    = "Add newlines after paragraphs"
+        , action  = "store_true"
         )
     (options, args) = parser.parse_args ()
     if options.output_file is None :
@@ -54,4 +63,4 @@ if __name__ == '__main__' :
     for f in infiles :
         o = OOoPy  (infile = f)
         e = o.read ('content.xml')
-        as_text (e.getroot (), outfile)
+        as_text (e.getroot (), outfile, o.mimetype, options.newlines)

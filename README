@@ -149,6 +149,13 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.7: Minor feature additions (unreleased)
+
+Add --newlines option to ooo_as_text: With this option the paragraphs in
+the office document are preserved in the text output.
+
+ - add --newlines option to ooo_as_text
+
 Version 1.6: Minor bugfixes
 
 Fix compression: when writing new XML-files these would be stored
