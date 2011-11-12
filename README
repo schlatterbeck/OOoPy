@@ -7,6 +7,8 @@
 OOoPy: Modify OpenOffice.org documents in Python
 ================================================
 
+:Author: Ralf Schlatterbeck <rsc@runtux.com>
+
 OpenOffice.org (OOo) documents are ZIP archives containing several XML
 files.  Therefore it is easy to inspect, create, or modify OOo
 documents. OOoPy is a library in Python for these tasks with OOo
