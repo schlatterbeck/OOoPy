@@ -151,12 +151,18 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
-Version 1.7: Minor feature additions (unreleased)
+Version 1.7: Minor feature additions
 
 Add --newlines option to ooo_as_text: With this option the paragraphs in
 the office document are preserved in the text output.
+Fix assertion error with python2.7, thanks to Hans-Peter Jansen for the
+report. Several other small fixes for python2.7 vs. 2.6.
 
  - add --newlines option to ooo_as_text
+ - fix assertion error with python2.7 reported by Hans-Peter Jansen
+ - fix several deprecation warnings with python2.7
+ - remove zip compression sizes from regression test: the compressor in
+   python2.7 is better than the one in python2.6
 
 Version 1.6: Minor bugfixes
 

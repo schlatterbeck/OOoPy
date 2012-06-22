@@ -659,7 +659,7 @@ class Mailmerge (_Body_Concat) :
             fr = Field_Replace (replace = i, transformer = self.transformer)
             # add page break only to non-empty tbody
             # reanchor only after the first mailmerge
-            if self.tbody : # tbody non-empty (but existing!)
+            if len (self.tbody) : # tbody non-empty (but existing!)
                 pb.apply (self.bodyparts [-1])
                 ra.apply (self.copyparts)
             else :
@@ -907,7 +907,8 @@ class Concatenate (_Body_Concat) :
             for n in decl_section.findall ('.//' + t) :
                 name = n.get (self.oootag ('text', 'name'))
                 if name not in d :
-                    if append and s : s.append (n)
+                    if append and s is not None :
+                        s.append (n)
                     d [name] = 1
     # end def body_decl
 
@@ -998,7 +999,7 @@ class Concatenate (_Body_Concat) :
             styles = croot.find  (self.oootag ('office', 'automatic-styles'))
             ost    = sroot.find  (self.oootag ('office', 'styles'))
             mst    = sroot.find  (self.oootag ('office', 'master-styles'))
-            assert mst
+            assert mst is not None and len (mst)
             assert mst [0].tag == self.oootag ('style', 'master-page')
             sntag  = self.oootag ('style', 'name')
             master = mst [0].get (sntag)
@@ -1013,7 +1014,7 @@ class Concatenate (_Body_Concat) :
                         s.set (mpn, master)
                     if s.get (sntag) == sname :
                         style = s
-            if not style :
+            if style is None :
                 for s in ost :
                     if s.tag == stytag and s.get (sntag) == sname :
                         style = s

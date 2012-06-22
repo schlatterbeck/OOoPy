@@ -106,8 +106,8 @@ namespace_by_name = \
       , 'oooc'     : "http://openoffice.org/2004/calc"
       , 'o_dom'    : "http://www.w3.org/2001/xml-events"
       , 'o_xforms' : "http://www.w3.org/2002/xforms"
-      , 'o_xsd'    : "http://www.w3.org/2001/XMLSchema"
-      , 'o_xsi'    : "http://www.w3.org/2001/XMLSchema-instance"
+      , 'xs'       : "http://www.w3.org/2001/XMLSchema"
+      , 'xsi'      : "http://www.w3.org/2001/XMLSchema-instance"
       # predefined xml namespace, see
       # http://www.w3.org/TR/2006/REC-xml-names11-20060816/
       # "It MAY, but need not, be declared, and MUST NOT be undeclared
@@ -177,39 +177,22 @@ class OOoPy (autosuper) :
         >>> o.close ()
         >>> o = OOoPy (infile = 'out2.odt')
         >>> for f in o.izip.infolist () :
-        ...     print f.filename, f.create_system
-        mimetype 0
-        content.xml 0
-        styles.xml 0
-        meta.xml 0
-        settings.xml 0
-        META-INF/manifest.xml 0
-        Configurations2/statusbar/ 0
-        Configurations2/accelerator/current.xml 0
-        Configurations2/floater/ 0
-        Configurations2/popupmenu/ 0
-        Configurations2/progressbar/ 0
-        Configurations2/menubar/ 0
-        Configurations2/toolbar/ 0
-        Configurations2/images/Bitmaps/ 0
-        Thumbnails/thumbnail.png 0
-        >>> for f in o.izip.infolist () :
-        ...     print f.filename, f.compress_type, f.compress_size, f.file_size
-        mimetype 8 41 39
-        content.xml 8 1930 16212
-        styles.xml 8 1888 12743
-        meta.xml 8 436 1545
-        settings.xml 8 1376 7862
-        META-INF/manifest.xml 8 286 1845
-        Configurations2/statusbar/ 0 0 0
-        Configurations2/accelerator/current.xml 8 2 0
-        Configurations2/floater/ 0 0 0
-        Configurations2/popupmenu/ 0 0 0
-        Configurations2/progressbar/ 0 0 0
-        Configurations2/menubar/ 0 0 0
-        Configurations2/toolbar/ 0 0 0
-        Configurations2/images/Bitmaps/ 0 0 0
-        Thumbnails/thumbnail.png 8 2145 2367
+        ...     print f.filename, f.create_system, f.compress_type
+        mimetype 0 8
+        content.xml 0 8
+        styles.xml 0 8
+        meta.xml 0 8
+        settings.xml 0 8
+        META-INF/manifest.xml 0 8
+        Configurations2/statusbar/ 0 0
+        Configurations2/accelerator/current.xml 0 8
+        Configurations2/floater/ 0 0
+        Configurations2/popupmenu/ 0 0
+        Configurations2/progressbar/ 0 0
+        Configurations2/menubar/ 0 0
+        Configurations2/toolbar/ 0 0
+        Configurations2/images/Bitmaps/ 0 0
+        Thumbnails/thumbnail.png 0 8
     """
     def __init__ \
         ( self
