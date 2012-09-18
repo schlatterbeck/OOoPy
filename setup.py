@@ -36,7 +36,8 @@ for line in f :
     logo_stripped = True
     description.append (line)
 
-license = 'GNU Library or Lesser General Public License (LGPL)'
+license  = 'GNU Library or Lesser General Public License (LGPL)'
+download = 'http://downloads.sourceforge.net/project/ooopy/ooopy'
 
 setup \
     ( name             = "OOoPy"
@@ -47,6 +48,8 @@ setup \
     , author           = "Ralf Schlatterbeck"
     , author_email     = "rsc@runtux.com"
     , url              = "http://ooopy.sourceforge.net/"
+    , download_url     = \
+        "%(download)s/%(VERSION)s/OOoPy-%(VERSION)s.tar.gz" % locals ()
     , packages         = ['ooopy']
     , platforms        = 'Any'
     , data_files       =
