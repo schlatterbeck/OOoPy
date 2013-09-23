@@ -97,7 +97,7 @@ A, well, there are command-line _`utilities` now:
 - ooo_cat for concatenating several OOo files into one
 - ooo_grep to do equivalent of grep -l on OOo files -- only runs on
   Unix-like operating systems, probably only with the GNU version of grep
-  (it's a shell-script using ooo_cat)
+  (it's a shell-script using ooo_as_text)
 - ooo_fieldreplace for replacing fields in an OOo document
 - ooo_mailmerge for doing a mailmerge from a template OOo document and a
   CSV (comma separated values) input
@@ -150,6 +150,17 @@ Please use the `Sourceforge Bug Tracker`_ and
 
 Changes
 -------
+
+Version 1.8: Minor bugfixes
+
+Distribute a missing file that is used in the doctest. Fix directory
+structure. Thanks to Michael Nagel for suggesting the change and
+reporting the bug.
+
+ - The file ``testenum.odt`` was missing from MANIFEST.in
+ - All OOo files and other files needed for testing are now in the
+   subdirectory ``testfiles``.
+ - All command line utilities are now in subdirectory ``bin``.
 
 Version 1.7: Minor feature additions
 
