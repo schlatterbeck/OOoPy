@@ -1,3 +1,4 @@
+from __future__ import print_function
 import doctest
 import os
 import sys
@@ -15,17 +16,17 @@ if sys.version.startswith ('2.3') :
             if name is None:
                 try:
                     name = obj.__name__
-                except AttributeError:
+                except AttributeError :
                     raise ValueError("Tester.rundoc: name must be given "
-                        "when obj.__name__ doesn't exist; " + `obj`)
+                        "when obj.__name__ doesn't exist; " + repr (obj))
             if self.verbose:
-                print "Running", name + ".__doc__"
+                print ("Running", name + ".__doc__")
             f, t = doctest.run_docstring_examples \
                 ( obj, self.globs, self.verbose, name
                 , self.compileflags, self.optionflags
                 )
             if self.verbose:
-                print f, "of", t, "examples failed in", name + ".__doc__"
+                print (f, "of", t, "examples failed in", name + ".__doc__")
             self.__record_outcome(name, f, t)
             if doctest._isclass(obj):
                 # In 2.2, class and static methods complicate life.  Build
@@ -76,6 +77,7 @@ if sys.version.startswith ('2.3') :
 format = "%(file)s fails %(f)s of %(t)s doc-tests"
 for a in sys.argv [1:] :
     sys.path [0:0] = ["./", os.path.dirname  (a)]
+    os.environ ['PYTHONPATH'] = ':'.join (sys.path)
     m = os.path.splitext (os.path.basename (a)) [0]
     try :
         module = __import__ (m)
@@ -83,10 +85,10 @@ for a in sys.argv [1:] :
         f, t   = doctest.testmod (module, verbose = 0)
     except KeyboardInterrupt :
         raise
-    except StandardError, cause :
-        print "Testing of %s resulted in exception" % (a,)
+    except Exception as cause :
+        print ("Testing of %s resulted in exception" % (a,))
         raise
     else :
-        print format % locals ()
+        print (format % locals ())
     del sys.path [0:2]
 

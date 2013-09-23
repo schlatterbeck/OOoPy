@@ -21,17 +21,19 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
+from __future__              import absolute_import
+
 import time
 import re
 try :
     from xml.etree.ElementTree   import dump, SubElement, Element, tostring
 except ImportError :
     from elementtree.ElementTree import dump, SubElement, Element, tostring
-from OOoPy                   import OOoPy, autosuper
-from Transformer             import files, split_tag, OOo_Tag, Transform
-from Transformer             import mimetypes, namespace_by_name
-from Version                 import VERSION
 from copy                    import deepcopy
+from ooopy.OOoPy             import OOoPy, autosuper
+from ooopy.Transformer       import files, split_tag, OOo_Tag, Transform
+from ooopy.Transformer       import mimetypes, namespace_by_name
+from ooopy.Version           import VERSION
 
 # counts in meta.xml
 meta_counts = \

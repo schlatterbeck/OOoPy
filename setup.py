@@ -54,23 +54,24 @@ setup \
     , platforms        = 'Any'
     , data_files       =
         [ ('share/ooopy'
-          , [ 'test.sxw'
-            , 'carta.stw'
-            , 'test.odt'
-            , 'carta.odt'
-            , 'rechng.sxw'
-            , 'rechng.odt'
-            , 'run_doctest.py'
-            , 'x.csv'
+          , [ 'run_doctest.py'
+            , 'testfiles/carta.odt'
+            , 'testfiles/carta.stw'
+            , 'testfiles/rechng.odt'
+            , 'testfiles/rechng.sxw'
+            , 'testfiles/testenum.odt'
+            , 'testfiles/test.odt'
+            , 'testfiles/test.sxw'
+            , 'testfiles/x.csv'
             ]
           )
         ]
     , scripts          = 
-        [ 'ooo_as_text'
-        , 'ooo_cat'
-        , 'ooo_fieldreplace'
-        , 'ooo_grep'
-        , 'ooo_mailmerge'
+        [ 'bin/ooo_as_text'
+        , 'bin/ooo_cat'
+        , 'bin/ooo_fieldreplace'
+        , 'bin/ooo_grep'
+        , 'bin/ooo_mailmerge'
         ]
     , classifiers      =
         [ 'Development Status :: 5 - Production/Stable'

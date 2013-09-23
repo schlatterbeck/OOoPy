@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-13 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -21,15 +21,20 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
+from __future__              import absolute_import
+
 from zipfile                 import ZipFile, ZIP_DEFLATED, ZipInfo
-from StringIO                import StringIO
+try :
+    from StringIO            import StringIO
+except ImportError :
+    from io                  import StringIO
 from datetime                import datetime
 try :
     from xml.etree.ElementTree   import ElementTree, fromstring, _namespace_map
 except ImportError :
     from elementtree.ElementTree import ElementTree, fromstring, _namespace_map
 from tempfile                import mkstemp
-from Version                 import VERSION
+from ooopy.Version           import VERSION
 import os
 
 class _autosuper (type) :
@@ -148,7 +153,7 @@ class OOoElementTree (autosuper) :
             result = getattr (self.tree, name)
             setattr (self, name, result)
             return result
-        raise AttributeError, name
+        raise AttributeError (name)
     # end def __getattr__
 
 # end class OOoElementTree
@@ -159,7 +164,7 @@ class OOoPy (autosuper) :
         really zip files internally).
 
         from ooopy.OOoPy import OOoPy
-        >>> o = OOoPy (infile = 'test.sxw', outfile = 'out.sxw')
+        >>> o = OOoPy (infile = 'testfiles/test.sxw', outfile = 'out.sxw')
         >>> o.mimetype
         'application/vnd.sun.xml.writer'
         >>> for f in files :
@@ -167,7 +172,7 @@ class OOoPy (autosuper) :
         ...     e.write ()
         ...
         >>> o.close ()
-        >>> o = OOoPy (infile = 'test.odt', outfile = 'out2.odt')
+        >>> o = OOoPy (infile = 'testfiles/test.odt', outfile = 'out2.odt')
         >>> o.mimetype
         'application/vnd.oasis.opendocument.text'
         >>> for f in files :

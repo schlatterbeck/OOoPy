@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-13 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -21,6 +21,8 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
+from __future__              import absolute_import
+
 import time
 import re
 try :
@@ -29,10 +31,10 @@ try :
 except ImportError :
     from elementtree.ElementTree import dump, SubElement, Element, tostring
     from elementtree.ElementTree import _namespace_map
-from OOoPy                   import OOoPy, autosuper
-from OOoPy                   import files, mimetypes, namespace_by_name
-from Version                 import VERSION
 from copy                    import deepcopy
+from ooopy.OOoPy             import OOoPy, autosuper
+from ooopy.OOoPy             import files, mimetypes, namespace_by_name
+from ooopy.Version           import VERSION
 
 def OOo_Tag (namespace, name, mimetype) :
     """Return combined XML tag
@@ -168,9 +170,13 @@ class Transformer (autosuper) :
         as a prefix for storing values in the dictionary.
         >>> import Transforms
         >>> from Transforms import renumber_all, get_meta, set_meta, meta_counts
-        >>> from StringIO import StringIO
-        >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+        >>> try :
+        ...     from io import StringIO, BytesIO
+        ...     StringIO = BytesIO
+        ... except ImportError :
+        ...     from StringIO import StringIO
+        >>> sio = BytesIO ()
+        >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> m   = o.mimetype
         >>> c = o.read ('content.xml')
         >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
@@ -242,7 +248,7 @@ class Transformer (autosuper) :
         >>> body [-1].get (OOo_Tag ('text', 'style-name', mimetype = m))
         'P2'
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
         >>> t   = Transformer (
         ...       o.mimetype
@@ -363,11 +369,12 @@ class Transformer (autosuper) :
         word-count '162'
         >>> o.close ()
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'test.sxw', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
+        >>> tf  = ('testfiles/test.sxw', 'testfiles/rechng.sxw')
         >>> t   = Transformer (
         ...       o.mimetype
         ...     , get_meta (o.mimetype)
-        ...     , Transforms.Concatenate ('test.sxw', 'rechng.sxw')
+        ...     , Transforms.Concatenate (*tf)
         ...     , renumber_all (o.mimetype)
         ...     , set_meta (o.mimetype)
         ...     , Transforms.Fix_OOo_Tag ()
@@ -662,7 +669,7 @@ class Transformer (autosuper) :
         draw:line 22
         draw:line 21
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'carta.stw', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/carta.stw', outfile = sio)
         >>> t = Transformer (
         ...     o.mimetype
         ...   , get_meta (o.mimetype)
@@ -718,7 +725,7 @@ class Transformer (autosuper) :
         luogo : Gavirate
         oggetto : Ossequi
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'test.odt', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/test.odt', outfile = sio)
         >>> t   = Transformer (
         ...       o.mimetype
         ...     , get_meta (o.mimetype)
@@ -838,7 +845,7 @@ class Transformer (autosuper) :
         word-count '162'
         >>> o.close ()
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'carta.odt', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/carta.odt', outfile = sio)
         >>> t = Transformer (
         ...     o.mimetype
         ...   , get_meta (o.mimetype)
@@ -894,11 +901,12 @@ class Transformer (autosuper) :
         luogo : Gavirate
         oggetto : Ossequi
         >>> sio = StringIO ()
-        >>> o   = OOoPy (infile = 'test.odt', outfile = sio)
+        >>> o   = OOoPy (infile = 'testfiles/test.odt', outfile = sio)
+        >>> tf  = ('testfiles/test.odt', 'testfiles/rechng.odt')
         >>> t   = Transformer (
         ...       o.mimetype
         ...     , get_meta (o.mimetype)
-        ...     , Transforms.Concatenate ('test.odt', 'rechng.odt')
+        ...     , Transforms.Concatenate (*tf)
         ...     , renumber_all (o.mimetype)
         ...     , set_meta (o.mimetype)
         ...     , Transforms.Fix_OOo_Tag ()
@@ -1167,7 +1175,8 @@ class Transformer (autosuper) :
         draw:line 22
         draw:line 21
         >>> from os import system
-        >>> system ('python ./ooo_fieldreplace -i test.odt -o testout.odt '
+        >>> system ('python bin/ooo_fieldreplace -i testfiles/test.odt '
+        ...         '-o testout.odt '
         ...         'salutation=Frau firstname=Erika lastname=Musterfrau '
         ...         'country=D postalcode=00815 city=Niemandsdorf '
         ...         'street="Beispielstrasse 42"')
@@ -1195,7 +1204,8 @@ class Transformer (autosuper) :
         postalcode : 00815
         city : Niemandsdorf
         >>> o.close ()
-        >>> system ("./ooo_mailmerge -o testout.odt -d, carta.odt x.csv")
+        >>> system ("bin/ooo_mailmerge -o testout.odt -d, "
+        ...         "testfiles/carta.odt testfiles/x.csv")
         0
         >>> o = OOoPy (infile = 'testout.odt')
         >>> m = o.mimetype
@@ -1218,7 +1228,8 @@ class Transformer (autosuper) :
         luogo : Gavirate
         oggetto : Ossequi
         >>> o.close ()
-        >>> o   = OOoPy (infile = 'testenum.odt', outfile = 'xyzzy.odt')
+        >>> infile = 'testfiles/testenum.odt'
+        >>> o   = OOoPy (infile = infile, outfile = 'xyzzy.odt')
         >>> t   = Transformer (
         ...       o.mimetype
         ...     , get_meta (o.mimetype)

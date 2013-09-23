@@ -1,7 +1,7 @@
 PKG=ooopy
 PY=__init__.py OOoPy.py Transformer.py Transforms.py
 SRC=Makefile MANIFEST.in setup.py README README.html \
-    $(PY:%.py=$(PKG)/%.py) test.sxw test.odt
+    $(PY:%.py=$(PKG)/%.py) testfiles/* bin/*
 
 VERSIONPY=ooopy/Version.py
 VERSION=$(VERSIONPY)
@@ -26,14 +26,16 @@ test: $(VERSION)
 	python run_doctest.py ooopy/Transformer.py
 
 clean:
-	rm -f MANIFEST README.html default.css \
-	    $(PKG)/Version.py $(PKG)/Version.pyc $(PKG)/testout.sxw \
+	rm -f $(PKG)/Version.pyc $(PKG)/testout.sxw \
 	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
 	rm -rf dist build
 	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
 	    testout3.sxw testout3.odt out.html out2.odt         \
 	    out.sxw carta-out.stw carta-out.odt xyzzy.odt       \
             upload upload_homepage announce_pypi announce
+
+clobber: clean
+	rm -f $(PKG)/Version.py MANIFEST README.html default.css
 
 release: upload upload_homepage announce_pypi announce
 
