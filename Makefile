@@ -33,6 +33,7 @@ clean:
 	    testout3.sxw testout3.odt out.html out2.odt         \
 	    out.sxw carta-out.stw carta-out.odt xyzzy.odt       \
             upload upload_homepage announce_pypi announce
+	rm -rf $(PKG)/__pycache__
 
 clobber: clean
 	rm -f $(PKG)/Version.py MANIFEST README.html default.css
