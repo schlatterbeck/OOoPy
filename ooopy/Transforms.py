@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-14 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -285,6 +285,43 @@ class Attribute_Access (Transform) :
     # end def apply
 
 # end class Attribute_Access
+
+#
+# META-INF/manifest.xml transforms
+#
+
+class Manifest_Append (Transform) :
+    """
+        The Transformer stores a list of files (and contents) to append.
+        These files are added to the archive later but need to be
+        present in the manifest, too.
+        The file list in the Transformer currently doesn't store a media
+        type (which is one of the parameters in the manifest), the
+        current application of this transform is to add pictures --
+        these don't have a media type in the files that were checked.
+        So for now we add an empty media type.
+    """
+    filename = 'META-INF/manifest.xml'
+    prio     = 1000
+
+    def apply (self, root) :
+        for n, node in enumerate (root) :
+            assert node.tag == self.oootag ('manifest', 'file-entry')
+            path = node.get (self.oootag ('manifest', 'full-path'))
+            assert (path)
+            if path == '/' :
+                break
+        else :
+            assert (not "The manifest needs a '/' entry")
+        for f, _ in self.transformer.appendfiles :
+            e = Element (self.oootag ('manifest', 'file-entry'))
+            e.attrib [self.oootag ('manifest', 'full-path')]  = f
+            e.attrib [self.oootag ('manifest', 'media-type')] = ''
+            root.insert (n + 1, e)
+            n += 1
+    # end def apply
+
+# end class Manifest_Append
 
 #
 # meta.xml transforms
@@ -747,8 +784,7 @@ class Concatenate (_Body_Concat) :
 
     body_decl_sections = ['variable-decl', 'sequence-decl']
 
-    def __init__ \
-        (self, * docs, ** kw) :
+    def __init__ (self, * docs, ** kw) :
         self.__super.__init__ (** kw)
         self.docs = []
         for doc in docs :
@@ -815,6 +851,7 @@ class Concatenate (_Body_Concat) :
         for f in 'styles.xml', 'content.xml' :
             self.style_merge (f)
         self.body_concat ()
+        self.append_pictures ()
     # end def apply_all
 
     def apply_tab_correction (self, node) :
@@ -1116,6 +1153,14 @@ class Concatenate (_Body_Concat) :
                 for i in delnode :
                     del node [i]
     # end style_merge
+
+    def append_pictures (self) :
+        for doc in self.docs :
+            for f in doc.izip.infolist () :
+                if f.filename.startswith ('Pictures/') :
+                    self.transformer.appendfiles.append \
+                        ((f.filename, doc.izip.read (f.filename)))
+    # end def append_pictures
             
 # end class Concatenate
 

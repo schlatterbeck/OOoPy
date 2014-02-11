@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-13 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-14 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -1258,7 +1258,55 @@ class Transformer (autosuper) :
         xml:id : list1
         xml:id : list2
         xml:id : list3
+        >>> o = OOoPy (infile = 'testfiles/page1.odt', outfile = 'xyzzy.odt')
+        >>> m = o.mimetype
+        >>> t = Transformer (
+        ...       o.mimetype
+        ...     , get_meta (o.mimetype)
+        ...     , Transforms.Concatenate ('testfiles/page2.odt')
+        ...     , renumber_all (o.mimetype)
+        ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
+        ...     , Transforms.Manifest_Append ()
+        ...     )
+        >>> t.transform (o)
+        >>> o.close ()
+        >>> o = OOoPy (infile = 'xyzzy.odt')
+        >>> c = o.read ('META-INF/manifest.xml')
+        >>> for node in c.getroot () :
+        ...     fe = node.get (OOo_Tag ('manifest', 'full-path', m))
+        ...     print fe
+        /
+        Pictures/10000000000000C80000007941B1A419.jpg
+        Pictures/10000000000000DC000000B02E191635.jpg
+        Pictures/10000000000000DC000000A337377AAA.jpg
+        meta.xml
+        settings.xml
+        content.xml
+        Thumbnails/thumbnail.png
+        layout-cache
+        manifest.rdf
+        Configurations2/accelerator/current.xml
+        Configurations2/
+        styles.xml
+        >>> for f in o.izip.infolist () :
+        ...     print f.filename
+        mimetype
+        settings.xml
+        META-INF/manifest.xml
+        content.xml
+        meta.xml
+        styles.xml
+        Pictures/10000000000000C80000007941B1A419.jpg
+        Pictures/10000000000000DC000000B02E191635.jpg
+        Pictures/10000000000000DC000000A337377AAA.jpg
+        Thumbnails/thumbnail.png
+        layout-cache
+        manifest.rdf
+        Configurations2/images/Bitmaps/
+        Configurations2/accelerator/current.xml
     """
+
     def __init__ (self, mimetype, *tf) :
         assert (mimetype in mimetypes)
         self.mimetype     = mimetype
@@ -1268,6 +1316,8 @@ class Transformer (autosuper) :
         self.dictionary   = {}
         self.has_key      = self.dictionary.has_key
         self.__contains__ = self.has_key
+        # 2-tuples of filename, content
+        self.appendfiles  = []
     # end def __init__
 
     def insert (self, transform) :
@@ -1295,6 +1345,8 @@ class Transformer (autosuper) :
                 t.apply_all (self.trees)
         for e in self.trees.itervalues () :
             e.write ()
+        for fname, fcontent in self.appendfiles :
+            e.ooopy.append_file (fname, fcontent)
     # end def transform
 
     def __getitem__ (self, key) :

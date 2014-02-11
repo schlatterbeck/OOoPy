@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005-13 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-14 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -179,6 +179,7 @@ class OOoPy (autosuper) :
         ...     e = o.read (f)
         ...     e.write ()
         ...
+        >>> o.append_file ('Pictures/empty', '')
         >>> o.close ()
         >>> o = OOoPy (infile = 'out2.odt')
         >>> for f in o.izip.infolist () :
@@ -189,6 +190,7 @@ class OOoPy (autosuper) :
         meta.xml 0 8
         settings.xml 0 8
         META-INF/manifest.xml 0 8
+        Pictures/empty 0 8
         Configurations2/statusbar/ 0 0
         Configurations2/accelerator/current.xml 0 8
         Configurations2/floater/ 0 0
@@ -278,12 +280,20 @@ class OOoPy (autosuper) :
     def write (self, zname, etree) :
         assert (self.ozip)
         # assure mimetype is the first member in new archive
-        if not self.written.has_key ('mimetype') :
+        if 'mimetype' not in self.written :
             self._write ('mimetype', self.mimetype)
         str = StringIO ()
         etree.write (str)
         self._write (zname, str.getvalue ())
     # end def write
+
+    def append_file (self, zname, str) :
+        """ Official interface to _write: Append a file to the end of
+            the archive.
+        """
+        if zname not in self.written :
+            self._write (zname, str)
+    # end def append_file
 
     def close (self) :
         """
@@ -294,7 +304,7 @@ class OOoPy (autosuper) :
         """
         if self.izip and self.ozip :
             for f in self.izip.infolist () :
-                if not self.written.has_key (f.filename) :
+                if f.filename not in self.written :
                     self.ozip.writestr (f, self.izip.read (f.filename))
         for i in self.izip, self.ozip :
             if i : i.close ()
