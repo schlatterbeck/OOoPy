@@ -3,9 +3,10 @@ PY=__init__.py OOoPy.py Transformer.py Transforms.py
 SRC=Makefile MANIFEST.in setup.py README README.html \
     $(PY:%.py=$(PKG)/%.py) testfiles/* bin/*
 
+RELEASETOOLS=../releasetools
 VERSIONPY=ooopy/Version.py
 VERSION=$(VERSIONPY)
-LASTRELEASE:=$(shell ../svntools/lastrelease -n)
+LASTRELEASE:=$(shell $(RELEASETOOLS)/lastrelease -n)
 
 USERNAME=schlatterbeck
 PROJECT=ooopy
@@ -40,4 +41,4 @@ clobber: clean
 
 release: upload upload_homepage announce_pypi announce
 
-include ../make/Makefile-sf
+include $(RELEASETOOLS)/Makefile-sf

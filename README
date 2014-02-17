@@ -151,6 +151,21 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.9: Add Picture Handling for Concatenation
+
+Now ooo_cat supports pictures, thanks to Antonio Sánchez for reporting
+that this wasn't working.
+
+ - Add a list of filenames + contents to Transformer
+ - Update this file-list in Concatenate
+ - Add Manifest_Append transform to update META-INF/manifest.xml with
+   added filenames
+ - Add hook in OOoPy for adding files
+ - Update tests
+ - Update ooo_cat to use new transform
+ - This is the first release after migration of the version control from
+   Subversion to GIT
+
 Version 1.8: Minor bugfixes
 
 Distribute a missing file that is used in the doctest. Fix directory
