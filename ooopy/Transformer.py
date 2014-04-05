@@ -1305,6 +1305,44 @@ class Transformer (autosuper) :
         manifest.rdf
         Configurations2/images/Bitmaps/
         Configurations2/accelerator/current.xml
+        >>> sio = StringIO ()
+        >>> o = OOoPy (infile = 'testfiles/tbl_first.odt', outfile = sio)
+        >>> m = o.mimetype
+        >>> t = Transformer (
+        ...       o.mimetype
+        ...     , get_meta (o.mimetype)
+        ...     , Transforms.Concatenate ('testfiles/tbl_second.odt')
+        ...     , renumber_all (o.mimetype)
+        ...     , set_meta (o.mimetype)
+        ...     , Transforms.Fix_OOo_Tag ()
+        ...     , Transforms.Manifest_Append ()
+        ...     )
+        >>> t.transform (o)
+        >>> o.close ()
+        >>> o = OOoPy (infile = sio)
+        >>> c = o.read ('content.xml')
+        >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
+        >>> tbls = './/' + OOo_Tag ('table', 'table', mimetype = m)
+        >>> for table in body.findall (tbls) :
+        ...     name = table.get (OOo_Tag ('table', 'style-name', mimetype = m))
+        ...     if name :
+        ...         print name
+        ...     for t in table.findall ('.//') :
+        ...         name = t.get (OOo_Tag ('table', 'style-name', mimetype = m))
+        ...         if name :
+        ...             print name
+        Tabella1
+        Tabella1.A
+        Tabella1.A1
+        Tabella1.B1
+        Tabella1.A2
+        Tabella1.B2
+        Tabella1
+        Tabella1.A
+        Tabella1.A1
+        Tabella1.B1
+        Tabella1.A2
+        Tabella1.B2
     """
 
     def __init__ (self, mimetype, *tf) :

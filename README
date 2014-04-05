@@ -151,6 +151,16 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.10: Fix table styles when concatenating
+
+Now ooo_cat fixes tables styles when concatenating (renaming): We
+optimize style usage by re-using existing styles. But for some table
+styles the original names were not renamed to the re-used ones.
+Fixes SF Bug 10, thanks to Claudio Girlanda for reporting.
+
+ - Fix style renaming for table styles when concatenating documents
+ - Add some missing namespaces (ooo 2009)
+
 Version 1.9: Add Picture Handling for Concatenation
 
 Now ooo_cat supports pictures, thanks to Antonio Sánchez for reporting
