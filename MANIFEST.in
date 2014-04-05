@@ -3,7 +3,7 @@ include testfiles/*.stw
 include testfiles/*.odt
 include testfiles/x.csv
 include ooopy/*.py
-include README
+include README.rst
 include default.css
 include README.html
 include run_doctest.py

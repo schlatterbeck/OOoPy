@@ -1,6 +1,6 @@
 PKG=ooopy
 PY=__init__.py OOoPy.py Transformer.py Transforms.py
-SRC=Makefile MANIFEST.in setup.py README README.html \
+SRC=Makefile MANIFEST.in setup.py README.rst README.html \
     $(PY:%.py=$(PKG)/%.py) testfiles/* bin/*
 
 RELEASETOOLS=../releasetools
@@ -41,4 +41,5 @@ clobber: clean
 
 release: upload upload_homepage announce_pypi announce
 
+README:=README.rst
 include $(RELEASETOOLS)/Makefile-sf
