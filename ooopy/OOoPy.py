@@ -97,6 +97,7 @@ namespace_by_name = \
       , 'meta'     : "urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
       , 'number'   : "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
       , 'office'   : "urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+      , 'officeooo': "http://openoffice.org/2009/office"
       , 'script'   : "urn:oasis:names:tc:opendocument:xmlns:script:1.0"
       , 'style'    : "urn:oasis:names:tc:opendocument:xmlns:style:1.0"
       , 'svg'      : "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
@@ -104,6 +105,7 @@ namespace_by_name = \
       , 'text'     : "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
       , 'xlink'    : "http://www.w3.org/1999/xlink"
       , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+      , 'tableooo' : "http://openoffice.org/2009/table"
       , 'transformation' : "http://www.w3.org/2003/g/data-view#"
       # OOo 1.X tags and some others:
       , 'ooo'      : "http://openoffice.org/2004/office"
