@@ -772,6 +772,8 @@ class Concatenate (_Body_Concat) :
                OOo_Tag ('style', 'page-layout',       m)
              , OOo_Tag ('style', 'page-master-name',  m) :
                OOo_Tag ('style', 'page-master',       m)
+             , OOo_Tag ('table', 'style-name',        m) :
+               OOo_Tag ('style', 'style',             m)
              , OOo_Tag ('text',  'style-name',        m) :
                OOo_Tag ('style', 'style',             m)
              , OOo_Tag ('draw',  'style-name',        m) :
