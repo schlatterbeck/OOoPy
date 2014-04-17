@@ -1,9 +1,16 @@
+# To use this Makefile, get a copy of my SF Release Tools
+# git clone git://git.code.sf.net/p/sfreleasetools/code sfreleasetools
+# And point the environment variable RELEASETOOLS to the checkout
+
+ifeq (,${RELEASETOOLS})
+    RELEASETOOLS=../releasetools
+endif
+README:=README.rst
 PKG=ooopy
 PY=__init__.py OOoPy.py Transformer.py Transforms.py
-SRC=Makefile MANIFEST.in setup.py README.rst README.html \
+SRC=Makefile MANIFEST.in setup.py $(README) README.html \
     $(PY:%.py=$(PKG)/%.py) testfiles/* bin/*
 
-RELEASETOOLS=../releasetools
 VERSIONPY=ooopy/Version.py
 VERSION=$(VERSIONPY)
 LASTRELEASE:=$(shell $(RELEASETOOLS)/lastrelease -n)
@@ -35,11 +42,11 @@ clean:
 	    out.sxw carta-out.stw carta-out.odt xyzzy.odt       \
             upload upload_homepage announce_pypi announce
 	rm -rf $(PKG)/__pycache__
+	rm -f ooopy/Version.py ooopy/Version.py{c,o} 
 
 clobber: clean
 	rm -f $(PKG)/Version.py MANIFEST README.html default.css
 
 release: upload upload_homepage announce_pypi announce
 
-README:=README.rst
 include $(RELEASETOOLS)/Makefile-sf
