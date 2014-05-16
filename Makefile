@@ -34,18 +34,14 @@ test: $(VERSION)
 	python run_doctest.py ooopy/Transformer.py
 
 clean:
-	rm -f $(PKG)/Version.pyc $(PKG)/testout.sxw \
-	    $(PKG)/testout2.sxw ${CHANGES} ${NOTES}
-	rm -rf dist build
+	rm -f $(PKG)/Version.pyc $(PKG)/testout.sxw $(PKG)/testout2.sxw
 	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
 	    testout3.sxw testout3.odt out.html out2.odt         \
-	    out.sxw carta-out.stw carta-out.odt xyzzy.odt       \
-            upload upload_homepage announce_pypi announce
+	    out.sxw carta-out.stw carta-out.odt xyzzy.odt
 	rm -rf $(PKG)/__pycache__
 	rm -f ooopy/Version.py ooopy/Version.py{c,o} 
-
-clobber: clean
-	rm -f $(PKG)/Version.py MANIFEST README.html default.css
+	rm -f $(PKG)/Version.py
+	rm -rf ${CLEAN}
 
 release: upload upload_homepage announce_pypi announce
 

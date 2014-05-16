@@ -1204,7 +1204,7 @@ class Transformer (autosuper) :
         postalcode : 00815
         city : Niemandsdorf
         >>> o.close ()
-        >>> system ("bin/ooo_mailmerge -o testout.odt -d, "
+        >>> system ("bin/ooo_mailmerge -o testout.odt -d'|' "
         ...         "testfiles/carta.odt testfiles/x.csv")
         0
         >>> o = OOoPy (infile = 'testout.odt')

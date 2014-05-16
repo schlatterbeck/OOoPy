@@ -52,7 +52,7 @@ if __name__ == '__main__' :
     outfile = options.output_file
     if outfile is None :
         outfile = StringIO ()
-    d = DictReader (open (args [1]))
+    d = DictReader (open (args [1]), delimiter = options.delimiter)
     o = OOoPy (infile = args [0], outfile = outfile)
     t = Transformer \
         ( o.mimetype

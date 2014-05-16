@@ -151,6 +151,13 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
+Version 1.11: Small Bug fix ooo_mailmerge
+
+Now ooo_mailmerge uses the delimiter option, it was ignored before.
+Thanks to Bob Danek for report and test.
+
+ - Fix setting csv delimiter in ooo_mailmerge
+
 Version 1.10: Fix table styles when concatenating
 
 Now ooo_cat fixes tables styles when concatenating (renaming): We
