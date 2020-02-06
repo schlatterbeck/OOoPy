@@ -140,7 +140,7 @@ Please use the `Sourceforge Bug Tracker`_ and
 Changes
 -------
 
-Version 1.12: Port to Python3
+Version 2.0: Port to Python3
 
 Still working with lower python versions but I'm only able to test with
 2.7, nothing earlier. Bug fixes where sometimes multiple Set_Attribute
