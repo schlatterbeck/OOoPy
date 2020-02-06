@@ -965,15 +965,16 @@ class Concatenate (_Body_Concat) :
         for k in range (1, len (self.tab_correct)) :
             if self.tab_correct [-k].isdigit() :
                 break
-        l    = float (self.tab_correct [:-k])
-        unit = self.tab_correct [-k:]
+        l    = float (self.tab_correct [:-k+1])
+        unit = self.tab_correct [-k+1:]
         for ts in range (35) :
             pos = l * (ts + 1)
             if pos > max :
+                p = ("%1.4f" % pos)
                 SubElement \
                     ( element
                     , self.oootag ('style', 'tab-stop')
-                    , { self.oootag ('style', 'position') : '%s%s' % (pos, unit)
+                    , { self.oootag ('style', 'position') : '%s%s' % (p, unit)
                       }
                     )
     # end def insert_tabs
