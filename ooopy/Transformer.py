@@ -170,10 +170,9 @@ class Transformer (autosuper) :
         >>> import Transforms
         >>> from Transforms import renumber_all, get_meta, set_meta, meta_counts
         >>> try :
-        ...     from io import StringIO, BytesIO
-        ...     StringIO = BytesIO
+        ...     from io import BytesIO
         ... except ImportError :
-        ...     from StringIO import StringIO
+        ...     from StringIO import StringIO as BytesIO
         >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> m   = o.mimetype
@@ -246,7 +245,7 @@ class Transformer (autosuper) :
         city : Niemandsdorf
         >>> body [-1].get (OOo_Tag ('text', 'style-name', mimetype = m))
         'P2'
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> c = o.read ('content.xml')
         >>> t   = Transformer (
@@ -367,7 +366,7 @@ class Transformer (autosuper) :
         table-count '3'
         word-count '162'
         >>> o.close ()
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> tf  = ('testfiles/test.sxw', 'testfiles/rechng.sxw')
         >>> t   = Transformer (
@@ -667,7 +666,7 @@ class Transformer (autosuper) :
         draw:text-box 5
         draw:line 22
         draw:line 21
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/carta.stw', outfile = sio)
         >>> t = Transformer (
         ...     o.mimetype
@@ -723,7 +722,7 @@ class Transformer (autosuper) :
         tipo : Raccomandata
         luogo : Gavirate
         oggetto : Ossequi
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/test.odt', outfile = sio)
         >>> t   = Transformer (
         ...       o.mimetype
@@ -843,7 +842,7 @@ class Transformer (autosuper) :
         table-count '3'
         word-count '162'
         >>> o.close ()
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/carta.odt', outfile = sio)
         >>> t = Transformer (
         ...     o.mimetype
@@ -899,7 +898,7 @@ class Transformer (autosuper) :
         tipo : Raccomandata
         luogo : Gavirate
         oggetto : Ossequi
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o   = OOoPy (infile = 'testfiles/test.odt', outfile = sio)
         >>> tf  = ('testfiles/test.odt', 'testfiles/rechng.odt')
         >>> t   = Transformer (
@@ -1310,7 +1309,7 @@ class Transformer (autosuper) :
         mimetype
         settings.xml
         styles.xml
-        >>> sio = StringIO ()
+        >>> sio = BytesIO ()
         >>> o = OOoPy (infile = 'testfiles/tbl_first.odt', outfile = sio)
         >>> m = o.mimetype
         >>> t = Transformer (
