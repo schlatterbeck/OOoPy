@@ -21,8 +21,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
-from __future__              import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
+import sys
 import time
 import re
 try :
@@ -30,10 +31,11 @@ try :
 except ImportError :
     from elementtree.ElementTree import dump, SubElement, Element, tostring
 from copy                    import deepcopy
-from ooopy.OOoPy             import OOoPy, autosuper
+from ooopy.autosuper         import autosuper
+from ooopy.Version           import VERSION
+from ooopy.OOoPy             import OOoPy
 from ooopy.Transformer       import files, split_tag, OOo_Tag, Transform
 from ooopy.Transformer       import mimetypes, namespace_by_name
-from ooopy.Version           import VERSION
 
 # counts in meta.xml
 meta_counts = \
@@ -66,7 +68,7 @@ class Access_Attribute (autosuper) :
         """ Can change the given value by returning the new value. If
             returning None or oldval the attribute stays unchanged.
         """
-        raise NotImplementedError, "use_value must be defined in derived class"
+        raise NotImplementedError ("use_value must be defined in derived class")
     # end def use_value
 
 # end class Access_Attribute
@@ -106,9 +108,9 @@ class Get_Max (Access_Attribute) :
     # end def register
 
     def use_value (self, oldval = None) :
-        if  self.transformer [self.key] < oldval :
-            self.transformer [self.key] = oldval
-        return None
+        if oldval :
+            if int (self.transformer [self.key]) < int (oldval) :
+                self.transformer [self.key] = oldval
     # end def use_value
 
 # end def Get_Max
@@ -185,7 +187,7 @@ class Set_Attribute (Access_Attribute) :
             return None
         if self.oldvalue and oldval != self.oldvalue :
             return None
-        if self.key and self.transformer.has_key (self.key) :
+        if self.key and self.key in self.transformer :
             return str (self.transformer [self.key])
         return self.value
     # end def use_value
@@ -198,7 +200,7 @@ def set_attributes_from_dict (tag, attr, d) :
         the dictionary
     """
     return [Set_Attribute (tag, attr, oldvalue = k, value = v)
-            for k,v in d.iteritems ()
+            for k,v in d.items ()
            ]
 # end def set_attributes_from_dict
 
@@ -347,12 +349,13 @@ class Editinfo (Transform) :
     # iterate over all mimetypes, so this works for all known mimetypes
     # of OOo documents.
     for m in mimetypes :
-        for params, value in repl.iteritems () :
+        for params in repl :
+            value = repl [params]
             replace [OOo_Tag (mimetype = m, *params)] = value
 
     def apply (self, root) :
         for node in root.findall (self.oootag ('office', 'meta') + '/*') :
-            if self.replace.has_key (node.tag) :
+            if node.tag in self.replace :
                 node.text = self.replace [node.tag]
     # end def apply
 # end class Editinfo
@@ -733,8 +736,7 @@ def tree_serialise (element, prefix = '', mimetype = mimetypes [1]) :
     stylename = OOo_Tag ('style', 'name', mimetype)
     if stylename in attr : del attr [stylename]
     attr = attr.items ()
-    attr.sort ()
-    attr = tuple (attr)
+    attr = tuple (sorted (attr))
     serial = [prefix + element.tag, attr]
     for e in element :
         serial.append (tree_serialise (e, prefix, mimetype))
@@ -800,7 +802,8 @@ class Concatenate (_Body_Concat) :
         self.stylenames = {}
         self.namemaps   = [{}]
         self.tab_depend = {}
-        for s in self.ref_attrs.itervalues () :
+        for a in self.ref_attrs :
+            s = self.ref_attrs [a]
             self.namemaps [0][s] = {}
         self.body_decls = {}
         for s in self.body_decl_sections :
@@ -815,7 +818,8 @@ class Concatenate (_Body_Concat) :
                 self.sections [f][node.tag] = node
         for d in self.docs :
             self.namemaps.append ({})
-            for s in self.ref_attrs.itervalues () :
+            for a in self.ref_attrs :
+                s = self.ref_attrs [a]
                 self.namemaps [-1][s] = {}
             for f in self.oofiles :
                 self.trees [f].append (d.read (f).getroot ())
@@ -884,7 +888,7 @@ class Concatenate (_Body_Concat) :
     def _attr_rename (self, idx) :
         r = sum \
             ( [ set_attributes_from_dict (None, k, self.namemaps [idx][v])
-                for k,v in self.ref_attrs.iteritems ()
+                for k, v in self.ref_attrs.items ()
               ]
             , []
             )
@@ -983,7 +987,8 @@ class Concatenate (_Body_Concat) :
         sn       = self.oootag ('style', 'name')
         if props is None :
             props = Element (self.properties_tag)
-        for k, v in defprops.attrib.iteritems () :
+        for k in defprops.attrib :
+            v = defprops.attrib [k]
             if self.default_properties.get (k) != v and not props.get (k) :
                 if k == self.oootag ('style', 'tab-stop-distance') :
                     self.tab_correct = v

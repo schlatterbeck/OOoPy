@@ -21,7 +21,7 @@
 # ****************************************************************************
 
 import sys
-from optparse          import OptionParser
+from argparse          import ArgumentParser
 from ooopy.OOoPy       import OOoPy
 from ooopy.Transformer import split_tag
 
@@ -47,34 +47,35 @@ def pretty (n, indent = 0, with_text = False, ext_ns = False) :
         pretty (sub, indent + 1, with_text, ext_ns)
 
 if __name__ == '__main__' :
-    usage  = "%prog [options] file ..."
-    parser = OptionParser (usage = usage)
-    parser.add_option \
+    parser = ArgumentParser ()
+    parser.add_argument \
+        ( "file"
+        , help  = "Open Office file"
+        , nargs = '+'
+        )
+    parser.add_argument \
         ( "-f", "--file"
-        , dest = "ooofile"
-        , help = "XML-File inside OOo File"
+        , dest    = "ooofile"
+        , help    = "XML-File inside OOo File"
         , default = 'content.xml'
         )
-    parser.add_option \
+    parser.add_argument \
         ( "-t", "--with-text"
         , dest    = "with_text"
         , action  = "store_true"
         , help    = "Print text of xml nodes"
         , default = False
         )
-    parser.add_option \
+    parser.add_argument \
         ( "-x", "--extend_namespaces"
         , dest    = "ext_ns"
         , action  = "store_true"
         , help    = "Print full text of namespace name"
         , default = False
         )
-    (opt, args) = parser.parse_args ()
-    if len (args) < 1 :
-        parser.print_help (sys.stderr)
-        sys.exit (23)
-    for f in args :
+    args = parser.parse_args ()
+    for f in args.file :
         o = OOoPy (infile = f)
-        e = o.read (opt.ooofile)
-        pretty (e.getroot (), with_text = opt.with_text, ext_ns = opt.ext_ns)
+        e = o.read (args.ooofile)
+        pretty (e.getroot (), with_text = args.with_text, ext_ns = args.ext_ns)
         o.close ()

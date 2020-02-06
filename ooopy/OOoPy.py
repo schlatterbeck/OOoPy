@@ -21,35 +21,22 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
-from __future__              import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 from zipfile                 import ZipFile, ZIP_DEFLATED, ZipInfo
 try :
-    from StringIO            import StringIO
+    from io                  import BytesIO
 except ImportError :
-    from io                  import StringIO
+    from StringIO            import StringIO as BytesIO
 from datetime                import datetime
 try :
     from xml.etree.ElementTree   import ElementTree, fromstring, _namespace_map
 except ImportError :
     from elementtree.ElementTree import ElementTree, fromstring, _namespace_map
 from tempfile                import mkstemp
+from ooopy.autosuper         import autosuper
 from ooopy.Version           import VERSION
 import os
-
-class _autosuper (type) :
-    def __init__ (cls, name, bases, dict) :
-        super   (_autosuper, cls).__init__ (name, bases, dict)
-        setattr (cls, "_%s__super" % name, super (cls))
-    # end def __init__
-# end class _autosuper
-
-class autosuper (object) :
-    __metaclass__ = _autosuper
-    def __init__ (self, *args, **kw) :
-        self.__super.__init__ ()
-    # end def __init__
-# end class autosuper
 
 files = \
     [ 'content.xml'
@@ -123,8 +110,10 @@ namespace_by_name = \
       }
   }
 
-for mimetype in namespace_by_name.itervalues () :
-    for k, v in mimetype.iteritems () :
+for ns in namespace_by_name :
+    mimetype = namespace_by_name [ns]
+    for k in mimetype :
+        v = mimetype [k]
         if v in _namespace_map :
             assert (_namespace_map [v] == k)
         _namespace_map [v] = k
@@ -167,16 +156,16 @@ class OOoPy (autosuper) :
 
         from ooopy.OOoPy import OOoPy
         >>> o = OOoPy (infile = 'testfiles/test.sxw', outfile = 'out.sxw')
-        >>> o.mimetype
-        'application/vnd.sun.xml.writer'
+        >>> print (o.mimetype)
+        application/vnd.sun.xml.writer
         >>> for f in files :
         ...     e = o.read (f)
         ...     e.write ()
         ...
         >>> o.close ()
         >>> o = OOoPy (infile = 'testfiles/test.odt', outfile = 'out2.odt')
-        >>> o.mimetype
-        'application/vnd.oasis.opendocument.text'
+        >>> print (o.mimetype)
+        application/vnd.oasis.opendocument.text
         >>> for f in files :
         ...     e = o.read (f)
         ...     e.write ()
@@ -184,24 +173,24 @@ class OOoPy (autosuper) :
         >>> o.append_file ('Pictures/empty', '')
         >>> o.close ()
         >>> o = OOoPy (infile = 'out2.odt')
-        >>> for f in o.izip.infolist () :
-        ...     print f.filename, f.create_system, f.compress_type
-        mimetype 0 8
-        content.xml 0 8
-        styles.xml 0 8
-        meta.xml 0 8
-        settings.xml 0 8
-        META-INF/manifest.xml 0 8
-        Pictures/empty 0 8
-        Configurations2/statusbar/ 0 0
+        >>> for f in sorted (o.izip.infolist (), key = lambda x : x.filename) :
+        ...     print (f.filename, f.create_system, f.compress_type)
         Configurations2/accelerator/current.xml 0 8
         Configurations2/floater/ 0 0
+        Configurations2/images/Bitmaps/ 0 0
+        Configurations2/menubar/ 0 0
         Configurations2/popupmenu/ 0 0
         Configurations2/progressbar/ 0 0
-        Configurations2/menubar/ 0 0
+        Configurations2/statusbar/ 0 0
         Configurations2/toolbar/ 0 0
-        Configurations2/images/Bitmaps/ 0 0
+        META-INF/manifest.xml 0 8
+        Pictures/empty 0 8
         Thumbnails/thumbnail.png 0 8
+        content.xml 0 8
+        meta.xml 0 8
+        mimetype 0 8
+        settings.xml 0 8
+        styles.xml 0 8
     """
     def __init__ \
         ( self
@@ -246,7 +235,7 @@ class OOoPy (autosuper) :
         if mimetype :
             self.mimetype = mimetype
         elif self.izip :
-            self.mimetype = self.izip.read ('mimetype')
+            self.mimetype = self.izip.read ('mimetype').decode ('ascii')
     # end def __init__
 
     def read (self, zname) :
@@ -283,8 +272,10 @@ class OOoPy (autosuper) :
         assert (self.ozip)
         # assure mimetype is the first member in new archive
         if 'mimetype' not in self.written :
-            self._write ('mimetype', self.mimetype)
-        str = StringIO ()
+            self._write ('mimetype', self.mimetype.encode ('ascii'))
+        if zname in self.written :
+            raise ValueError ("Rewrite file: %s" % zname)
+        str = BytesIO ()
         etree.write (str)
         self._write (zname, str.getvalue ())
     # end def write

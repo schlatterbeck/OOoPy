@@ -38,7 +38,7 @@ clean:
 	rm -f testout.sxw testout.odt testout2.sxw testout2.odt \
 	    testout3.sxw testout3.odt out.html out2.odt         \
 	    out.sxw carta-out.stw carta-out.odt xyzzy.odt
-	rm -rf $(PKG)/__pycache__
+	rm -rf $(PKG)/__pycache__ __pycache__
 	rm -f ooopy/Version.py ooopy/Version.py{c,o} 
 	rm -f $(PKG)/Version.py
 	rm -rf ${CLEAN}

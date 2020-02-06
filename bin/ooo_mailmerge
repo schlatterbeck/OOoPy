@@ -23,7 +23,7 @@
 import sys
 from optparse           import OptionParser
 from csv                import DictReader
-from StringIO           import StringIO
+from io                 import BytesIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
@@ -51,7 +51,7 @@ if __name__ == '__main__' :
         sys.exit (1)
     outfile = options.output_file
     if outfile is None :
-        outfile = StringIO ()
+        outfile = BytesIO ()
     d = DictReader (open (args [1]), delimiter = options.delimiter)
     o = OOoPy (infile = args [0], outfile = outfile)
     t = Transformer \

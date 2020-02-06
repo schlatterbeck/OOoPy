@@ -21,7 +21,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
-from __future__              import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 import time
 import re
@@ -32,17 +32,17 @@ except ImportError :
     from elementtree.ElementTree import dump, SubElement, Element, tostring
     from elementtree.ElementTree import _namespace_map
 from copy                    import deepcopy
-from ooopy.OOoPy             import OOoPy, autosuper
-from ooopy.OOoPy             import files, mimetypes, namespace_by_name
+from ooopy.autosuper         import autosuper
 from ooopy.Version           import VERSION
+from ooopy.OOoPy             import OOoPy, files, mimetypes, namespace_by_name
 
 def OOo_Tag (namespace, name, mimetype) :
     """Return combined XML tag
     
-       >>> OOo_Tag ('xml', 'id', mimetypes [1])
-       '{http://www.w3.org/XML/1998/namespace}id'
-       >>> OOo_Tag ('text', 'list', mimetypes [1])
-       '{urn:oasis:names:tc:opendocument:xmlns:text:1.0}list'
+       >>> print (OOo_Tag ('xml', 'id', mimetypes [1]))
+       {http://www.w3.org/XML/1998/namespace}id
+       >>> print (OOo_Tag ('text', 'list', mimetypes [1]))
+       {urn:oasis:names:tc:opendocument:xmlns:text:1.0}list
     """
     return "{%s}%s" % (namespace_by_name [mimetype][namespace], name)
 # end def OOo_Tag
@@ -95,7 +95,7 @@ class Transform (autosuper) :
 
     def apply (self, root) :
         """ Apply myself to the element given as root """
-        raise NotImplementedError, 'derived transforms must implement "apply"'
+        raise NotImplementedError ('derived transforms must implement "apply"')
     # end def apply
 
     def apply_all (self, trees) :
@@ -187,18 +187,18 @@ class Transformer (autosuper) :
         ...         , 'firstname'  : 'Hugo'
         ...         , 'salutation' : 'Frau'
         ...         }
-        ...     if r.has_key (name) : return r [name]
-        ...     return None
+        ...     return r.get (name, None)
         ... 
         >>> p = get_meta (m)
         >>> t = Transformer (m, p)
         >>> t ['a'] = 'a'
-        >>> t ['a']
-        'a'
+        >>> print (t ['a'])
+        a
         >>> t.transform (o)
         >>> p.set ('a', 'b')
-        >>> t ['Attribute_Access:a']
-        'b'
+        >>> print (t ['Attribute_Access:a'])
+        b
+        >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> t   = Transformer (
         ...       m
         ...     , Transforms.Autoupdate ()
@@ -221,7 +221,7 @@ class Transformer (autosuper) :
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout.sxw", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
@@ -230,7 +230,7 @@ class Transformer (autosuper) :
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
         ...     name = node.get (OOo_Tag ('text', 'name', m))
-        ...     print name, ':', node.text
+        ...     print (name, ':', node.text)
         salutation : None
         firstname : Erika
         lastname : Musterfrau
@@ -267,7 +267,7 @@ class Transformer (autosuper) :
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
-        ...     print i, t [':'.join (('Set_Attribute', i))]
+        ...     print (i, t [':'.join (('Set_Attribute', i))])
         character-count 951
         image-count 0
         object-count 0
@@ -276,12 +276,12 @@ class Transformer (autosuper) :
         table-count 3
         word-count 162
         >>> name = t ['Addpagebreak_Style:stylename']
-        >>> name
-        'P2'
+        >>> print (name)
+        P2
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout2.sxw", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -290,7 +290,7 @@ class Transformer (autosuper) :
         >>> for n in body.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :
-        ...         print ':'.join(split_tag (n.tag)), zidx
+        ...         print (':'.join(split_tag (n.tag)), zidx)
         draw:text-box 0
         draw:rect 1
         draw:text-box 3
@@ -302,14 +302,14 @@ class Transformer (autosuper) :
         draw:text-box 8
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'p', m)) :
         ...     if n.get (OOo_Tag ('text', 'style-name', m)) == name :
-        ...         print n.tag
+        ...         print (n.tag)
         {http://openoffice.org/2000/text}p
         {http://openoffice.org/2000/text}p
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', m)
         >>> for n in body.findall (vset) :
         ...     if n.get (OOo_Tag ('text', 'name', m), None).endswith ('name') :
         ...         name = n.get (OOo_Tag ('text', 'name', m))
-        ...         print name, ':', n.text
+        ...         print (name, ':', n.text)
         firstname : Erika
         lastname : Nobody
         firstname : Eric
@@ -323,8 +323,8 @@ class Transformer (autosuper) :
         firstname : Hugo
         lastname : Testman
         >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'text-box', m)) :
-        ...     print n.get (OOo_Tag ('draw', 'name', m)),
-        ...     print n.get (OOo_Tag ('text', 'anchor-page-number', m))
+        ...     print (n.get (OOo_Tag ('draw', 'name', m)), end = ' ')
+        ...     print (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
         Frame1 1
         Frame2 2
         Frame3 3
@@ -332,7 +332,7 @@ class Transformer (autosuper) :
         Frame5 None
         Frame6 None
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section', m)) :
-        ...     print n.get (OOo_Tag ('text', 'name', m))
+        ...     print (n.get (OOo_Tag ('text', 'name', m)))
         Section1
         Section2
         Section3
@@ -352,14 +352,14 @@ class Transformer (autosuper) :
         Section17
         Section18
         >>> for n in body.findall ('.//' + OOo_Tag ('table', 'table', m)) :
-        ...     print n.get (OOo_Tag ('table', 'name', m))
+        ...     print (n.get (OOo_Tag ('table', 'name', m)))
         Table1
         Table2
         Table3
         >>> r = o.read ('meta.xml')
         >>> meta = r.find ('.//' + OOo_Tag ('meta', 'document-statistic', m))
         >>> for i in meta_counts :
-        ...     print i, repr (meta.get (OOo_Tag ('meta', i, m)))
+        ...     print (i, repr (meta.get (OOo_Tag ('meta', i, m))))
         character-count '951'
         image-count '0'
         object-count '0'
@@ -381,7 +381,7 @@ class Transformer (autosuper) :
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
-        ...     print i, repr (t [':'.join (('Set_Attribute', i))])
+        ...     print (i, repr (t [':'.join (('Set_Attribute', i))]))
         character-count '1131'
         image-count '0'
         object-count '0'
@@ -392,7 +392,7 @@ class Transformer (autosuper) :
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout3.sxw", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -402,7 +402,7 @@ class Transformer (autosuper) :
         ...     name = n.get (OOo_Tag ('style', 'name', m))
         ...     if name :
         ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
-        ...         print '"%s", "%s"' % (name, parent)
+        ...         print ('"%s", "%s"' % (name, parent))
         "Tahoma1", "None"
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
@@ -462,7 +462,7 @@ class Transformer (autosuper) :
         ...     name = n.get (OOo_Tag ('style', 'name', m))
         ...     if name :
         ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
-        ...         print '"%s", "%s"' % (name, parent)
+        ...         print ('"%s", "%s"' % (name, parent))
         "Tahoma1", "None"
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
@@ -498,7 +498,7 @@ class Transformer (autosuper) :
         "Concat_Standard", "None"
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl', m)) :
         ...     name = n.get (OOo_Tag ('text', 'name', m))
-        ...     print name
+        ...     print (name)
         salutation
         firstname
         lastname
@@ -534,7 +534,7 @@ class Transformer (autosuper) :
         invoice.subscriber.initial
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'sequence-decl', m)) :
         ...     name = n.get (OOo_Tag ('text', 'name', m))
-        ...     print name
+        ...     print (name)
         Illustration
         Table
         Text
@@ -542,7 +542,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'p', m)) :
         ...     name = n.get (OOo_Tag ('text', 'style-name', m))
         ...     if not name or name.startswith ('Concat') :
-        ...         print ">%s<" % name
+        ...         print (">%s<" % name)
         >Concat_P1<
         >Concat_P2<
         >Concat_Frame contents<
@@ -550,7 +550,7 @@ class Transformer (autosuper) :
         ...     attrs = 'name', 'style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
-        ...     print attrs
+        ...     print (attrs)
         ['Frame1', 'fr1', '0', '1']
         ['Frame2', 'fr1', '3', '2']
         ['Frame3', 'Concat_fr1', '6', '3']
@@ -574,7 +574,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'section', m)) :
         ...     attrs = 'name', 'style-name'
         ...     attrs = [n.get (OOo_Tag ('text', i, m)) for i in attrs]
-        ...     print attrs
+        ...     print (attrs)
         ['Section1', 'Sect1']
         ['Section2', 'Sect1']
         ['Section3', 'Sect1']
@@ -612,13 +612,13 @@ class Transformer (autosuper) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
-        ...     print attrs
+        ...     print (attrs)
         ['gr1', 'P1', '1', '1']
         ['gr1', 'P1', '4', '2']
         >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'line', m)) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
-        ...     print attrs
+        ...     print (attrs)
         ['gr1', 'P1', '24']
         ['gr1', 'P1', '22']
         ['gr1', 'P1', '21']
@@ -626,7 +626,7 @@ class Transformer (autosuper) :
         ...     if n.get (OOo_Tag ('style', 'name', m)).startswith ('Co') :
         ...         attrs = 'name', 'class', 'family'
         ...         attrs = [n.get (OOo_Tag ('style', i, m)) for i in attrs]
-        ...         print attrs
+        ...         print (attrs)
         ...         props = n.find ('./' + OOo_Tag ('style', 'properties', m))
         ...         if props is not None and len (props) :
         ...             props [0].tag
@@ -642,7 +642,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :
-        ...         print ':'.join(split_tag (n.tag)), zidx
+        ...         print (':'.join(split_tag (n.tag)), zidx)
         draw:text-box 0
         draw:rect 1
         draw:text-box 3
@@ -702,7 +702,7 @@ class Transformer (autosuper) :
         >>> o.close()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("carta-out.stw", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -711,7 +711,7 @@ class Transformer (autosuper) :
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
         ...     name = node.get (OOo_Tag ('text', 'name', m))
-        ...     print name, ':', node.text
+        ...     print (name, ':', node.text)
         Spett : Spettabile
         contraente : First person
         indirizzo : street? 1
@@ -743,7 +743,7 @@ class Transformer (autosuper) :
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
-        ...     print i, t [':'.join (('Set_Attribute', i))]
+        ...     print (i, t [':'.join (('Set_Attribute', i))])
         character-count 951
         image-count 0
         object-count 0
@@ -752,12 +752,12 @@ class Transformer (autosuper) :
         table-count 3
         word-count 162
         >>> name = t ['Addpagebreak_Style:stylename']
-        >>> name
-        'P2'
+        >>> print (name)
+        P2
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout.odt", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -766,7 +766,7 @@ class Transformer (autosuper) :
         >>> for n in body.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :
-        ...         print ':'.join(split_tag (n.tag)), zidx
+        ...         print (':'.join(split_tag (n.tag)), zidx)
         draw:frame 0
         draw:rect 1
         draw:frame 3
@@ -778,14 +778,14 @@ class Transformer (autosuper) :
         draw:frame 8
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'p', m)) :
         ...     if n.get (OOo_Tag ('text', 'style-name', m)) == name :
-        ...         print n.tag
+        ...         print (n.tag)
         {urn:oasis:names:tc:opendocument:xmlns:text:1.0}p
         {urn:oasis:names:tc:opendocument:xmlns:text:1.0}p
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', m)
         >>> for n in body.findall (vset) :
         ...     if n.get (OOo_Tag ('text', 'name', m), None).endswith ('name') :
         ...         name = n.get (OOo_Tag ('text', 'name', m))
-        ...         print name, ':', n.text
+        ...         print (name, ':', n.text)
         firstname : Erika
         lastname : Nobody
         firstname : Eric
@@ -799,8 +799,8 @@ class Transformer (autosuper) :
         firstname : Hugo
         lastname : Testman
         >>> for n in body.findall ('.//' + OOo_Tag ('draw', 'frame', m)) :
-        ...     print n.get (OOo_Tag ('draw', 'name', m)),
-        ...     print n.get (OOo_Tag ('text', 'anchor-page-number', m))
+        ...     print (n.get (OOo_Tag ('draw', 'name', m)), end = ' ')
+        ...     print (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
         Frame1 1
         Frame2 2
         Frame3 3
@@ -808,7 +808,7 @@ class Transformer (autosuper) :
         Frame5 None
         Frame6 None
         >>> for n in body.findall ('.//' + OOo_Tag ('text', 'section', m)) :
-        ...     print n.get (OOo_Tag ('text', 'name', m))
+        ...     print (n.get (OOo_Tag ('text', 'name', m)))
         Section1
         Section2
         Section3
@@ -828,14 +828,14 @@ class Transformer (autosuper) :
         Section17
         Section18
         >>> for n in body.findall ('.//' + OOo_Tag ('table', 'table', m)) :
-        ...     print n.get (OOo_Tag ('table', 'name', m))
+        ...     print (n.get (OOo_Tag ('table', 'name', m)))
         Table1
         Table2
         Table3
         >>> r = o.read ('meta.xml')
         >>> meta = r.find ('.//' + OOo_Tag ('meta', 'document-statistic', m))
         >>> for i in meta_counts :
-        ...     print i, repr (meta.get (OOo_Tag ('meta', i, m)))
+        ...     print (i, repr (meta.get (OOo_Tag ('meta', i, m))))
         character-count '951'
         image-count '0'
         object-count '0'
@@ -878,7 +878,7 @@ class Transformer (autosuper) :
         >>> o.close()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("carta-out.odt", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -887,7 +887,7 @@ class Transformer (autosuper) :
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
         ...     name = node.get (OOo_Tag ('text', 'name', m))
-        ...     print name, ':', node.text
+        ...     print (name, ':', node.text)
         Spett : Spettabile
         contraente : First person
         indirizzo : street? 1
@@ -913,7 +913,7 @@ class Transformer (autosuper) :
         ...     )
         >>> t.transform (o)
         >>> for i in meta_counts :
-        ...     print i, repr (t [':'.join (('Set_Attribute', i))])
+        ...     print (i, repr (t [':'.join (('Set_Attribute', i))]))
         character-count '1131'
         image-count '0'
         object-count '0'
@@ -924,7 +924,7 @@ class Transformer (autosuper) :
         >>> o.close ()
         >>> ov  = sio.getvalue ()
         >>> f   = open ("testout3.odt", "wb")
-        >>> f.write (ov)
+        >>> dum = f.write (ov)
         >>> f.close ()
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
@@ -934,7 +934,7 @@ class Transformer (autosuper) :
         ...     name = n.get (OOo_Tag ('style', 'name', m))
         ...     if name :
         ...         parent = n.get (OOo_Tag ('style', 'parent-style-name', m))
-        ...         print '"%s", "%s"' % (name, parent)
+        ...         print ('"%s", "%s"' % (name, parent))
         "Tahoma1", "None"
         "Bitstream Vera Sans", "None"
         "Tahoma", "None"
@@ -992,7 +992,7 @@ class Transformer (autosuper) :
         "P14_Concat", "Concat_Standard"
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'variable-decl', m)) :
         ...     name = n.get (OOo_Tag ('text', 'name', m))
-        ...     print name
+        ...     print (name)
         salutation
         firstname
         lastname
@@ -1028,7 +1028,7 @@ class Transformer (autosuper) :
         invoice.subscriber.initial
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'sequence-decl', m)) :
         ...     name = n.get (OOo_Tag ('text', 'name', m))
-        ...     print name
+        ...     print (name)
         Illustration
         Table
         Text
@@ -1036,7 +1036,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'p', m)) :
         ...     name = n.get (OOo_Tag ('text', 'style-name', m))
         ...     if not name or name.startswith ('Concat') :
-        ...         print ':'.join(split_tag (n.tag)), ">%s<" % name
+        ...         print (':'.join(split_tag (n.tag)), ">%s<" % name)
         text:p >None<
         text:p >None<
         text:p >Concat_P1<
@@ -1059,7 +1059,7 @@ class Transformer (autosuper) :
         ...     attrs = 'name', 'style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
-        ...     print attrs
+        ...     print (attrs)
         ['Frame1', 'fr1', '0', '1']
         ['Frame2', 'fr1', '3', '2']
         ['Frame3', 'Concat_fr1', '6', '3']
@@ -1083,7 +1083,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//' + OOo_Tag ('text', 'section', m)) :
         ...     attrs = 'name', 'style-name'
         ...     attrs = [n.get (OOo_Tag ('text', i, m)) for i in attrs]
-        ...     print attrs
+        ...     print (attrs)
         ['Section1', 'Sect1']
         ['Section2', 'Sect1']
         ['Section3', 'Sect1']
@@ -1121,13 +1121,13 @@ class Transformer (autosuper) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
         ...     attrs.append (n.get (OOo_Tag ('text', 'anchor-page-number', m)))
-        ...     print attrs
+        ...     print (attrs)
         ['gr1', 'P1', '1', '1']
         ['gr1', 'P1', '4', '2']
         >>> for n in c.findall ('.//' + OOo_Tag ('draw', 'line', m)) :
         ...     attrs = 'style-name', 'text-style-name', 'z-index'
         ...     attrs = [n.get (OOo_Tag ('draw', i, m)) for i in attrs]
-        ...     print attrs
+        ...     print (attrs)
         ['Concat_gr1', 'P1', '24']
         ['Concat_gr1', 'P1', '22']
         ['Concat_gr1', 'P1', '21']
@@ -1135,7 +1135,7 @@ class Transformer (autosuper) :
         ...     if n.get (OOo_Tag ('style', 'name', m)).startswith ('Co') :
         ...         attrs = 'name', 'display-name', 'class', 'family'
         ...         attrs = [n.get (OOo_Tag ('style', i, m)) for i in attrs]
-        ...         print attrs
+        ...         print (attrs)
         ...         props = n.find ('./' + OOo_Tag ('style', 'properties', m))
         ...         if props is not None and len (props) :
         ...             props [0].tag
@@ -1148,7 +1148,7 @@ class Transformer (autosuper) :
         >>> for n in c.findall ('.//*') :
         ...     zidx = n.get (OOo_Tag ('draw', 'z-index', m))
         ...     if zidx :
-        ...         print ':'.join(split_tag (n.tag)), zidx
+        ...         print (':'.join(split_tag (n.tag)), zidx)
         draw:frame 0
         draw:rect 1
         draw:frame 3
@@ -1174,13 +1174,16 @@ class Transformer (autosuper) :
         draw:frame 5
         draw:line 22
         draw:line 21
-        >>> from os import system
-        >>> system ('python bin/ooo_fieldreplace -i testfiles/test.odt '
-        ...         '-o testout.odt '
-        ...         'salutation=Frau firstname=Erika lastname=Musterfrau '
-        ...         'country=D postalcode=00815 city=Niemandsdorf '
-        ...         'street="Beispielstrasse 42"')
+        >>> import os, sys
+        >>> oldpath = os.environ ['PYTHONPATH']
+        >>> os.environ ['PYTHONPATH'] = '.'
+        >>> os.system ('python%s bin/ooo_fieldreplace -i testfiles/test.odt '
+        ...            '-o testout.odt '
+        ...            'salutation=Frau firstname=Erika lastname=Musterfrau '
+        ...            'country=D postalcode=00815 city=Niemandsdorf '
+        ...            'street="Beispielstrasse 42"' % sys.version_info [0])
         0
+        >>> os.environ ['PYTHONPATH'] = oldpath
         >>> o = OOoPy (infile = 'testout.odt')
         >>> c = o.read ('content.xml')
         >>> m = o.mimetype
@@ -1188,7 +1191,7 @@ class Transformer (autosuper) :
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
         ...     name = node.get (OOo_Tag ('text', 'name', m))
-        ...     print name, ':', node.text
+        ...     print (name, ':', node.text)
         salutation : Frau
         firstname : Erika
         lastname : Musterfrau
@@ -1204,9 +1207,12 @@ class Transformer (autosuper) :
         postalcode : 00815
         city : Niemandsdorf
         >>> o.close ()
-        >>> system ("bin/ooo_mailmerge -o testout.odt -d'|' "
-        ...         "testfiles/carta.odt testfiles/x.csv")
+        >>> os.environ ['PYTHONPATH'] = '.'
+        >>> os.system ("python%s bin/ooo_mailmerge "
+        ...            "-o testout.odt -d'|' testfiles/carta.odt "
+        ...            "testfiles/x.csv" % sys.version_info [0])
         0
+        >>> os.environ ['PYTHONPATH'] = oldpath
         >>> o = OOoPy (infile = 'testout.odt')
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
@@ -1214,7 +1220,7 @@ class Transformer (autosuper) :
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
         ...     name = node.get (OOo_Tag ('text', 'name', m))
-        ...     print name, ':', node.text
+        ...     print (name, ':', node.text)
         Spett : Spettabile
         contraente : First person
         indirizzo : street? 1
@@ -1254,7 +1260,7 @@ class Transformer (autosuper) :
         >>> textlist = './/' + OOo_Tag ('text', 'list', m)
         >>> for node in body.findall (textlist) :
         ...     id = node.get (OOo_Tag ('xml', 'id', m))
-        ...     print 'xml:id', ':', id
+        ...     print ('xml:id', ':', id)
         xml:id : list1
         xml:id : list2
         xml:id : list3
@@ -1275,7 +1281,7 @@ class Transformer (autosuper) :
         >>> c = o.read ('META-INF/manifest.xml')
         >>> for node in c.getroot () :
         ...     fe = node.get (OOo_Tag ('manifest', 'full-path', m))
-        ...     print fe
+        ...     print (fe)
         /
         Pictures/10000000000000C80000007941B1A419.jpg
         Pictures/10000000000000DC000000B02E191635.jpg
@@ -1289,22 +1295,22 @@ class Transformer (autosuper) :
         Configurations2/accelerator/current.xml
         Configurations2/
         styles.xml
-        >>> for f in o.izip.infolist () :
-        ...     print f.filename
-        mimetype
-        settings.xml
+        >>> for f in sorted (o.izip.infolist (), key = lambda x: x.filename) :
+        ...     print (f.filename)
+        Configurations2/accelerator/current.xml
+        Configurations2/images/Bitmaps/
         META-INF/manifest.xml
-        content.xml
-        meta.xml
-        styles.xml
         Pictures/10000000000000C80000007941B1A419.jpg
-        Pictures/10000000000000DC000000B02E191635.jpg
         Pictures/10000000000000DC000000A337377AAA.jpg
+        Pictures/10000000000000DC000000B02E191635.jpg
         Thumbnails/thumbnail.png
+        content.xml
         layout-cache
         manifest.rdf
-        Configurations2/images/Bitmaps/
-        Configurations2/accelerator/current.xml
+        meta.xml
+        mimetype
+        settings.xml
+        styles.xml
         >>> sio = StringIO ()
         >>> o = OOoPy (infile = 'testfiles/tbl_first.odt', outfile = sio)
         >>> m = o.mimetype
@@ -1326,11 +1332,11 @@ class Transformer (autosuper) :
         >>> for table in body.findall (tbls) :
         ...     name = table.get (OOo_Tag ('table', 'style-name', mimetype = m))
         ...     if name :
-        ...         print name
+        ...         print (name)
         ...     for t in table.findall ('.//') :
         ...         name = t.get (OOo_Tag ('table', 'style-name', mimetype = m))
         ...         if name :
-        ...             print name
+        ...             print (name)
         Tabella1
         Tabella1.A
         Tabella1.A1
@@ -1352,8 +1358,6 @@ class Transformer (autosuper) :
         for t in tf :
             self.insert (t)
         self.dictionary   = {}
-        self.has_key      = self.dictionary.has_key
-        self.__contains__ = self.has_key
         # 2-tuples of filename, content
         self.appendfiles  = []
     # end def __init__
@@ -1376,16 +1380,19 @@ class Transformer (autosuper) :
         for f in files :
             self.trees [f] = ooopy.read (f)
         #self.dictionary = {} # clear dict when transforming another ooopy
-        prios = self.transforms.keys ()
-        prios.sort ()
-        for p in prios :
+        for p in sorted (self.transforms.keys ()) :
             for t in self.transforms [p] :
                 t.apply_all (self.trees)
-        for e in self.trees.itervalues () :
+        for t in self.trees :
+            e = self.trees [t]
             e.write ()
         for fname, fcontent in self.appendfiles :
             e.ooopy.append_file (fname, fcontent)
     # end def transform
+
+    def __contains__ (self, key) :
+        return key in self.dictionary
+    # end def __contains__
 
     def __getitem__ (self, key) :
         return self.dictionary [key]

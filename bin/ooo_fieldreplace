@@ -22,7 +22,7 @@
 
 import sys
 from optparse           import OptionParser
-from StringIO           import StringIO
+from io                 import BytesIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
@@ -49,9 +49,9 @@ if __name__ == '__main__' :
     infile  = options.input_file
     outfile = options.output_file
     if infile is None :
-        infile = StringIO (sys.stdin.read ())
+        infile = BytesIO (sys.stdin.read ())
     if outfile is None :
-        outfile = StringIO ()
+        outfile = BytesIO ()
     o = OOoPy (infile = infile, outfile = outfile)
     t = Transformer \
         ( o.mimetype
