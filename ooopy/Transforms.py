@@ -200,7 +200,7 @@ def set_attributes_from_dict (tag, attr, d) :
         the dictionary
     """
     return [Set_Attribute (tag, attr, oldvalue = k, value = v)
-            for k,v in d.items ()
+            for k, v in d.items ()
            ]
 # end def set_attributes_from_dict
 
@@ -252,16 +252,22 @@ class Attribute_Access (Transform) :
           want to read or change.
         For examples of the attribute changer API, see Renumber and
         Reanchor above.
+        If match_all is not set, we apply only the first match for each
+        tag/attr combination, necessary for Set_Attribute created from a
+        dict where we would apply several transitive changes to the same
+        tag/attr.
     """
     filename = 'content.xml'
     prio     = 110
 
-    def __init__ (self, attrchangers, filename = None, ** kw) :
+    def __init__ \
+        (self, attrchangers, filename = None, match_all = True, ** kw) :
         self.filename     = filename or self.filename
         self.attrchangers = {}
         # allow several changers for a single tag
         self.attrchangers [None] = []
-        self.changers = attrchangers
+        self.changers  = attrchangers
+        self.match_all = match_all
         self.__super.__init__ (** kw)
     # end def __init__
 
@@ -280,10 +286,28 @@ class Attribute_Access (Transform) :
         for n in [root] + root.findall ('.//*') :
             changers = \
                 self.attrchangers [None] + self.attrchangers.get (n.tag, [])
-            for r in changers :
-                nval = r.use_value (n.get (r.attribute))
-                if nval is not None :
-                    n.set (r.attribute, nval)
+            if not self.match_all :
+                by_tag_attr = {}
+                for r in changers :
+                    tag  = getattr (r, 'tag', None)
+                    attr = getattr (r, 'attribute', None)
+                    key  = (tag, attr)
+                    if key not in by_tag_attr :
+                        by_tag_attr [key] = []
+                    by_tag_attr [key].append (r)
+                for ta in by_tag_attr :
+                    changers = by_tag_attr [ta]
+                    for r in changers :
+                        nval = r.use_value (n.get (r.attribute))
+                        if nval is not None :
+                            n.set (r.attribute, nval)
+                            # Only apply first combination
+                            break
+            else :
+                for r in changers :
+                    nval = r.use_value (n.get (r.attribute))
+                    if nval is not None :
+                        n.set (r.attribute, nval)
     # end def apply
 
 # end class Attribute_Access
@@ -892,7 +916,8 @@ class Concatenate (_Body_Concat) :
               ]
             , []
             )
-        return Attribute_Access (r, transformer = self.transformer)
+        return Attribute_Access \
+            (r, match_all = False, transformer = self.transformer)
     # end def _attr_rename
 
     def body_concat (self) :
