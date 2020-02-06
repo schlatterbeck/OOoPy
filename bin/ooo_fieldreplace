@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright (C) 2008-10 Dr. Ralf Schlatterbeck Open Source Consulting.
+#!/usr/bin/env python3
+# Copyright (C) 2008-20 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -21,33 +21,35 @@
 # ****************************************************************************
 
 import sys
-from optparse           import OptionParser
+from argparse           import ArgumentParser
 from io                 import BytesIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
 
 if __name__ == '__main__' :
-    usage  = \
-        '''%prog [-i|--input-file <filename>]
-           [-o|--output-file <filename>] [name=value, ...]'''
-    parser = OptionParser (usage = usage)
-    parser.add_option \
+    parser = ArgumentParser ()
+    parser.add_argument \
+        ( "values"
+        , help    = "Assignments of the form name=value for field replacement"
+        , nargs   = '*'
+        )
+    parser.add_argument \
         ( "-i", "--input-file"
         , dest    = "input_file"
         , help    = "Input file (defaults to stdin)"
         , default = None
         )
-    parser.add_option \
+    parser.add_argument \
         ( "-o", "--output-file"
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
         , default = None
         )
-    (options, args) = parser.parse_args ()
-    fields  = dict (arg.split ('=', 1) for arg in args)
-    infile  = options.input_file
-    outfile = options.output_file
+    args = parser.parse_args ()
+    fields  = dict (arg.split ('=', 1) for arg in args.values)
+    infile  = args.input_file
+    outfile = args.output_file
     if infile is None :
         infile = BytesIO (sys.stdin.read ())
     if outfile is None :
@@ -61,5 +63,5 @@ if __name__ == '__main__' :
         )
     t.transform (o)
     o.close ()
-    if options.output_file is None :
+    if args.output_file is None :
         sys.stdout.write (outfile.getvalue ())

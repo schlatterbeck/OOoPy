@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright (C) 2005-10 Dr. Ralf Schlatterbeck Open Source Consulting.
+#!/usr/bin/env python3
+# Copyright (C) 2005-20 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -20,6 +20,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # ****************************************************************************
 
+from __future__        import print_function, unicode_literals
 import sys
 from argparse          import ArgumentParser
 from ooopy.OOoPy       import OOoPy
@@ -35,14 +36,13 @@ def pretty (n, indent = 0, with_text = False, ext_ns = False) :
         clean = lambda x : x
     s.append (clean (n.tag))
     attrkeys = n.attrib.keys ()
-    attrkeys.sort ()
-    for a in attrkeys :
+    for a in sorted (attrkeys) :
         s.append (' %s="%s"' % (clean (a), n.attrib [a]))
     if with_text and n.text is not None :
         s.append (' TEXT="%s"' % n.text)
     if with_text and n.tail is not None :
         s.append (' TAIL="%s"' % n.tail)
-    print ''.join (s).encode ('utf-8')
+    print (''.join (s))
     for sub in n :
         pretty (sub, indent + 1, with_text, ext_ns)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__' :
         , nargs = '+'
         )
     parser.add_argument \
-        ( "-f", "--file"
+        ( "-f", "--oofile"
         , dest    = "ooofile"
         , help    = "XML-File inside OOo File"
         , default = 'content.xml'

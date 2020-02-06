@@ -1,9 +1,3 @@
-.. image:: http://sflogo.sourceforge.net/sflogo.php?group_id=134329&type=7
-    :height: 62
-    :width: 210
-    :alt: SourceForge.net Logo
-    :target: http://sourceforge.net/projects/ooopy/
-
 OOoPy: Modify OpenOffice.org documents in Python
 ================================================
 
@@ -13,12 +7,11 @@ OpenOffice.org (OOo) documents are ZIP archives containing several XML
 files.  Therefore it is easy to inspect, create, or modify OOo
 documents. OOoPy is a library in Python for these tasks with OOo
 documents. To not reinvent the wheel, OOoPy uses an existing XML
-library, ElementTree_ by Fredrik Lundh. OOoPy is a thin wrapper around
-ElementTree_ using Python's ZipFile to read and write OOo documents.
+library, ElementTree by Fredrik Lundh (which is in the Python standard
+library for quite some time now). OOoPy is a thin wrapper around
+ElementTree using Python's ZipFile to read and write OOo documents.
 
-.. _ElementTree: http://effbot.org/zone/element-index.htm
-
-In addition to being a wrapper for ElementTree_, OOoPy contains a
+In addition to being a wrapper for ElementTree, OOoPy contains a
 framework for applying XML transforms to OOo documents. Several
 Transforms for OOo documents exist, e.g., for changing OOo fields (OOo
 Insert-Fields menu) or using OOo fields for a mail merge application.
@@ -52,9 +45,6 @@ ooopy (assuming here you installed using python into /usr/local)::
  python run_doctest.py /usr/local/lib/python2.X/site-packages/ooopy/OOoPy.py
 
 Both should report no failed tests.
-For running the doctest on python2.3 with the metaclass trickery of
-autosuper, see the file run_doctest.py. For later versions of python the
-bug in doctest is already fixed.
 
 Usage
 -----
@@ -97,7 +87,8 @@ A, well, there are command-line _`utilities` now:
 - ooo_cat for concatenating several OOo files into one
 - ooo_grep to do equivalent of grep -l on OOo files -- only runs on
   Unix-like operating systems, probably only with the GNU version of grep
-  (it's a shell-script using ooo_as_text)
+  (it's a shell-script using ooo_as_text) Note that the -l option of
+  grep only prints the matching filenames.
 - ooo_fieldreplace for replacing fields in an OOo document
 - ooo_mailmerge for doing a mailmerge from a template OOo document and a
   CSV (comma separated values) input
@@ -115,16 +106,14 @@ Project information and download from `Sourceforge main page`_
 
 .. _`Sourceforge main page`: http://sourceforge.net/projects/ooopy/
 
-You need at least version 2.3 of python.
+You need at least version 2.7 of python. Now also tested with 3.5, will
+probably work with later versions, too.
 
-For using OOoPy with Python versions below 2.5, you need to download and
-install the
-`ElementTree Library`_ by Fredrik Lundh. For documentation about the OOo
-XML file format, see the book by J. David Eisenberg called
-`OASIS OpenDocument Essentials`_ which is under the Gnu Free
-Documentation License and is also available `in print`_. For a reference
-document you may want to check out the `XML File Format Specification`_
-(PDF) by OpenOffice.org.
+For documentation about the OOo XML file format, see the book by
+J. David Eisenberg called `OASIS OpenDocument Essentials`_ which is
+under the Gnu Free Documentation License and is also available `in
+print`_.  For a reference document you may want to check out the `XML
+File Format Specification`_ (PDF) by OpenOffice.org.
 
 A german page for OOoPy exists at `runtux.com`_
 
@@ -150,6 +139,14 @@ Please use the `Sourceforge Bug Tracker`_ and
 
 Changes
 -------
+
+Version 1.12: Port to Python3
+
+Still working with lower python versions but I'm only able to test with
+2.7, nothing earlier. Bug fixes where sometimes multiple Set_Attribute
+transformations (e.g. when concatenating OO documents) would be applied
+to the same tag/attribute combination. Also fix a bug with the
+computation of default tabulators when concatenating documents.
 
 Version 1.11: Small Bug fix ooo_mailmerge
 

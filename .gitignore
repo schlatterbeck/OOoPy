@@ -13,6 +13,7 @@
 *~
 .#*
 .*.swp
+.swp
 .DS_store
 dist
 MANIFEST
@@ -27,3 +28,4 @@ notes
 xyzzy.odt
 out.sxw
 out2.odt
+build

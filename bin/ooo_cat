@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright (C) 2008-14 Dr. Ralf Schlatterbeck Open Source Consulting.
+#!/usr/bin/env python3
+# Copyright (C) 2008-20 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -21,35 +21,33 @@
 # ****************************************************************************
 
 import sys
-from optparse           import OptionParser
-from StringIO           import StringIO
+from argparse           import ArgumentParser
+from io                 import BytesIO, StringIO
 from ooopy.OOoPy        import OOoPy
 from ooopy.Transformer  import Transformer
 import ooopy.Transforms as     Transforms
 
 if __name__ == '__main__' :
-    usage  = '%prog [-o|--output-file <filename>] [file, ...]'
-    parser = OptionParser (usage = usage)
-    parser.add_option \
+    parser = ArgumentParser ()
+    parser.add_argument \
+        ( "file"
+        , help    = "Input file (mandatory)"
+        , nargs   = '+'
+        )
+    parser.add_argument \
         ( "-o", "--output-file"
         , dest    = "output_file"
         , help    = "Output file (defaults to stdout)"
-        , default = None
+        , default = '/dev/null'
         )
-    (options, args) = parser.parse_args ()
-    if len (args) < 1 :
-        infiles = [StringIO (sys.stdin.read ())]
-    else :
-        infiles = args
-    outfile = options.output_file
-    if outfile is None :
-        outfile = StringIO ()
-    o = OOoPy (infile = infiles [0], outfile = outfile)
-    if len (infiles) > 1 :
+    args = parser.parse_args ()
+    outfile = args.output_file
+    o = OOoPy (infile = args.file [0], outfile = outfile)
+    if len (args.file) > 1 :
         t = Transformer \
             ( o.mimetype
             , Transforms.get_meta        (o.mimetype)
-            , Transforms.Concatenate     (* (infiles [1:]))
+            , Transforms.Concatenate     (* (args.file [1:]))
             , Transforms.renumber_all    (o.mimetype)
             , Transforms.set_meta        (o.mimetype)
             , Transforms.Fix_OOo_Tag     ()
@@ -57,5 +55,3 @@ if __name__ == '__main__' :
             )
         t.transform (o)
     o.close ()
-    if options.output_file is None :
-        sys.stdout.write (outfile.getvalue ())

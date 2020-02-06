@@ -48,6 +48,7 @@ files = \
 mimetypes = \
     [ 'application/vnd.sun.xml.writer'
     , 'application/vnd.oasis.opendocument.text'
+    , 'application/vnd.oasis.opendocument.spreadsheet'
     ]
 namespace_by_name = \
   { mimetypes [0] :
@@ -92,15 +93,27 @@ namespace_by_name = \
       , 'xlink'    : "http://www.w3.org/1999/xlink"
       , 'manifest' : "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
       , 'tableooo' : "http://openoffice.org/2009/table"
-      , 'transformation' : "http://www.w3.org/2003/g/data-view#"
+      , 'drawooo'  : "http://openoffice.org/2010/draw"
+      , 'grddl'    : "http://www.w3.org/2003/g/data-view#"
+      , 'pres'     : "urn:oasis:names:tc:opendocument:xmlns:presentation:1.0"
+      , 'calcext'  : "urn:org:documentfoundation:names:experimental:"
+                     "calc:xmlns:calcext:1.0"
+      , 'loext'    : "urn:org:documentfoundation:names:experimental:"
+                     "office:xmlns:loext:1.0"
+      , 'field'    : "urn:openoffice:names:experimental:ooo-ms-interop:"
+                     "xmlns:field:1.0"
       # OOo 1.X tags and some others:
       , 'ooo'      : "http://openoffice.org/2004/office"
       , 'ooow'     : "http://openoffice.org/2004/writer"
       , 'oooc'     : "http://openoffice.org/2004/calc"
       , 'o_dom'    : "http://www.w3.org/2001/xml-events"
+      , 'rpt'      : "http://openoffice.org/2005/report"
+      , 'of'       : "urn:oasis:names:tc:opendocument:xmlns:of:1.2"
+      , 'html'     : "http://www.w3.org/1999/xhtml"
       , 'o_xforms' : "http://www.w3.org/2002/xforms"
       , 'xs'       : "http://www.w3.org/2001/XMLSchema"
       , 'xsi'      : "http://www.w3.org/2001/XMLSchema-instance"
+      , 'css3t'    : "http://www.w3.org/TR/css3-text/"
       # predefined xml namespace, see
       # http://www.w3.org/TR/2006/REC-xml-names11-20060816/
       # "It MAY, but need not, be declared, and MUST NOT be undeclared
@@ -108,6 +121,7 @@ namespace_by_name = \
       , 'xml'      : "http://www.w3.org/XML/1998/namespace"
       }
   }
+namespace_by_name [mimetypes [2]] = namespace_by_name [mimetypes [1]]
 
 for ns in namespace_by_name :
     mimetype = namespace_by_name [ns]
