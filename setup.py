@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2005 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2005-22 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # All rights reserved
@@ -55,10 +55,17 @@ setup \
     , data_files       =
         [ ('share/ooopy'
           , [ 'run_doctest.py'
-            , 'testfiles/carta.odt'
+            ]
+          ),
+          ('share/ooopy/testfiles'
+          , [ 'testfiles/carta.odt'
             , 'testfiles/carta.stw'
+            , 'testfiles/page1.odt'
+            , 'testfiles/page2.odt'
             , 'testfiles/rechng.odt'
             , 'testfiles/rechng.sxw'
+            , 'testfiles/tbl_first.odt'
+            , 'testfiles/tbl_second.odt'
             , 'testfiles/testenum.odt'
             , 'testfiles/test.odt'
             , 'testfiles/test.sxw'
@@ -70,8 +77,10 @@ setup \
         [ 'bin/ooo_as_text'
         , 'bin/ooo_cat'
         , 'bin/ooo_fieldreplace'
+        , 'bin/ooo_from_csv'
         , 'bin/ooo_grep'
         , 'bin/ooo_mailmerge'
+        , 'bin/ooo_prettyxml'
         ]
     , classifiers      =
         [ 'Development Status :: 5 - Production/Stable'
