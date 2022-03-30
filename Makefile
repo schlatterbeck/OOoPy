@@ -25,13 +25,10 @@ all: $(VERSION)
 
 $(VERSION): $(SRC)
 
-dist: all
-	python setup.py sdist --formats=gztar,zip
-
 test: $(VERSION)
-	python run_doctest.py ooopy/OOoPy.py
-	python run_doctest.py ooopy/Transforms.py
-	python run_doctest.py ooopy/Transformer.py
+	$(PYTHON) run_doctest.py ooopy/OOoPy.py
+	$(PYTHON) run_doctest.py ooopy/Transforms.py
+	$(PYTHON) run_doctest.py ooopy/Transformer.py
 
 clean:
 	rm -f $(PKG)/Version.pyc $(PKG)/testout.sxw $(PKG)/testout2.sxw
@@ -45,4 +42,4 @@ clean:
 
 release: upload upload_homepage announce_pypi announce
 
-include $(RELEASETOOLS)/Makefile-sf
+include $(RELEASETOOLS)/Makefile-pyrelease
