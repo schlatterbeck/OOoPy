@@ -196,6 +196,7 @@ class Transformer (autosuper) :
         >>> p.set ('a', 'b')
         >>> print (t ['Attribute_Access:a'])
         b
+        >>> o.close ()
         >>> o   = OOoPy (infile = 'testfiles/test.sxw', outfile = sio)
         >>> t   = Transformer (
         ...       m
@@ -224,6 +225,7 @@ class Transformer (autosuper) :
         >>> o = OOoPy (infile = sio)
         >>> c = o.read ('content.xml')
         >>> m = o.mimetype
+        >>> o.close ()
         >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
@@ -396,6 +398,7 @@ class Transformer (autosuper) :
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
         >>> s = o.read ('styles.xml')
+        >>> o.close ()
         >>> for n in c.findall ('./*/*') :
         ...     name = n.get (OOo_Tag ('style', 'name', m))
         ...     if name :
@@ -705,6 +708,7 @@ class Transformer (autosuper) :
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
+        >>> o.close ()
         >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
@@ -881,6 +885,7 @@ class Transformer (autosuper) :
         >>> o = OOoPy (infile = sio)
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
+        >>> o.close ()
         >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
         >>> vset = './/' + OOo_Tag ('text', 'variable-set', mimetype = m)
         >>> for node in body.findall (vset) :
@@ -928,6 +933,7 @@ class Transformer (autosuper) :
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
         >>> s = o.read ('styles.xml')
+        >>> o.close ()
         >>> for n in c.findall ('./*/*') :
         ...     name = n.get (OOo_Tag ('style', 'name', m))
         ...     if name :
@@ -1254,6 +1260,7 @@ class Transformer (autosuper) :
         >>> o = OOoPy (infile = 'xyzzy.odt')
         >>> m = o.mimetype
         >>> c = o.read ('content.xml')
+        >>> o.close ()
         >>> body = c.find (OOo_Tag ('office', 'body', mimetype = m))
         >>> textlist = './/' + OOo_Tag ('text', 'list', m)
         >>> for node in body.findall (textlist) :
@@ -1309,6 +1316,7 @@ class Transformer (autosuper) :
         mimetype
         settings.xml
         styles.xml
+        >>> o.close ()
         >>> sio = BytesIO ()
         >>> o = OOoPy (infile = 'testfiles/tbl_first.odt', outfile = sio)
         >>> m = o.mimetype
