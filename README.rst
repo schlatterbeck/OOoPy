@@ -129,7 +129,12 @@ no longer test Python2 in the future.
 
 - Fix setup.py, thanks to Hans-Peter Jansen for the patch, this now adds
   missing test files and installs tests in a separate sub-directory
-- Test against Python2.7 (debian buster) and Python2.9 (Debian bullseye)
+- Test against Python2.7, Python3.7 (debian buster) and Python2.9
+  (Debian bullseye)
+- Close the ooopy object in all regression tests. This hopefully fixes a
+  traceback during garbage collection reported in source forge issue
+  https://sourceforge.net/p/ooopy/bugs/13/ for the reason also see
+  https://bugs.python.org/issue37773
 
 Version 2.0: Port to Python3
 
