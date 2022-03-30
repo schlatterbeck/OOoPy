@@ -313,9 +313,10 @@ class OOoPy (autosuper) :
                 if f.filename not in self.written :
                     self.ozip.writestr (f, self.izip.read (f.filename))
         for i in self.izip, self.ozip :
-            if i : i.close ()
+            if i :
+                i.close ()
         self.izip = self.ozip = None
     # end def close
-
     __del__ = close # auto-close on deletion of object
+
 # end class OOoPy
