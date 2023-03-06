@@ -928,6 +928,8 @@ class Concatenate (_Body_Concat) :
         pb   = Addpagebreak \
             (stylename = self.pbname, transformer = self.transformer)
         self.divide_body (self.trees ['content.xml'][0])
+        tr   = self._attr_rename (0)
+        tr.apply (self.bodyparts)
         self.body_decl (self.declarations, append = 0)
         for idx in range (1, len (self.docs) + 1) :
             meta    = self.trees ['meta.xml'][idx]
@@ -1124,8 +1126,8 @@ class Concatenate (_Body_Concat) :
         for idx in range (len (self.trees [oofile])) :
             namemap = self.namemaps [idx]
             root    = self.trees    [oofile][idx]
-            delnode = []
             for nodeidx, node in enumerate (root) :
+                delnode = []
                 if node.tag not in self.style_containers :
                     continue
                 prefix = ''
@@ -1133,7 +1135,7 @@ class Concatenate (_Body_Concat) :
                 if node.tag == self.font_decls_tag :
                     prefix = oofile
                 default_style = None
-                for n in node :
+                for subnodeidx, n in enumerate (node) :
                     if  (   n.tag == self.oootag ('style', 'default-style')
                         and (  n.get (self.oootag ('style', 'family'))
                             == 'paragraph'
@@ -1166,8 +1168,7 @@ class Concatenate (_Body_Concat) :
                             namemap [key][name] = newname
                             # optimize original doc: remove duplicate styles
                             if  not idx and node.tag != self.font_decls_tag :
-                                pass
-                                #delnode.append (nodeidx)
+                                delnode.append (subnodeidx)
                     else :
                         newname = self._newname (key, name)
                         self.serialised [sn] = newname
